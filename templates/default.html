@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+
+    {% load staticfiles %}
+    <link rel="stylesheet" href="{% static "css/styles.css" %}" />
+
+    <script type="text/javascript" src="{% static "js/jquery.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/jquery.js" %}"></script>
+
+    {% block extra_styles %}
+    {% endblock %}
+
+    {% block extra_scripts %}
+    {% endblock %}
+</head>
+<body>
+    {% block content %}
+    {% endblock %}
+</body>
+</html>

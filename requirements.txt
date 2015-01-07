@@ -1,0 +1,4 @@
+django==1.7.2
+mysql-python==1.2.5
+django-social-auth==0.7.28
+vk==1.5.3

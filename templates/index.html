@@ -1,0 +1,7 @@
+{% extends "default.html" %}
+
+{% block content %}
+    <p>Hello, I am {{ text }}. Nice to meet you!</p>
+
+    <a href="{% url 'socialauth_begin' 'vk-oauth' %}">Enter VK</a>
+{% endblock %}
