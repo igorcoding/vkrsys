@@ -1,3 +1,4 @@
+from pprint import pprint
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.template import RequestContext
@@ -6,11 +7,12 @@ from django.views.generic import View
 from django.contrib.auth import logout
 from social_auth.db.django_models import UserSocialAuth
 import vk
+from app import tasks
 
 
 class MyView(View):
     initial_params = {
-        'title': 'VK Rsys.'
+        'title': 'VK Music Recommender'
     }
 
     def build_params(self, d=None):
@@ -26,7 +28,7 @@ class MyView(View):
 
 class LoginView(MyView):
     initial_params = {
-        'title': 'VK Rsys. Login.'
+        'title': MyView.initial_params['title'] + '. Login'
     }
 
     template = 'login.html'
@@ -54,10 +56,10 @@ class HomePageView(MyView):
         instance = UserSocialAuth.objects.filter(provider='vk-oauth').get(user_id=user_id)
         access_token = instance.tokens['access_token']
         user_vk_id = instance.uid
+        print access_token
 
-        vkapi = vk.API(access_token=access_token)
-        music = vkapi.audio.get(owner_id=user_vk_id, need_user=0, count=3)
-        print music
+        res = tasks.fetch_music.delay(user_vk_id, access_token)
+        pprint(res.get())
 
         return self._render(request, self.template)
 

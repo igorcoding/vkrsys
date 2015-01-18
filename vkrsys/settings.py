@@ -30,6 +30,18 @@ VK_EXTRA_SCOPE = [
     'audio',
 ]
 
+
+# Celery Daemon
+BROKER_URL = config.get('celery', 'BROKER_URL')
+CELERY_RESULT_BACKEND = config.get('celery', 'CELERY_RESULT_BACKEND')
+
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_ACCEPT_CONTENT = ['json']  # Ignore other content
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Europe/Moscow'
+CELERY_ENABLE_UTC = True
+
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 PRODUCTION = not DEBUG
