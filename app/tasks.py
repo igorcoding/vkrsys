@@ -25,10 +25,10 @@ def fetch_music(vk_uid, access_token):
 
         bulk.append(song)
         if len(bulk) >= batch_limit:
-            Song.objects.bulk_create(bulk)
+            Song.objects.bulk_create_new(bulk)
             bulk = []
 
     if len(bulk) != 0:
-        Song.objects.bulk_create(bulk)
+        Song.objects.bulk_create_new(bulk)
 
     return songs
