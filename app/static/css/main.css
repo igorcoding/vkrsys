@@ -1,0 +1,180 @@
+.content {
+    /*background-color: gold;*/
+    width: 100%;
+}
+
+.main-header {
+    /*background-color: darkblue;*/
+    color: white;
+    font-size: 16px;
+    padding: 0 10px 0 10px;
+    height: 40px;
+    line-height: 40px;
+    margin-top: 5px;
+}
+
+.main-header__title {
+    display: inline-block;
+    height: 40px;
+    line-height: 40px;
+    margin-left: 10px;
+}
+
+.main-header__toolbar {
+    display: inline-block;
+    float: right;
+    height: 40px;
+    line-height: 40px;
+}
+
+.main-header__toolbar__user {
+    display: inline-block;
+    margin-right: 30px;
+    height: 40px;
+    line-height: 40px;
+}
+
+
+.main-header__toolbar__user__name {
+    display: inline-block;
+    vertical-align: middle;
+    margin-top: -29px;
+    margin-right: 10px;
+}
+
+.main-header__toolbar__user__avatar {
+    display: inline-block;
+    -moz-background-size: 100% 100%;
+    -webkit-background-size: 100% 100%;
+    background-size: 100% 100%;
+    height: 40px;
+    width: 40px;
+    border: 0;
+    border-radius: 100%;
+}
+
+
+.main-header__toolbar__share {
+    display: inline-block;
+    margin-right: 30px;
+    background-image: url("/static/img/share.png");
+    -moz-background-size: 100% 100%;
+    -webkit-background-size: 100% 100%;
+    background-size: 100% 100%;
+    height: 40px;
+    width: 40px;
+    border: 0;
+
+    -webkit-filter: invert(100%);
+    filter: invert(100%);
+}
+
+.main-header__toolbar__logout {
+    display: inline-block;
+    vertical-align: middle;
+    margin-top: -29px;
+
+    background-image: url("/static/img/logout.png");
+    -moz-background-size: 100% 100%;
+    -webkit-background-size: 100% 100%;
+    background-size: 100% 100%;
+    height: 30px;
+    width: 30px;
+    border: 0;
+
+    -webkit-filter: invert(100%);
+    filter: invert(100%);
+}
+
+.main-content {
+    background-color: #f1f1f1;
+    margin: 15px auto 15px auto;
+    padding: 10px;
+    width: 55%;
+}
+
+.main-content__inner {
+    width: 720px;
+    margin: 0 auto;
+}
+
+.player {
+
+}
+
+.player > div {
+    display: inline-block;
+}
+
+.player__art {
+    background-color: gold;
+
+    background-image: url("http://ecx.images-amazon.com/images/I/61gOquV24GL._SL500_AA280_.jpg");
+    background-repeat: no-repeat;
+    -moz-background-size: 100%;
+    -webkit-background-size: 100%;
+    background-size: 100%;
+    background-position: center;
+    width: 140px;
+    height: 180px;
+    border: 1px solid #656565;
+
+    vertical-align: middle;
+}
+
+.player__main {
+    background-color: blueviolet;
+    width: 570px;
+    height: 180px;
+    border: 1px solid #656565;
+
+    vertical-align: middle;
+}
+
+.control {
+    display: inline-block;
+}
+
+.player__main__song {
+
+}
+
+.player__main__song__title {
+
+}
+
+.player__main__song__progressbar {
+
+}
+
+.player__main__controls {
+
+}
+
+.player__main__controls__dislike {
+
+}
+
+.player__main__controls__prev {
+
+}
+
+.player__main__controls__playpause {
+
+}
+
+.player__main__controls__next {
+
+}
+
+.player__main__controls__like {
+
+}
+
+.playlist {
+
+}
+
+.main-footer {
+    background-color: green;
+}

@@ -1,5 +1,6 @@
 from pprint import pprint
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.template import RequestContext
 from django.utils.decorators import method_decorator
@@ -21,9 +22,9 @@ class MyView(View):
             return dict(params, **d)
         return params
 
-    @staticmethod
-    def _render(request, template, params=initial_params, **kwargs):
-        return render(request, template, params, **kwargs)
+    def _render(self, request, template, params=None, **kwargs):
+        p = self.build_params(params)
+        return render(request, template, p, **kwargs)
 
 
 class LoginView(MyView):
@@ -54,14 +55,21 @@ class HomePageView(MyView):
     def get(self, request):
         user_id = request.user.id
         instance = UserSocialAuth.objects.filter(provider='vk-oauth').get(user_id=user_id)
+        instance.refresh_token()
         access_token = instance.tokens['access_token']
         user_vk_id = instance.uid
         print access_token
 
-        res = tasks.fetch_music.delay(user_vk_id, access_token)
-        pprint(res.get())
+        userpic_res = tasks.fetch_userpic.delay(request.user.id, user_vk_id, access_token)
+        userpic = userpic_res.get()
+        # res = tasks.fetch_music.delay(user_vk_id, access_token)
+        # pprint(res.get())
 
-        return self._render(request, self.template)
+        params = {
+            'username': "%s %s" % (request.user.first_name, request.user.last_name),
+            'userpic': userpic
+        }
+        return self._render(request, self.template, params)
 
 
 class LogoutView(MyView):

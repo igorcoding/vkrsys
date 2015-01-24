@@ -1,4 +1,17 @@
+from django.contrib.auth.models import User
 from django.db import models, connection, transaction
+from django.db.models.signals import post_save
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User)
+
+
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
+
+post_save.connect(create_user_profile, sender=User)
 
 
 class SongManager(models.Manager):
@@ -31,9 +44,10 @@ class SongManager(models.Manager):
             sql = """BEGIN;
             START TRANSACTION;
 
-            INSERT INTO app_song (s_id,artist,title,duration,genre,url)
-            SELECT s_id,artist,title,duration,genre,url FROM app_songtmp WHERE NOT EXISTS (
-                SELECT 1 FROM app_song WHERE app_songtmp.s_id = app_song.s_id
+            INSERT INTO app_song (owner_id,song_id,artist,title,duration,genre,url)
+            SELECT owner_id,song_id,artist,title,duration,genre,url FROM app_songtmp WHERE NOT EXISTS (
+                SELECT 1 FROM app_song WHERE app_songtmp.owner_id = app_song.owner_id AND
+                                             app_songtmp.song_id = app_song.song_id
             );
             COMMIT;
             """
@@ -47,7 +61,8 @@ class SongManager(models.Manager):
 
 
 class SongBase(models.Model):
-    s_id = models.IntegerField(unique=True, db_index=True)
+    owner_id = models.IntegerField()
+    song_id = models.IntegerField()
     artist = models.CharField(max_length=100)
     title = models.CharField(max_length=255)
     duration = models.SmallIntegerField()
@@ -55,6 +70,8 @@ class SongBase(models.Model):
     url = models.CharField(max_length=255)
 
     class Meta:
+        unique_together = ('owner_id', 'song_id')
+        index_together = ('owner_id', 'song_id')
         abstract = True
 
 

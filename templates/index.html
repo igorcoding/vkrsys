@@ -1,7 +1,62 @@
 {% extends "default.html" %}
 
-{% block content %}
-    <p>Hello, I am {{ text }}. Nice to meet you!</p>
+{% block extra_styles %}
+    {% load staticfiles %}
+    <link rel="stylesheet" href="{% static "css/main.css" %}" />
+{% endblock %}
 
-    <a href="{% url 'socialauth_begin' 'vk-oauth' %}">Enter VK</a>
+{% block content %}
+    <div class="content">
+        <header class="main-header">
+            <div class="main-header__title link">VK RECOMMENDER</div>
+            <div class="main-header__toolbar">
+                <div id="user_profile_button" class="main-header__toolbar__user link">
+                    <div class="main-header__toolbar__user__name">
+                        {{ username|upper }}
+                    </div>
+                    <div class="main-header__toolbar__user__avatar" style="background-image: url({{ userpic }})">
+                    </div>
+                </div>
+                <div id="share_button" class="main-header__toolbar__share link"></div>
+                <div id="logout_button" class="main-header__toolbar__logout link"></div>
+
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="main-content__inner">
+                <div class="player">
+                    <div class="player__art"></div>
+
+                    <div class="player__main">
+                        <div class="player__main__song">
+                            <div class="player__main__song__title">
+                                Title
+                            </div>
+                            <div class="player__main__song__progressbar">
+                                <audio src="default.html"></audio>
+                                Progress
+                            </div>
+                        </div>
+
+                        <div class="player__main__controls">
+                            <div class="player__main__controls__dislike control">D</div>
+                            <div class="player__main__controls__prev control">P</div>
+                            <div class="player__main__controls__playpause control">PP</div>
+                            <div class="player__main__controls__next control">N</div>
+                            <div class="player__main__controls__like control">L</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="main-content__playlist">
+                    Playlist Stub
+                </div>
+            </div>
+        </div>
+
+        <footer class="main-footer">
+            Footer
+        </footer>
+    </div>
 {% endblock %}
