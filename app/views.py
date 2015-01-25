@@ -9,6 +9,7 @@ from django.contrib.auth import logout
 from social_auth.db.django_models import UserSocialAuth
 import vk
 from app import tasks
+from app.basicscripts import VkSocial
 
 
 class MyView(View):
@@ -54,14 +55,8 @@ class HomePageView(MyView):
     @method_decorator(login_required)
     def get(self, request):
         user_id = request.user.id
-        instance = UserSocialAuth.objects.filter(provider='vk-oauth').get(user_id=user_id)
-        instance.refresh_token()
-        access_token = instance.tokens['access_token']
-        user_vk_id = instance.uid
-        print access_token
-
-        userpic_res = tasks.fetch_userpic.delay(request.user.id, user_vk_id, access_token)
-        userpic = userpic_res.get()
+        access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
+        userpic = VkSocial.get_userpic(user_id, user_vk_id, access_token)
         # res = tasks.fetch_music.delay(user_vk_id, access_token)
         # pprint(res.get())
 
