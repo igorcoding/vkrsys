@@ -5,3 +5,5 @@ vk==1.5.3
 pika==0.9.14
 celery==3.1.17
 python-memcached
+
+./libs/rsys/rsys-python/
