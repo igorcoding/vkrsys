@@ -70,7 +70,6 @@ class HomePageView(MyView):
             'userpic': userpic
         }
 
-        tasks.r.delay()
         return self._render(request, self.template, params)
 
 
