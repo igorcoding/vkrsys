@@ -1,6 +1,7 @@
 from pprint import pprint
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.http.response import JsonResponse
 from django.shortcuts import render, redirect
 from django.template import RequestContext
 from django.utils.decorators import method_decorator
@@ -9,7 +10,7 @@ from django.contrib.auth import logout
 from social_auth.db.django_models import UserSocialAuth
 import vk
 from app import tasks
-from app.basicscripts import VkSocial
+from app.basicscripts import VkSocial, Rsys
 
 
 class MyView(View):
@@ -74,3 +75,61 @@ class LogoutView(MyView):
         if request.user.is_authenticated():
             logout(request)
         return redirect('/login')
+
+
+class Api:
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def ensure_present(d, args):
+        absent = []
+        for arg in args:
+            if arg not in d:
+                absent.append(arg)
+
+        if len(absent) > 0:
+            return absent
+        return None
+
+    class Rate(View):
+        PARAMS = ['user_id', 'song_id', 'rating']
+
+        @method_decorator(login_required)
+        def get(self, request):
+            # TODO: move to POST probably
+
+            d = request.GET
+            absent = Api.ensure_present(d, self.PARAMS)
+            if absent:
+                return JsonResponse({
+                    'status': 400,
+                    'reason': 'required params are not present',
+                    'absent': absent
+                }, status=400)
+
+            try:
+                Rsys.rate(int(d['user_id']), int(d['song_id']), float(d['rating']))
+            except ValueError:
+                return JsonResponse({
+                    'status': 400,
+                    'reason': 'some params are not numeric'
+                }, status=400)
+
+            return JsonResponse({
+                'status': 200
+            }, status=200)
+
+        @method_decorator(login_required)
+        def post(self, request):
+            return JsonResponse({
+                'status': 405
+            }, status=405)
+
+
+
+
+
+
+
+

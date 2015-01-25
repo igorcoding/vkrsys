@@ -1,3 +1,4 @@
+import json
 from django.core.cache import cache
 from social_auth.db.django_models import UserSocialAuth
 from app import tasks
@@ -37,4 +38,29 @@ class MQ:
 class Rsys:
     def __init__(self):
         pass
+
+    @staticmethod
+    def rate(user_id, song_id, rating):
+        import pika
+        URL = 'amqp://vkmruser:vkmruserpass@localhost/vkmrvhost'
+        connection = pika.BlockingConnection(pika.URLParameters(URL))
+        channel = connection.channel()
+
+        channel.queue_declare(queue='rsys', durable=True)
+
+        data = {
+            'user_id': user_id,
+            'item_id': song_id,
+            'rating': rating
+        }
+
+        data_json = json.dumps(data, encoding='utf-8')
+
+        channel.basic_publish(exchange='',
+                              routing_key='rsys',
+                              body=data_json)
+
+        print " [x] Sent '%s'" % data_json
+
+        connection.close()
 
