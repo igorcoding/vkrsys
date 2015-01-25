@@ -69,6 +69,8 @@ class HomePageView(MyView):
             'username': "%s %s" % (request.user.first_name, request.user.last_name),
             'userpic': userpic
         }
+
+        tasks.r.delay()
         return self._render(request, self.template, params)
 
 
