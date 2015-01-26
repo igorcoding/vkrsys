@@ -110,9 +110,14 @@ class Api:
                 }, status=400)
 
             try:
-                pass
-                Db.rate(int(d['user_id']), int(d['song_id']), d['direction'])
-                # Rsys.rate(int(d['user_id']), int(d['song_id']), float(d['rating']))
+                rating_obj = Db.rate(int(d['user_id']), int(d['song_id']), d['direction'])
+                rating = Rsys.compute_total_rating(rating_obj)
+                Rsys.rate(int(d['user_id']), int(d['song_id']), rating)
+
+                return JsonResponse({
+                    'status': 200
+                }, status=200)
+
             except ValueError:
                 return JsonResponse({
                     'status': 400,
@@ -130,10 +135,6 @@ class Api:
                     'reason': 'bad input',
                     'msg': e.message
                 }, status=400)
-
-            return JsonResponse({
-                'status': 200
-            }, status=200)
 
         @method_decorator(login_required)
         def post(self, request):

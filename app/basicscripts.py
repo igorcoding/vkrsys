@@ -34,6 +34,7 @@ class VkSocial:
 
 
 class Db:
+    MAX_VOTES = 5
 
     def __init__(self):
         raise Exception("Abstract class")
@@ -51,9 +52,11 @@ class Db:
             rating = Rating(user=user, song=song)
 
         if direction == 'up':
-            rating.up_votes += 1
+            if rating.up_votes < Db.MAX_VOTES:
+                rating.up_votes += 1
         elif direction == 'down':
-            rating.down_votes += 1
+            if rating.down_votes < Db.MAX_VOTES:
+                rating.down_votes += 1
         else:
             raise AttributeError("Unknown direction: %s" % direction)
         rating.save()
@@ -61,8 +64,25 @@ class Db:
 
 
 class Rsys:
+    UPVOTE_W = 0.4
+    DOWNVOTE_W = 0.6
+    RATING_MAX = 5
+    MAX_SCORE = (Db.MAX_VOTES + 0.5) / 0.5
+
     def __init__(self):
-        pass
+        raise Exception("Abstract class")
+
+    @staticmethod
+    def compute_total_rating(rating_obj):
+
+        """
+            Computes total rating based on user activity
+        :param rating_obj: Rating
+        :return: total rating
+        :rtype: float
+        """
+        relative_score = (rating_obj.up_votes + 0.5) / (rating_obj.down_votes + 0.5)
+        return relative_score / Rsys.MAX_SCORE * Rsys.RATING_MAX
 
     @staticmethod
     def rate(user_id, song_id, rating):
