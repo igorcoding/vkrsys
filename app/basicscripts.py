@@ -1,14 +1,17 @@
 import json
+from django.contrib.auth.models import User
 from django.core.cache import cache
 from social_auth.db.django_models import UserSocialAuth
 from app import tasks
+from app.models import Rating, Song
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class VkSocial:
     VK_PROVIDER = 'vk-oauth'
 
     def __init__(self):
-        pass
+        raise Exception("Abstract class")
 
     @staticmethod
     def get_access_token_and_id(request):
@@ -30,9 +33,31 @@ class VkSocial:
         return userpic
 
 
-class MQ:
+class Db:
+
     def __init__(self):
-        pass
+        raise Exception("Abstract class")
+
+    @staticmethod
+    def rate(user_id, song_id, direction):
+        user = User.objects.get(pk=user_id)
+        song = Song.objects.get(pk=song_id)
+        rating = None
+        try:
+            rating = Rating.objects.get(user=user, song=song)
+        except ObjectDoesNotExist:
+            rating = None
+        if rating is None:
+            rating = Rating(user=user, song=song)
+
+        if direction == 'up':
+            rating.up_votes += 1
+        elif direction == 'down':
+            rating.down_votes += 1
+        else:
+            raise AttributeError("Unknown direction: %s" % direction)
+        rating.save()
+        return rating
 
 
 class Rsys:

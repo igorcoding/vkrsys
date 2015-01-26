@@ -81,3 +81,13 @@ class SongTmp(SongBase):
 
 class Song(SongBase):
     objects = SongManager()
+
+
+class Rating(models.Model):
+    user = models.ForeignKey(User)
+    song = models.ForeignKey(Song)
+    up_votes = models.IntegerField(default=0)
+    down_votes = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ('user', 'song')

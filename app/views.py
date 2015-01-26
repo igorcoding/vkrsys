@@ -1,6 +1,7 @@
 from pprint import pprint
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 from django.http.response import JsonResponse
 from django.shortcuts import render, redirect
 from django.template import RequestContext
@@ -10,7 +11,7 @@ from django.contrib.auth import logout
 from social_auth.db.django_models import UserSocialAuth
 import vk
 from app import tasks
-from app.basicscripts import VkSocial, Rsys
+from app.basicscripts import VkSocial, Rsys, Db
 
 
 class MyView(View):
@@ -58,7 +59,7 @@ class HomePageView(MyView):
         user_id = request.user.id
         access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
         userpic = VkSocial.get_userpic(user_id, user_vk_id, access_token)
-        # res = tasks.fetch_music.delay(user_vk_id, access_token)
+        res = tasks.fetch_music.delay(user_vk_id, access_token)
         # pprint(res.get())
 
         params = {
@@ -93,7 +94,7 @@ class Api:
         return None
 
     class Rate(View):
-        PARAMS = ['user_id', 'song_id', 'rating']
+        PARAMS = ['user_id', 'song_id', 'direction']
 
         @method_decorator(login_required)
         def get(self, request):
@@ -109,11 +110,25 @@ class Api:
                 }, status=400)
 
             try:
-                Rsys.rate(int(d['user_id']), int(d['song_id']), float(d['rating']))
+                pass
+                Db.rate(int(d['user_id']), int(d['song_id']), d['direction'])
+                # Rsys.rate(int(d['user_id']), int(d['song_id']), float(d['rating']))
             except ValueError:
                 return JsonResponse({
                     'status': 400,
                     'reason': 'some params are not numeric'
+                }, status=400)
+            except ObjectDoesNotExist as e:
+                return JsonResponse({
+                    'status': 404,
+                    'reason': 'unknown entry',
+                    'msg': e.message
+                }, status=404)
+            except Exception as e:
+                return JsonResponse({
+                    'status': 400,
+                    'reason': 'bad input',
+                    'msg': e.message
                 }, status=400)
 
             return JsonResponse({
