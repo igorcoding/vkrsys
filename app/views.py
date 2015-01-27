@@ -59,7 +59,7 @@ class HomePageView(MyView):
         user_id = request.user.id
         access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
         userpic = VkSocial.get_userpic(user_id, user_vk_id, access_token)
-        res = tasks.fetch_music.delay(user_vk_id, access_token)
+        # res = tasks.fetch_music.delay(user_vk_id, access_token)
         # pprint(res.get())
 
         params = {
@@ -94,11 +94,14 @@ class Api:
         return None
 
     class Rate(View):
-        PARAMS = ['user_id', 'song_id', 'direction']
+        PARAMS = ['song_id', 'direction']
+        ACTION_TYPE = 'rate'
 
         @method_decorator(login_required)
         def get(self, request):
             # TODO: move to POST probably
+
+            user_id = request.user.id
 
             d = request.GET
             absent = Api.ensure_present(d, self.PARAMS)
@@ -110,19 +113,23 @@ class Api:
                 }, status=400)
 
             try:
-                rating_obj = Db.rate(int(d['user_id']), int(d['song_id']), d['direction'])
+                song_id = int(d['song_id'])
+            except ValueError:
+                return JsonResponse({
+                    'status': 400,
+                    'reason': 'song_id is not numeric'
+                }, status=400)
+
+            try:
+                rating_obj = Db.rate(user_id, song_id, d['direction'])
                 rating = Rsys.compute_total_rating(rating_obj)
-                Rsys.rate(int(d['user_id']), int(d['song_id']), rating)
+                Rsys.rate(user_id, song_id, rating)
+                Db.transact(user_id, song_id, self.ACTION_TYPE, d)
 
                 return JsonResponse({
                     'status': 200
                 }, status=200)
 
-            except ValueError:
-                return JsonResponse({
-                    'status': 400,
-                    'reason': 'some params are not numeric'
-                }, status=400)
             except ObjectDoesNotExist as e:
                 return JsonResponse({
                     'status': 404,
@@ -131,10 +138,10 @@ class Api:
                 }, status=404)
             except Exception as e:
                 return JsonResponse({
-                    'status': 400,
-                    'reason': 'bad input',
+                    'status': 500,
+                    'reason': 'unknown error',
                     'msg': e.message
-                }, status=400)
+                }, status=500)
 
         @method_decorator(login_required)
         def post(self, request):

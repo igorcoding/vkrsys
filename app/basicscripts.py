@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.core.cache import cache
 from social_auth.db.django_models import UserSocialAuth
 from app import tasks
-from app.models import Rating, Song
+from app.models import Rating, Song, UserAction
 from django.core.exceptions import ObjectDoesNotExist
 
 
@@ -29,7 +29,7 @@ class VkSocial:
         if userpic is None:
             userpic_res = tasks.fetch_userpic.delay(user_id, user_vk_id, access_token)
             userpic = userpic_res.get()
-            cache.set(cache_key, userpic, 60*30)
+            cache.set(cache_key, userpic, 60 * 30)
         return userpic
 
 
@@ -63,6 +63,16 @@ class Db:
         return rating
 
 
+    @staticmethod
+    def transact(user_id, song_id, action_type, activity):
+        action = UserAction(user=User.objects.get(pk=user_id),
+                            song=Song.objects.get(pk=song_id),
+                            action_type=action_type,
+                            action_json=json.dumps(activity, ensure_ascii=False))
+
+        action.save()
+
+
 class Rsys:
     UPVOTE_W = 0.4
     DOWNVOTE_W = 0.6
@@ -74,7 +84,6 @@ class Rsys:
 
     @staticmethod
     def compute_total_rating(rating_obj):
-
         """
             Computes total rating based on user activity
         :param rating_obj: Rating
@@ -87,6 +96,7 @@ class Rsys:
     @staticmethod
     def rate(user_id, song_id, rating):
         import pika
+
         URL = 'amqp://vkmruser:vkmruserpass@localhost/vkmrvhost'
         connection = pika.BlockingConnection(pika.URLParameters(URL))
         channel = connection.channel()

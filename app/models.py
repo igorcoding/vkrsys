@@ -83,6 +83,14 @@ class Song(SongBase):
     objects = SongManager()
 
 
+class UserAction(models.Model):
+    user = models.ForeignKey(User)
+    song = models.ForeignKey(Song)
+    date = models.DateTimeField(auto_now=True)
+    action_type = models.CharField(max_length=25)
+    action_json = models.CharField(max_length=255)
+
+
 class Rating(models.Model):
     user = models.ForeignKey(User)
     song = models.ForeignKey(Song)
