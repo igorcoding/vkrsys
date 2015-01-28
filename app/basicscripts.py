@@ -5,6 +5,7 @@ from social_auth.db.django_models import UserSocialAuth
 from app import tasks
 from app.models import Rating, Song, UserAction
 from django.core.exceptions import ObjectDoesNotExist
+from recommender.rsys_actions import RsysActions
 
 
 class VkSocial:
@@ -73,14 +74,30 @@ class Db:
         action.save()
 
 
-class Rsys:
+class RsysWorker:
     UPVOTE_W = 0.4
     DOWNVOTE_W = 0.6
     RATING_MAX = 5
     MAX_SCORE = (Db.MAX_VOTES + 0.5) / 0.5
 
+    QUEUE_NAME = 'rsys'
+
     def __init__(self):
-        raise Exception("Abstract class")
+        # TODO: need to fetch everything from db (i.e. factors, users/items count, ...)
+        # TODO: and then send this information to recommender
+        import pika
+
+        URL = 'amqp://vkmruser:vkmruserpass@localhost/vkmrvhost'
+        self.connection = pika.BlockingConnection(pika.URLParameters(URL))
+        self.channel = self.connection.channel()
+
+        self.channel.queue_declare(queue=self.QUEUE_NAME, durable=True)
+
+        # self.connection.close()
+
+    def __del__(self):
+        print "RSYS WORKER IS BEING DELETED!"
+        self.connection.close()
 
     @staticmethod
     def compute_total_rating(rating_obj):
@@ -91,31 +108,23 @@ class Rsys:
         :rtype: float
         """
         relative_score = (rating_obj.up_votes + 0.5) / (rating_obj.down_votes + 0.5)
-        return relative_score / Rsys.MAX_SCORE * Rsys.RATING_MAX
+        return relative_score / RsysWorker.MAX_SCORE * RsysWorker.RATING_MAX
 
-    @staticmethod
-    def rate(user_id, song_id, rating):
-        import pika
-
-        URL = 'amqp://vkmruser:vkmruserpass@localhost/vkmrvhost'
-        connection = pika.BlockingConnection(pika.URLParameters(URL))
-        channel = connection.channel()
-
-        channel.queue_declare(queue='rsys', durable=True)
-
+    def rate(self, user_id, song_id, rating):
         data = {
-            'user_id': user_id,
-            'item_id': song_id,
-            'rating': rating
+            'action': RsysActions.RATE,
+            'data': {
+                'user_id': user_id,
+                'item_id': song_id,
+                'rating': rating
+            }
         }
 
         data_json = json.dumps(data, encoding='utf-8')
 
-        channel.basic_publish(exchange='',
-                              routing_key='rsys',
-                              body=data_json)
+        self.channel.basic_publish(exchange='',
+                                   routing_key=self.QUEUE_NAME,
+                                   body=data_json)
 
-        print " [x] Sent '%s'" % data_json
-
-        connection.close()
+        print '[x] Sent: %s' % data_json
 

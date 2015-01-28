@@ -3,6 +3,7 @@ import json
 import ConfigParser
 
 from listener import Listener
+from rsys_actions import RsysActions
 
 
 class Recommender:
@@ -10,6 +11,11 @@ class Recommender:
 
     def __init__(self):
         self.listener = Listener(self.BROKER_URL, self.on_message)
+        self.users = None
+        self.songs = None
+        self.initialized = False
+
+
         m = rsys.data_sources.matrix(4, 4, -1)
         m.set(0, 0, 4)
         m.set(0, 1, 5)
@@ -44,12 +50,61 @@ class Recommender:
     def on_message(self, data):
         print data
         d = json.loads(data, encoding='utf-8')
-        self.svd.learn_online(d['user_id'], d['item_id'], d['rating'])
-        for i in xrange(0, self.m.rows):
-            for j in xrange(0, self.m.cols):
-                print "%f " % self.svd.predict(i, j),
-            print
-        pass
+
+        action = d['action']
+        switcher = {
+            RsysActions.INIT: self.on_init,
+            RsysActions.RATE: self.on_rate,
+            RsysActions.USER_ADD: self.on_user_add,
+            RsysActions.SONG_ADD: self.on_song_add,
+        }
+
+        if action in switcher:
+            switcher[action](d['data'])
+        else:
+            # TODO
+            pass
+
+    def on_init(self, data):
+        try:
+            u = data['users']
+            s = data['songs']
+            self.users = dict(zip(u, xrange(len(u))))
+            self.songs = dict(zip(s, xrange(len(s))))
+
+            self.initialized = True
+        except KeyError:
+            # TODO
+            pass
+
+    def on_user_add(self, data):
+        if self.initialized:
+            u_id = data['user_id']
+            self.users[u_id] = len(self.users)
+            self.svd.add_user()
+        else:
+            # TODO
+            pass
+
+    def on_song_add(self, data):
+        if self.initialized:
+            s_id = data['song_id']
+            self.songs[s_id] = len(self.songs)
+            self.svd.add_song()
+        else:
+            # TODO
+            pass
+
+    def on_rate(self, data):
+        try:
+            self.svd.learn_online(data['user_id'], data['item_id'], data['rating'])
+            for i in xrange(0, self.m.rows):
+                for j in xrange(0, self.m.cols):
+                    print "%f " % self.svd.predict(i, j),
+                print
+        except KeyError:
+            # TODO
+            pass
 
     def start(self):
         print "=== Started Recommender ==="

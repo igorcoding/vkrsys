@@ -11,7 +11,10 @@ from django.contrib.auth import logout
 from social_auth.db.django_models import UserSocialAuth
 import vk
 from app import tasks
-from app.basicscripts import VkSocial, Rsys, Db
+from app.basicscripts import VkSocial, Db, RsysWorker
+
+
+rsys_worker = RsysWorker()
 
 
 class MyView(View):
@@ -44,6 +47,7 @@ class LoginView(MyView):
         params = self.build_params({
             'text': request.user.is_authenticated()
         })
+
         return self._render(request, self.template, params)
 
     def post(self, request):
@@ -122,8 +126,8 @@ class Api:
 
             try:
                 rating_obj = Db.rate(user_id, song_id, d['direction'])
-                rating = Rsys.compute_total_rating(rating_obj)
-                Rsys.rate(user_id, song_id, rating)
+                rating = RsysWorker.compute_total_rating(rating_obj)
+                rsys_worker.rate(user_id, song_id, rating)
                 Db.transact(user_id, song_id, self.ACTION_TYPE, d)
 
                 return JsonResponse({
