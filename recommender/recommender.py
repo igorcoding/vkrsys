@@ -47,20 +47,20 @@ class Recommender:
                 print "%f " % self.svd.predict(i, j),
             print
 
-    def on_message(self, data):
-        print data
-        d = json.loads(data, encoding='utf-8')
-
-        action = d['action']
-        switcher = {
+        self.message_router = {
             RsysActions.INIT: self.on_init,
             RsysActions.RATE: self.on_rate,
             RsysActions.USER_ADD: self.on_user_add,
             RsysActions.SONG_ADD: self.on_song_add,
         }
 
-        if action in switcher:
-            switcher[action](d['data'])
+    def on_message(self, data):
+        print data
+        d = json.loads(data, encoding='utf-8')
+
+        action = d['action']
+        if action in self.message_router:
+            self.message_router[action](d['data'])
         else:
             # TODO
             pass
