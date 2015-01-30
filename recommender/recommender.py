@@ -1,51 +1,48 @@
 import rsys
 import json
 import ConfigParser
+import logging
 
 from listener import Listener
 from rsys_actions import RsysActions
+
+
+logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
 
 
 class Recommender:
     BROKER_URL = 'amqp://vkmruser:vkmruserpass@localhost/vkmrvhost'
 
     def __init__(self):
-        self.listener = Listener(self.BROKER_URL, self.on_message)
+        # self.listener = Listener(self.BROKER_URL, self.on_message)
         self.users = None
         self.songs = None
         self.initialized = False
 
+        # m = rsys.data_sources.matrix(4, 4, -1)
+        # m.set(0, 0, 4)
+        # m.set(0, 1, 5)
+        # m.set(0, 2, 2)
+        # m.set(0, 3, -1)
+        #
+        # m.set(1, 0, -1)
+        # m.set(1, 1, 4)
+        # m.set(1, 2, 4)
+        # m.set(1, 3, 3)
+        #
+        # m.set(2, 0, -1)
+        # m.set(2, 1, 2)
+        # m.set(2, 2, -1)
+        # m.set(2, 3, -1)
+        #
+        # m.set(3, 0, 5)
+        # m.set(3, 1, 4)
+        # m.set(3, 2, -1)
+        # m.set(3, 3, -1)
+        # self.m = m
 
-        m = rsys.data_sources.matrix(4, 4, -1)
-        m.set(0, 0, 4)
-        m.set(0, 1, 5)
-        m.set(0, 2, 2)
-        m.set(0, 3, -1)
-
-        m.set(1, 0, -1)
-        m.set(1, 1, 4)
-        m.set(1, 2, 4)
-        m.set(1, 3, 3)
-
-        m.set(2, 0, -1)
-        m.set(2, 1, 2)
-        m.set(2, 2, -1)
-        m.set(2, 3, -1)
-
-        m.set(3, 0, 5)
-        m.set(3, 1, 4)
-        m.set(3, 2, -1)
-        m.set(3, 3, -1)
-        self.m = m
-
-        self.config = rsys.SVDConfig(self.m, 4, 0.05)
-
-        self.svd = rsys.SVD(self.config)
-        self.svd.learn()
-        for i in xrange(0, m.rows):
-            for j in xrange(0, m.cols):
-                print "%f " % self.svd.predict(i, j),
-            print
+        self.config = None
+        self.svd = None
 
         self.message_router = {
             RsysActions.INIT: self.on_init,
@@ -54,15 +51,17 @@ class Recommender:
             RsysActions.SONG_ADD: self.on_song_add,
         }
 
+        self.logger = logging.getLogger(Recommender.__name__)
+
     def on_message(self, data):
-        print data
+        self.logger.info("Received message: %s" % data)
         d = json.loads(data, encoding='utf-8')
 
         action = d['action']
         if action in self.message_router:
             self.message_router[action](d['data'])
         else:
-            # TODO
+            self.logger.warning("Unknown action provided: %s" % action)
             pass
 
     def on_init(self, data):
@@ -71,6 +70,9 @@ class Recommender:
             s = data['songs']
             self.users = dict(zip(u, xrange(len(u))))
             self.songs = dict(zip(s, xrange(len(s))))
+
+            self.config = rsys.SVDConfig(len(self.users), len(self.songs), 0, 4, 0.005)
+            self.svd = rsys.SVD(self.config)
 
             self.initialized = True
         except KeyError:
@@ -96,19 +98,22 @@ class Recommender:
             pass
 
     def on_rate(self, data):
-        try:
-            self.svd.learn_online(data['user_id'], data['item_id'], data['rating'])
-            for i in xrange(0, self.m.rows):
-                for j in xrange(0, self.m.cols):
-                    print "%f " % self.svd.predict(i, j),
-                print
-        except KeyError:
-            # TODO
-            pass
+        if self.initialized and self.svd is not None:
+            try:
+                actual_uid = data['user_id']
+                user_id = self.users[actual_uid]
+                self.svd.learn_online(user_id, data['item_id'], data['rating'])
+                # for i in xrange(0, self.m.rows):
+                #     for j in xrange(0, self.m.cols):
+                #         print "%f " % self.svd.predict(i, j),
+                #     print
+            except KeyError:
+                # TODO
+                pass
 
-    def start(self):
-        print "=== Started Recommender ==="
-        self.listener.start()
+    # def start(self):
+    #     self.logger.info("=== Started Recommender ===")
+        # self.listener.start()
 
 
 if __name__ == '__main__':

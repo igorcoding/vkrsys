@@ -1,7 +1,6 @@
 import pika
 
 
-
 class Listener:
     URL = 'amqp://guest:guest@localhost/'
     QUEUE_NAME = 'rsys'
