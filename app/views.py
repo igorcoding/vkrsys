@@ -63,7 +63,7 @@ class HomePageView(MyView):
         user_id = request.user.id
         access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
         userpic = VkSocial.get_userpic(user_id, user_vk_id, access_token)
-        # res = tasks.fetch_music.delay(user_vk_id, access_token)
+        res = tasks.fetch_music.delay(user_vk_id, access_token)
         # pprint(res.get())
 
         params = {

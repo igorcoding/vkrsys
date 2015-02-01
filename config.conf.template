@@ -16,3 +16,6 @@ PORT =
 [celery]
 BROKER_URL =
 CELERY_RESULT_BACKEND =
+
+[api]
+URL =

@@ -5,7 +5,7 @@ from social_auth.db.django_models import UserSocialAuth
 from app import tasks
 from app.models import Rating, Song, UserAction
 from django.core.exceptions import ObjectDoesNotExist
-from recommender.rsys_actions import RsysActions
+from recommender_api.rsys_actions import RsysActions
 
 
 class VkSocial:

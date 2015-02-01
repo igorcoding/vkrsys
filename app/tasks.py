@@ -1,10 +1,15 @@
 from __future__ import absolute_import
+import json
 from pprint import pprint
 
 from celery import shared_task
 from django.contrib.auth.models import User
 import vk
 from app.models import Song
+import requests
+
+from django.conf import settings
+from recommender_api.rsys_actions import RsysActions
 
 
 @shared_task
@@ -41,4 +46,16 @@ def fetch_music(vk_uid, access_token):
     if len(bulk) != 0:
         Song.objects.bulk_create_new(bulk)
 
+    # TODO: find somehow ids of just inserted songs
+    # ids = [x.id for x in Song.objects.raw("SELECT id FROM app_song ORDER BY id")]
+    # api_request(RsysActions.ITEMS_ADD, dict(items=ids))
+
     return songs
+
+
+@shared_task
+def api_request(action, data):
+    url = settings.API_URL + action
+    resp = requests.get(url, params=data)
+    jresp = json.loads(resp.text, encoding='utf-8')
+    return jresp

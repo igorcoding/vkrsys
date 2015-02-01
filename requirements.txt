@@ -4,7 +4,8 @@ django-social-auth==0.7.28
 vk==1.5.3
 pika==0.9.14
 celery==3.1.17
-python-memcached
-tornado
+python-memcached==1.53
+tornado==4.0.2
+requests==2.5.1
 
 ./libs/rsys/rsys-python/

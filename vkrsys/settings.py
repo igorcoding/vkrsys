@@ -18,6 +18,8 @@ CONFIG_PATH = os.path.join(BASE_DIR, 'config.conf')
 config = ConfigParser.ConfigParser()
 config.read(CONFIG_PATH)
 
+API_URL = config.get('api', 'URL')
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 

@@ -14,6 +14,8 @@ import tornado.ioloop
 from tornado.options import define, options
 from recommender import Recommender, Responses
 
+logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
+
 
 class ProcessMixin(tornado.web.RequestHandler):
 
@@ -52,6 +54,10 @@ class ApiHandler(ProcessMixin):
     data = None
     res = None
 
+    def __init__(self, application, request, **kwargs):
+        super(ApiHandler, self).__init__(application, request, **kwargs)
+        self.logger = logging.getLogger(ApiHandler.__name__)
+
     def _worker(self, *args, **kwargs):
         return self.RSYS.on_message(kwargs['action'], kwargs['data'])
         # self.res = api_executor.execute(ds, self.entity, self.action, self.data)
@@ -66,24 +72,30 @@ class ApiHandler(ProcessMixin):
         elif hasattr(self, 'redir'):
             self.redirect(self.redir)
         else:
-            self.res = Recommender.error(Responses.NO_BACKEND_RESPONSE, 'No response from backend methods')
+            self.res = Recommender.error(Responses.NO_BACKEND_RESPONSE)
             self.set_status(self.res[0])
             self.finish(self.res[1])
+        self.logger.info("Response: %s", str(self.res))
 
     @tornado.web.asynchronous
     def get(self, action):
-        # self.data = parse_get(self.request.arguments)
-
         data = {}
         args = self.request.arguments
         for arg in args:
-            data[arg] = args[arg][0]
+            data[arg] = json.loads(args[arg][0], encoding='utf-8')
         self.start_worker(action=action, data=data)
 
-    # @tornado.web.asynchronous
-    # def post(self, action):
-    #     # self.data = json.loads(self.request.body, encoding='utf-8')
-    #     self.start_worker()
+    @tornado.web.asynchronous
+    def post(self, action):
+        try:
+            data = json.loads(self.request.body, encoding='utf-8')
+        except ValueError:
+            self.res = Recommender.error(Responses.MALFORMED_REQUEST)
+            self.set_status(self.res[0])
+            self.finish(self.res[1])
+            return
+
+        self.start_worker(action=action, data=data)
 
 
 define('port', type=int, default=9001)

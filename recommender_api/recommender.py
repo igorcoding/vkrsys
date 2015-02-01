@@ -7,37 +7,47 @@ from listener import Listener
 from rsys_actions import RsysActions
 
 
-logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
-
-
 def model_initialized_required(f):
     def wrapper(self, *args, **kwargs):
         if self.initialized and self.svd is not None:
             return f(self, *args, **kwargs)
         else:
-            return Recommender.error(Responses.MODEL_NOT_INITIALIZED,
-                                     'Model is not initialized. Make sure to call /api/init method')
+            return Recommender.error(Responses.MODEL_NOT_INITIALIZED)
+
+    return wrapper
+
+
+def true_on_success(f):
+    def wrapper(self, *args, **kwargs):
+        ret = f(self, *args, **kwargs)
+        if ret is None:
+            return True
+        else:
+            return ret
 
     return wrapper
 
 
 class ResponseResult:
-    def __init__(self, code, status):
+    def __init__(self, code, status, msg):
         self.code = code
         self.status = status
+        self.msg = msg
 
 
 class Responses:
-    OK = ResponseResult(200, 200)
-    UNKNOWN_ACTION = ResponseResult(401, 400)
-    MODEL_NOT_INITIALIZED = ResponseResult(402, 200)
-    PARAMS_UNSATISFIED = ResponseResult(403, 400)
-    USER_ITEM_NOT_FOUND = ResponseResult(404, 404)
-    PARAMS_NOT_NUMERIC = ResponseResult(405, 400)
-    USERS_ITEMS_NOT_AN_ARRAY = ResponseResult(406, 400)
+    OK = ResponseResult(200, 200, 'ok')
+    MALFORMED_REQUEST = ResponseResult(400, 400, 'Malformed request')
+    UNKNOWN_ACTION = ResponseResult(401, 400, 'Unknown action provided: ')
+    MODEL_NOT_INITIALIZED = ResponseResult(402, 200, 'Model is not initialized. Make sure to call /api/init method')
+    PARAMS_UNSATISFIED = ResponseResult(403, 400, 'Required params are not provided: ')
+    USER_ITEM_NOT_FOUND = ResponseResult(404, 404, 'This combination of user_id/item_id is not found. '
+                                                   'Did you forgot to execute api/add_user or api/add_item?')
+    PARAMS_NOT_NUMERIC = ResponseResult(405, 400, 'Some of params are not numeric')
+    USERS_ITEMS_NOT_AN_ARRAY = ResponseResult(406, 400, 'users and items have to be arrays')
 
-    ONLINE_LEARN_FAILED = ResponseResult(501, 500)
-    NO_BACKEND_RESPONSE = ResponseResult(502, 500)
+    ONLINE_LEARN_FAILED = ResponseResult(501, 500, "Couldn't execute an online learning procedure successfully")
+    NO_BACKEND_RESPONSE = ResponseResult(502, 500, 'No response from backend methods')
 
     def __init__(self):
         pass
@@ -61,19 +71,29 @@ class Recommender:
                 'cb': self.on_init
             },
 
+            RsysActions.USER_ADD: {
+                'params': ['user_id'],
+                'cb': self.on_user_add
+            },
+
+            RsysActions.ITEM_ADD: {
+                'params': ['item_id'],
+                'cb': self.on_item_add
+            },
+
+            RsysActions.ITEMS_ADD: {
+                'params': ['items'],
+                'cb': self.on_items_add
+            },
+
             RsysActions.RATE: {
                 'params': ['user_id', 'item_id', 'rating'],
                 'cb': self.on_rate
             },
 
-            RsysActions.USER_ADD: {
-                'params': [],
-                'cb': self.on_user_add
-            },
-
-            RsysActions.ITEM_ADD: {
-                'params': [],
-                'cb': self.on_item_add
+            RsysActions.RATE_BULK: {
+                'params': ['scores'],
+                'cb': self.on_rate_bulk
             },
         }
 
@@ -95,15 +115,16 @@ class Recommender:
         })
 
     @staticmethod
-    def error(c, msg):
+    def error(c, msg=None):
+        m = c.msg if msg is None else c.msg + msg
         return (c.status, {
             'code': c.code,
-            'msg': msg
+            'msg': m
         })
 
+    @true_on_success
     def on_message(self, action, data):
         self.logger.info("Received message: [%s]: %s" % (action, data))
-        # d = json.loads(data, encoding='utf-8')
 
         if action in self.router:
             try:
@@ -113,17 +134,16 @@ class Recommender:
 
                 return self.router[action]['cb'](data)
             except KeyError as e:
-                return self.error(Responses.PARAMS_UNSATISFIED,
-                                  'Required params are not provided: %s' % self._params_checker(action, data))
+                return self.error(Responses.PARAMS_UNSATISFIED, self._params_checker(action, data))
         else:
-            return self.error(Responses.UNKNOWN_ACTION, "Unknown action provided: %s" % action)
+            return self.error(Responses.UNKNOWN_ACTION, action)
 
     def on_init(self, data):
-        u = json.loads(data['users'], encoding='utf-8')
-        i = json.loads(data['items'], encoding='utf-8')
+        u = data['users']
+        i = data['items']
 
         if type(u) != list or type(i) != list:
-            return self.error(Responses.USERS_ITEMS_NOT_AN_ARRAY, 'users and items have to be arrays')
+            return self.error(Responses.USERS_ITEMS_NOT_AN_ARRAY)
 
         u = list(set(u))
         i = list(set(i))
@@ -136,8 +156,6 @@ class Recommender:
 
         self.initialized = True
 
-        return True
-
     @model_initialized_required
     def on_user_add(self, data):
         u_id = data['user_id']
@@ -146,9 +164,21 @@ class Recommender:
 
     @model_initialized_required
     def on_item_add(self, data):
-        s_id = data['item_id']
-        self.items[s_id] = len(self.items)
+        i_id = data['item_id']
+        self.items[i_id] = len(self.items)
         self.svd.add_item()
+
+    @model_initialized_required
+    def on_items_add(self, data):
+        items = data['items']
+
+        if type(items) != list:
+            return self.error(Responses.USERS_ITEMS_NOT_AN_ARRAY)
+
+        for item_id in items:
+            self.items[item_id] = len(self.items)
+
+        self.svd.add_items(len(self.items))
 
     @model_initialized_required
     def on_rate(self, data):
@@ -157,19 +187,41 @@ class Recommender:
             actual_iid = int(data['item_id'])
             rating = float(data['rating'])
         except ValueError:
-            return self.error(Responses.PARAMS_NOT_NUMERIC, 'Some of params are not numeric')
+            return self.error(Responses.PARAMS_NOT_NUMERIC)
 
         try:
             user_id = self.users[actual_uid]
             item_id = self.items[actual_iid]
         except KeyError:
-            return self.error(Responses.USER_ITEM_NOT_FOUND, 'This combination of user_id/item_id is not found. '
-                                                             'Did you forgot to execute api/add_user or api/add_item?')
+            return self.error(Responses.USER_ITEM_NOT_FOUND)
 
         success = self.svd.learn_online(user_id, item_id, rating)
 
-        if success:
-            return True
-        else:
-            return self.error(Responses.ONLINE_LEARN_FAILED,
-                              "Couldn't execute an online learning procedure successfully")
+        if not success:
+            return self.error(Responses.ONLINE_LEARN_FAILED)
+
+    @model_initialized_required
+    def on_rate_bulk(self, data):
+        scores = data['scores']
+
+        if type(scores) != list:
+            return self.error(Responses.MALFORMED_REQUEST)
+
+        scores = []
+        for s in scores:
+            try:
+                actual_uid = int(s['user_id'])
+                actual_iid = int(s['item_id'])
+                rating = float(s['rating'])
+            except ValueError:
+                return self.error(Responses.PARAMS_NOT_NUMERIC)
+
+            try:
+                user_id = self.users[actual_uid]
+                item_id = self.items[actual_iid]
+            except KeyError:
+                return self.error(Responses.USER_ITEM_NOT_FOUND)
+            item_score = rsys.ItemScore(user_id, item_id, rating)
+            scores.append(item_score)
+
+        self.svd.learn_online(scores)
