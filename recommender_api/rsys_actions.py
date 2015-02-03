@@ -5,3 +5,4 @@ class RsysActions:
     ITEMS_ADD = 'items_add'
     RATE = 'rate'
     RATE_BULK = 'rate_bulk'
+    RECOMMEND = 'recommend'

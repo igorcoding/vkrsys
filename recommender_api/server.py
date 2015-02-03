@@ -12,7 +12,8 @@ import tornado.web
 import tornado.gen
 import tornado.ioloop
 from tornado.options import define, options
-from recommender import Recommender, Responses
+from recommender import Recommender, RespError
+from recommender_api.response import Responses, RespError
 
 logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
 
@@ -59,20 +60,21 @@ class ApiHandler(ProcessMixin):
         self.logger = logging.getLogger(ApiHandler.__name__)
 
     def _worker(self, *args, **kwargs):
-        return self.RSYS.on_message(kwargs['action'], kwargs['data'])
+        try:
+            return self.RSYS.on_message(kwargs['action'], kwargs['data'])
+        except RespError as e:
+            return e.resp
         # self.res = api_executor.execute(ds, self.entity, self.action, self.data)
 
     def _result_cb(self, result):
-        self.res = result
+        self.res = result.to_res()
         if hasattr(self, 'res') and self.res is not None:
-            if self.res is True:
-                self.res = Recommender.ok(Responses.OK)
             self.set_status(self.res[0])
             self.finish(self.res[1])
         elif hasattr(self, 'redir'):
             self.redirect(self.redir)
         else:
-            self.res = Recommender.error(Responses.NO_BACKEND_RESPONSE)
+            self.res = Responses.NO_BACKEND_RESPONSE.to_res()
             self.set_status(self.res[0])
             self.finish(self.res[1])
         self.logger.info("Response: %s", str(self.res))
@@ -89,8 +91,8 @@ class ApiHandler(ProcessMixin):
     def post(self, action):
         try:
             data = json.loads(self.request.body, encoding='utf-8')
-        except ValueError:
-            self.res = Recommender.error(Responses.MALFORMED_REQUEST)
+        except ValueError as e:
+            self.res = Responses.MALFORMED_REQUEST.to_res()
             self.set_status(self.res[0])
             self.finish(self.res[1])
             return
