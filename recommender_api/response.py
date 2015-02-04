@@ -1,14 +1,22 @@
 class ResponseResult:
-    def __init__(self, code, status, msg):
+    def __init__(self, code, status, msg, data=None):
         self.code = code
         self.status = status
         self.msg = msg
+        self.data = data
 
     def to_res(self):
-        return (self.status, {
+        d = {
             'code': self.code,
             'msg': self.msg
-        })
+        }
+        if self.data is not None:
+            d['data'] = self.data
+        return self.status, d
+
+    def d(self, data):
+        self.data = data
+        return self
 
     def __call__(self, *args, **kwargs):
         if len(args) > 0:
@@ -17,6 +25,8 @@ class ResponseResult:
 
 class Responses:
     OK = ResponseResult(200, 200, 'ok')
+    NOT_OK = ResponseResult(201, 200, 'not everything is ok')
+
     MALFORMED_REQUEST = ResponseResult(400, 400, 'Malformed request')
     UNKNOWN_ACTION = ResponseResult(401, 400, 'Unknown action provided: ')
     MODEL_NOT_INITIALIZED = ResponseResult(402, 200, 'Model is not initialized. Make sure to call /api/init method')

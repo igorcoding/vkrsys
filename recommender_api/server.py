@@ -21,8 +21,8 @@ logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=log
 class ProcessMixin(tornado.web.RequestHandler):
 
     def start_worker(self, *args, **kwargs):
-        res = self.worker(*args, **kwargs)
-        self.result_cb(res)
+        req, res = self.worker(*args, **kwargs)
+        self.result_cb(req, res)
         # POOL = mp.Pool()
         # r = POOL.apply_async(self.worker, args, kwargs, callback=self.result_cb)
         # r.wait()
@@ -33,7 +33,7 @@ class ProcessMixin(tornado.web.RequestHandler):
     def _worker(self, *args, **kwargs):
         raise NotImplementedError("Abstract method")
 
-    def _result_cb(self, result):
+    def _result_cb(self, req, result):
         raise NotImplementedError("Abstract method")
 
     def worker(self, *args, **kwargs):
@@ -46,8 +46,8 @@ class ProcessMixin(tornado.web.RequestHandler):
             self.set_status(500)
         # tornado.ioloop.IOLoop.instance().add_callback(self._result_cb)
 
-    def result_cb(self, result):
-        tornado.ioloop.IOLoop.instance().add_callback(self._result_cb, result)
+    def result_cb(self, req, result):
+        tornado.ioloop.IOLoop.instance().add_callback(self._result_cb, req, result)
 
 
 class ApiHandler(ProcessMixin):
@@ -60,13 +60,13 @@ class ApiHandler(ProcessMixin):
         self.logger = logging.getLogger(ApiHandler.__name__)
 
     def _worker(self, *args, **kwargs):
+        req = (kwargs['action'], kwargs['data'])
         try:
-            return self.RSYS.on_message(kwargs['action'], kwargs['data'])
+            return req, self.RSYS.on_message(*req)
         except RespError as e:
-            return e.resp
-        # self.res = api_executor.execute(ds, self.entity, self.action, self.data)
+            return req, e.resp
 
-    def _result_cb(self, result):
+    def _result_cb(self, req, result):
         self.res = result.to_res()
         if hasattr(self, 'res') and self.res is not None:
             self.set_status(self.res[0])
@@ -77,7 +77,7 @@ class ApiHandler(ProcessMixin):
             self.res = Responses.NO_BACKEND_RESPONSE.to_res()
             self.set_status(self.res[0])
             self.finish(self.res[1])
-        self.logger.info("Response: %s", str(self.res))
+        self.logger.info("Request: %s ===> Response: %s", str(req), str(self.res))
 
     @tornado.web.asynchronous
     def get(self, action):

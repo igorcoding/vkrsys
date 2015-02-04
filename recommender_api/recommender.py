@@ -1,3 +1,4 @@
+from pprint import pprint
 import rsys
 import logging
 
@@ -13,7 +14,9 @@ class Recommender:
     def __init__(self):
         # self.listener = Listener(self.BROKER_URL, self.on_message)
         self.users = None
+        self.users_arr = None
         self.items = None
+        self.items_arr = None
         self.initialized = False
 
         self.config = None
@@ -91,6 +94,20 @@ class Recommender:
         except KeyError:
             raise RespError(Responses.USER_ITEM_NOT_FOUND)
 
+    @staticmethod
+    def _cast_to_int(obj):
+        try:
+            return int(obj)
+        except ValueError:
+            raise RespError(Responses.PARAMS_NOT_NUMERIC)
+
+    @staticmethod
+    def _cast_to_float(obj):
+        try:
+            return float(obj)
+        except ValueError:
+            raise RespError(Responses.PARAMS_NOT_NUMERIC)
+
     @ok_on_success
     def on_message(self, action, data):
         self.logger.info("Received message: [%s]: %s" % (action, data))
@@ -103,7 +120,7 @@ class Recommender:
 
                 return self.router[action]['cb'](data)
             except KeyError as e:
-                raise RespError(Responses.PARAMS_UNSATISFIED, self._params_checker(action, data))
+                raise RespError(Responses.PARAMS_UNSATISFIED, str(self._params_checker(action, data)))
         else:
             raise RespError(Responses.UNKNOWN_ACTION, action)
 
@@ -116,6 +133,8 @@ class Recommender:
 
         u = list(set(u))
         i = list(set(i))
+        self.users_arr = u
+        self.items_arr = i
 
         self.users = dict(zip(u, xrange(len(u))))
         self.items = dict(zip(i, xrange(len(i))))
@@ -153,10 +172,7 @@ class Recommender:
     def on_rate(self, data):
         user_id = self._get_user_id(data['user_id'])
         item_id = self._get_item_id(data['item_id'])
-        try:
-            rating = float(data['rating'])
-        except ValueError:
-            raise RespError(Responses.PARAMS_NOT_NUMERIC)
+        rating = self._cast_to_float(data['rating'])
 
         success = self.svd.learn_online(user_id, item_id, rating)
 
@@ -174,10 +190,7 @@ class Recommender:
         for s in data_scores:
             user_id = self._get_user_id(s['user_id'])
             item_id = self._get_item_id(s['item_id'])
-            try:
-                rating = float(s['rating'])
-            except ValueError:
-                raise RespError(Responses.PARAMS_NOT_NUMERIC)
+            rating = self._cast_to_float(data['rating'])
 
             item_score = rsys.ItemScore(user_id, item_id, rating)
             scores.append(item_score)
@@ -186,5 +199,14 @@ class Recommender:
 
     @model_initialized_required
     def on_recommend(self, data):
-        # user_id
-        pass
+        user_id = self._get_user_id(data['user_id'])
+        count = self._cast_to_int(data['count'])
+        recommendations = map(lambda r: {
+            'item_id': self.items_arr[r.item_id],
+            'score': r.score
+        }, self.svd.recommend(user_id, count))
+        return Responses.OK.d({
+            'user_id': data['user_id'],
+            'count': data['count'],
+            'recommendations': recommendations
+        })
