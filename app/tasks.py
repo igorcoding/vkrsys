@@ -1,5 +1,9 @@
 from __future__ import absolute_import
+from contextlib import closing
 import json
+import os
+from dejavu import Dejavu
+from dejavu.recognize import FileRecognizer
 from pprint import pprint
 
 from celery import shared_task
@@ -9,8 +13,20 @@ from app.models import Song
 import requests
 
 from django.conf import settings
+
 from recommender_api.rsys_actions import RsysActions
 
+db = settings.DATABASES['default']
+config = {
+    "database": {
+        "host": db['HOST'],
+        "user": db['USER'],
+        "passwd": db['PASSWORD'],
+        "db": db['NAME'],
+    }
+}
+
+djv = Dejavu(config)
 
 @shared_task
 def fetch_userpic(user_id, vk_uid, access_token):
@@ -24,8 +40,13 @@ def fetch_music(vk_uid, access_token):
     vkapi = vk.API(access_token=access_token)
     songs = vkapi.audio.get(owner_id=vk_uid, need_user=0)
 
-    batch_limit = 500
+    last_song = Song.objects.order_by('id').last()
+    if last_song is None:
+        p_last_id = -1
+    else:
+        p_last_id = last_song.id
 
+    batch_limit = 500
     bulk = []
     for s in songs['items']:
         song = Song(
@@ -46,11 +67,8 @@ def fetch_music(vk_uid, access_token):
     if len(bulk) != 0:
         Song.objects.bulk_create_new(bulk)
 
-    # TODO: find somehow ids of just inserted songs
-    # ids = [x.id for x in Song.objects.raw("SELECT id FROM app_song ORDER BY id")]
-    # api_request(RsysActions.ITEMS_ADD, dict(items=ids))
-
-    return songs
+    new_songs = Song.objects.filter(id__gt=p_last_id)
+    download_and_process_songs.delay(map(lambda s1: (s1.id, s1.url), new_songs))
 
 
 @shared_task
@@ -59,3 +77,40 @@ def api_request(action, data):
     resp = requests.get(url, params=data)
     jresp = json.loads(resp.text, encoding='utf-8')
     return jresp
+
+
+@shared_task
+def download_and_process_songs(songs):
+    for s in songs[0:4]:
+        r = requests.get(s[1])
+        filename = '/home/igor/Projects/python/vkrsys/songs/%s' % str(s[0])
+        with closing(open(filename, 'wb')) as f:
+            f.write(r.content)
+
+        _process_song(filename, s[0])
+
+
+@shared_task
+def _process_song(filename, song_id):
+    f = djv.recognize(FileRecognizer, filename)
+    if f is None:
+        djv.fingerprint_file(filename)
+    else:
+        print "Recognized: %s" % str(f)
+
+    s = Song.objects.get(id=song_id)
+    s.url = None
+    s.save()
+
+    os.remove(filename)
+    return filename
+
+
+@shared_task
+def rsys_learn_online():
+    result = api_request('learn_online', {})
+
+
+@shared_task
+def rsys_learn_offline():
+    result = api_request('learn_offline', {})

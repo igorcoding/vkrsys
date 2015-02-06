@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 import ConfigParser
+from datetime import timedelta
+from celery.schedules import crontab
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 CONFIG_PATH = os.path.join(BASE_DIR, 'config.conf')
@@ -42,6 +44,19 @@ CELERY_ACCEPT_CONTENT = ['json']  # Ignore other content
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Europe/Moscow'
 CELERY_ENABLE_UTC = True
+
+CELERYBEAT_SCHEDULE = {
+    'rsys-learn-online': {
+        'task': 'tasks.rsys_learn_online',
+        'schedule': crontab(hour='*', minute=30),
+        'args': []
+    },
+    'rsys-learn-offline': {
+        'task': 'tasks.rsys_learn_offline',
+        'schedule': crontab(hour=0, minute=0),
+        'args': []
+    },
+}
 
 
 # SECURITY WARNING: don't run with debug turned on in production!

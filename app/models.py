@@ -68,7 +68,7 @@ class SongBase(models.Model):
     title = models.CharField(max_length=255)
     duration = models.SmallIntegerField()
     genre = models.SmallIntegerField(null=True)
-    url = models.CharField(max_length=255)
+    url = models.CharField(max_length=255, null=True)
 
     class Meta:
         unique_together = ('owner_id', 'song_id')
@@ -97,6 +97,7 @@ class Rating(models.Model):
     song = models.ForeignKey(Song)
     up_votes = models.IntegerField(default=0)
     down_votes = models.IntegerField(default=0)
+    rating = models.FloatField(default=0.0)
 
     class Meta:
         unique_together = ('user', 'song')
@@ -105,3 +106,4 @@ class Rating(models.Model):
 class RecommenderInfo(models.Model):
     last_known_user = models.ForeignKey(User)
     last_known_song = models.ForeignKey(Song)
+    last_known_user_event = models.ForeignKey(UserAction)

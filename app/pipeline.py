@@ -8,4 +8,4 @@ def user_created(backend, details, user=None, is_new=False, *args, **kwargs):
         data = {
             'user_id': user.id
         }
-        tasks.api_request.delay(RsysActions.USER_ADD, data)
+        # tasks.api_request.delay(RsysActions.USERS_ADD, data)

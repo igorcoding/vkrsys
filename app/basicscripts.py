@@ -37,67 +37,13 @@ class VkSocial:
 class Db:
     MAX_VOTES = 5
 
-    def __init__(self):
-        raise Exception("Abstract class")
-
-    @staticmethod
-    def rate(user_id, song_id, direction):
-        user = User.objects.get(pk=user_id)
-        song = Song.objects.get(pk=song_id)
-        rating = None
-        try:
-            rating = Rating.objects.get(user=user, song=song)
-        except ObjectDoesNotExist:
-            rating = None
-        if rating is None:
-            rating = Rating(user=user, song=song)
-
-        if direction == 'up':
-            if rating.up_votes < Db.MAX_VOTES:
-                rating.up_votes += 1
-        elif direction == 'down':
-            if rating.down_votes < Db.MAX_VOTES:
-                rating.down_votes += 1
-        else:
-            raise AttributeError("Unknown direction: %s" % direction)
-        rating.save()
-        return rating
-
-
-    @staticmethod
-    def transact(user_id, song_id, action_type, activity):
-        action = UserAction(user=User.objects.get(pk=user_id),
-                            song=Song.objects.get(pk=song_id),
-                            action_type=action_type,
-                            action_json=json.dumps(activity, ensure_ascii=False))
-
-        action.save()
-
-
-class RsysWorker:
     UPVOTE_W = 0.4
     DOWNVOTE_W = 0.6
     RATING_MAX = 5
-    MAX_SCORE = (Db.MAX_VOTES + 0.5) / 0.5
-
-    QUEUE_NAME = 'rsys'
+    MAX_SCORE = (MAX_VOTES + 0.5) / 0.5
 
     def __init__(self):
-        # TODO: need to fetch everything from db (i.e. factors, users/items count, ...)
-        # TODO: and then send this information to recommender
-        import pika
-
-        URL = 'amqp://vkmruser:vkmruserpass@localhost/vkmrvhost'
-        self.connection = pika.BlockingConnection(pika.URLParameters(URL))
-        self.channel = self.connection.channel()
-
-        self.channel.queue_declare(queue=self.QUEUE_NAME, durable=True)
-
-        # self.connection.close()
-
-    def __del__(self):
-        print "RSYS WORKER IS BEING DELETED!"
-        self.connection.close()
+        raise Exception("Abstract class")
 
     @staticmethod
     def compute_total_rating(rating_obj):
@@ -108,23 +54,45 @@ class RsysWorker:
         :rtype: float
         """
         relative_score = (rating_obj.up_votes + 0.5) / (rating_obj.down_votes + 0.5)
-        return relative_score / RsysWorker.MAX_SCORE * RsysWorker.RATING_MAX
+        return relative_score / Db.MAX_SCORE * Db.RATING_MAX
 
-    def rate(self, user_id, song_id, rating):
-        data = {
-            'action': RsysActions.RATE,
-            'data': {
-                'user_id': user_id,
-                'item_id': song_id,
-                'rating': rating
-            }
-        }
+    @staticmethod
+    def rate(user_id, song_id, direction):
+        user = User.objects.get(pk=user_id)
+        song = Song.objects.get(pk=song_id)
 
-        data_json = json.dumps(data, encoding='utf-8')
+        try:
+            rating_obj = Rating.objects.get(user=user, song=song)
+        except ObjectDoesNotExist:
+            rating_obj = None
+        if rating_obj is None:
+            rating_obj = Rating(user=user, song=song)
 
-        self.channel.basic_publish(exchange='',
-                                   routing_key=self.QUEUE_NAME,
-                                   body=data_json)
+        if direction == 'up':
+            if rating_obj.up_votes < Db.MAX_VOTES:
+                rating_obj.up_votes += 1
+        elif direction == 'down':
+            if rating_obj.down_votes < Db.MAX_VOTES:
+                rating_obj.down_votes += 1
+        else:
+            raise AttributeError("Unknown direction: %s" % direction)
 
-        print '[x] Sent: %s' % data_json
+        rating_obj.rating = Db.compute_total_rating(rating_obj)
+        rating_obj.save()
+
+        Db.transact(user_id, song_id, RsysActions.RATE, {
+            'user_id': user_id,
+            'item_id': song_id,
+            'rating': rating_obj.rating
+        })
+        return rating_obj
+
+    @staticmethod
+    def transact(user_id, song_id, action_type, activity):
+        action = UserAction(user=User.objects.get(pk=user_id),
+                            song=Song.objects.get(pk=song_id),
+                            action_type=action_type,
+                            action_json=json.dumps(activity, ensure_ascii=False))
+
+        action.save()
 

@@ -1,8 +1,9 @@
 class RsysActions:
     INIT = 'init'
-    USER_ADD = 'user_add'
+    USERS_ADD = 'users_add'
     ITEM_ADD = 'item_add'
     ITEMS_ADD = 'items_add'
     RATE = 'rate'
-    RATE_BULK = 'rate_bulk'
     RECOMMEND = 'recommend'
+    LEARN_ONLINE = 'learn_online'
+    LEARN_OFFLINE = 'learn_offline'

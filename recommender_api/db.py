@@ -1,5 +1,6 @@
 import ConfigParser
 from contextlib import closing
+import json
 from pprint import pprint
 import MySQLdb
 from MySQLdb.cursors import DictCursor
@@ -69,38 +70,106 @@ class Db:
 
         return count, last_id
 
-    def save_lasts(self, user_last, song_last):
+    def get_last_action(self):
+        db = self.connect()
+
+        with closing(db.cursor()) as c:
+            c.execute("""SELECT id FROM app_useraction ORDER BY date DESC""")
+            a = c.fetchone()
+            if a is not None:
+                return int(a[0])
+            else:
+                return -1
+
+    def save_lasts(self, user_last=None, song_last=None, last_action=None):
         db = self.connect()
 
         with closing(db.cursor()) as c:
             c.execute("""SELECT COUNT(id) FROM app_recommenderinfo""")
             count = int(c.fetchone()[0])
 
+        update_query = None
+        insert_query = None
+        params = None
+        if user_last is None:
+            if song_last is None and last_action is None:
+                params = None
+            elif song_last is None and last_action is not None:
+                update_query = """UPDATE app_recommenderinfo SET last_known_user_event_id=%s WHERE id=1"""
+                params = (last_action,)
+            elif song_last is not None and last_action is None:
+                update_query = """UPDATE app_recommenderinfo SET last_known_song_id=%s  WHERE id=1"""
+                params = (song_last,)
+            elif song_last is not None and last_action is not None:
+                update_query = """UPDATE app_recommenderinfo SET last_known_song_id=%s, last_known_user_event_id=%s  WHERE id=1"""
+                params = (song_last, last_action)
+        else:
+            if song_last is None and last_action is None:
+                update_query = """UPDATE app_recommenderinfo SET last_known_user_id=%s WHERE id=1"""
+                params = (user_last,)
+            elif song_last is None and last_action is not None:
+                update_query = """UPDATE app_recommenderinfo SET last_known_user_id=%s, last_known_user_event_id=%s WHERE id=1"""
+                params = (user_last, last_action)
+            elif song_last is not None and last_action is None:
+                update_query = """UPDATE app_recommenderinfo SET last_known_user_id=%s, last_known_song_id=%s  WHERE id=1"""
+                params = (user_last, song_last)
+            elif song_last is not None and last_action is not None:
+                update_query = """UPDATE app_recommenderinfo SET last_known_user_id=%s, last_known_song_id=%s, last_known_user_event_id=%s  WHERE id=1"""
+                insert_query = [
+                    """SET foreign_key_checks = 0""",
+                    """INSERT INTO app_recommenderinfo (id, last_known_user_id, last_known_song_id, last_known_user_event_id) VALUES (1, %s, %s, %s)""",
+                    """SET foreign_key_checks = 1"""
+                ]
+                params = [(), (user_last, song_last, last_action), ()]
+
         if count == 1:
-            with closing(db.cursor()) as c:
-                c.execute("""UPDATE app_recommenderinfo SET last_known_user_id=%s, last_known_song_id=%s WHERE id=1""",
-                          (user_last, song_last))
+            if update_query is not None and params is not None:
+                with closing(db.cursor()) as c:
+                    c.execute(update_query, params)
         else:
             if count != 0:
                 with closing(db.cursor()) as c:
                     c.execute("""TRUNCATE TABLE app_recommenderinfo""")
-            with closing(db.cursor()) as c:
-                c.execute("""INSERT INTO app_recommenderinfo (id, last_known_user_id, last_known_song_id)
-                             VALUES (1, %s, %s)""", (user_last, song_last))
+            if insert_query is not None and params is not None:
+                with closing(db.cursor()) as c:
+                    for i in xrange(len(insert_query)):
+                        c.execute(insert_query[i], params[i])
+            else:
+                raise Exception("Unexpected behaviour of save_lasts")
         db.commit()
 
-    def get_users_ids(self):
+    def get_lasts(self):
         db = self.connect()
 
         with closing(db.cursor()) as c:
-            c.execute("""SELECT id FROM auth_user ORDER BY id""")  # probably don't need ordering by id
-            ids = map(lambda entry: entry[0], c.fetchall())
-        return ids
+            c.execute(
+                """SELECT last_known_user_id, last_known_song_id, last_known_user_event_id FROM app_recommenderinfo""")
+            last_u, last_i, last_event = c.fetchone()
+        return last_u, last_i, last_event
 
-    def get_items_ids(self):
+    def get_users_ids(self, since_id=-1):
         db = self.connect()
 
         with closing(db.cursor()) as c:
-            c.execute("""SELECT id FROM app_song ORDER BY id""")  # probably don't need ordering by id
+            c.execute("""SELECT id FROM auth_user WHERE id > %s ORDER BY id """, (since_id,))
             ids = map(lambda entry: entry[0], c.fetchall())
         return ids
+
+    def get_items_ids(self, since_id=-1):
+        db = self.connect()
+
+        with closing(db.cursor()) as c:
+            c.execute("""SELECT id FROM app_song WHERE id > %s ORDER BY id""", (since_id,))
+            ids = map(lambda entry: entry[0], c.fetchall())
+        return ids
+
+    def get_user_actions(self, action, last_action=-1):
+        db = self.connect()
+
+        with closing(db.cursor()) as c:
+            c.execute("""SELECT id, action_json FROM app_useraction WHERE id > %s AND action_type = %s ORDER BY date""",
+                      (last_action, action))
+            actions = map(lambda entry: (entry[0], json.loads(entry[1], encoding='utf-8')), c.fetchall())
+        return actions
+
+

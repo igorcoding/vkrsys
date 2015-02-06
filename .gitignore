@@ -2,6 +2,7 @@
 config.conf
 .idea/
 app/migrations/*.py
+songs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
