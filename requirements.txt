@@ -9,3 +9,4 @@ tornado==4.0.2
 requests==2.5.1
 
 ./libs/rsys/rsys-python/
+./libs/dejavu

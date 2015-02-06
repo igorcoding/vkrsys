@@ -1,3 +1,6 @@
 [submodule "libs/rsys"]
 	path = libs/rsys
 	url = https://github.com/igorcoding/rsys.git
+[submodule "libs/dejavu"]
+	path = libs/dejavu
+	url = https://github.com/igorcoding/dejavu.git
