@@ -15,9 +15,7 @@ class Recommender:
     def __init__(self):
         # self.listener = Listener(self.BROKER_URL, self.on_message)
         self.users = None
-        # self.users_arr = None
         self.items = None
-        # self.items_arr = None
         self.initialized = False
 
         self.config = None
