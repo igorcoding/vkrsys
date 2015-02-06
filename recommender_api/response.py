@@ -18,9 +18,8 @@ class ResponseResult:
         self.data = data
         return self
 
-    def __call__(self, *args, **kwargs):
-        if len(args) > 0:
-            self.msg += str(args[0])
+    def m(self, extra_msg):
+        self.msg += extra_msg
 
 
 class Responses:

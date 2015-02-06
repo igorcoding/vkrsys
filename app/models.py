@@ -100,3 +100,8 @@ class Rating(models.Model):
 
     class Meta:
         unique_together = ('user', 'song')
+
+
+class RecommenderInfo(models.Model):
+    last_known_user = models.ForeignKey(User)
+    last_known_song = models.ForeignKey(Song)

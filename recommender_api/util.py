@@ -22,3 +22,8 @@ def model_initialized_required(f):
             raise RespError(Responses.MODEL_NOT_INITIALIZED)
 
     return wrapper
+
+
+def generate(what, n):
+    for i in xrange(n):
+        yield what

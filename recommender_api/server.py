@@ -116,6 +116,7 @@ def main():
         tornado.ioloop.IOLoop.instance().start()
     except KeyboardInterrupt:
         tornado.ioloop.IOLoop.instance().stop()
+        ApiHandler.RSYS.stop()
         logging.info("Server stopped")
 
 
