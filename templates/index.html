@@ -3,7 +3,16 @@
 {% block extra_styles %}
     {% load staticfiles %}
     <link rel="stylesheet" href="{% static "css/main.css" %}" />
+
 {% endblock %}
+
+{% block extra_scripts %}
+    {% load staticfiles %}
+    <script type="application/javascript" src="{% static "js/player.js" %}"></script>
+    <script type="application/javascript" src="{% static "js/main.js" %}"></script>
+
+{% endblock %}
+
 
 {% block content %}
     <div class="content">
@@ -18,17 +27,21 @@
                     </div>
                 </div>
                 <div id="share_button" class="main-header__toolbar__share link"></div>
-                <div id="logout_button" class="main-header__toolbar__logout link"></div>
+                <div id="logout_button" onclick="document.location='/logout'" class="main-header__toolbar__logout link"></div>
 
             </div>
         </header>
 
         <div class="main-content">
             <div class="main-content__inner">
-                <div class="player">
+                <div id="main_player" class="player">
                     <div class="player__art"></div>
 
                     <div class="player__main">
+                        <audio class="player__main__audio" controls>
+                          <source src="http://cs1-31v4.vk-cdn.net/p1/cd79e6b63a32e3.mp3?extra=d7HAjZLcGZaGrqaxGcVf1jwX15oDRPqTdPEAk0HfGsDvEMCLyP2MZgmWtg8lyBH06bwlcFPAA5ZkHS2nIgjXOby-Jvrlvlx5dw" type="audio/mpeg">
+                          Your browser does not support the audio element.
+                        </audio>
                         <div class="player__main__song">
                             <div class="player__main__song__title">
                                 Title
@@ -40,17 +53,37 @@
                         </div>
 
                         <div class="player__main__controls">
-                            <div class="player__main__controls__dislike control">D</div>
-                            <div class="player__main__controls__prev control">P</div>
-                            <div class="player__main__controls__playpause control">PP</div>
-                            <div class="player__main__controls__next control">N</div>
-                            <div class="player__main__controls__like control">L</div>
+                            <div class="player__main__controls__dislike player__main__controls__control">D</div>
+                            <div class="player__main__controls__prev player__main__controls__control">P</div>
+                            <div class="player__main__controls__playpause player__main__controls__control">PP</div>
+                            <div class="player__main__controls__next player__main__controls__control">N</div>
+                            <div class="player__main__controls__like player__main__controls__control">L</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="main-content__playlist">
-                    Playlist Stub
+                <div id="main_playlist" class="playlist">
+                    {% load range %}
+                    {% for i in 10|get_range %}
+                    <div class="playlist__entry link" data-state="paused" data-song_id="123_456">
+                        <div class="playlist__entry__info">
+                            <div class="playlist__entry__controls__playpause playlist__entry__controls__playpause_paused playlist__entry__controls__control link"></div>
+{#                            <div class="playlist__entry__art_wrapper">#}
+                                <div class="playlist__entry__art"></div>
+
+{#                            </div>#}
+                            <div class="playlist__entry__header">
+                                <div class="playlist__entry__title__artist">Green Day</div>
+                                <div class="playlist__entry__title__title">21 Guns</div>
+                            </div>
+                        </div>
+                        <div class="playlist__entry__controls">
+                            <div class="playlist__entry__controls__dislike playlist__entry__controls__control link"></div>
+                            <div class="playlist__entry__controls__like playlist__entry__controls__control link"></div>
+                        </div>
+
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>

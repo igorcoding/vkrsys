@@ -57,7 +57,7 @@
 .main-header__toolbar__share {
     display: inline-block;
     margin-right: 30px;
-    background-image: url("/static/img/share.png");
+    background-image: url("/static/img/icons/share.png");
     -moz-background-size: 100% 100%;
     -webkit-background-size: 100% 100%;
     background-size: 100% 100%;
@@ -74,7 +74,7 @@
     vertical-align: middle;
     margin-top: -29px;
 
-    background-image: url("/static/img/logout.png");
+    background-image: url("/static/img/icons/logout.png");
     -moz-background-size: 100% 100%;
     -webkit-background-size: 100% 100%;
     background-size: 100% 100%;
@@ -128,12 +128,9 @@
     height: 180px;
     border: 1px solid #656565;
     margin-left: 1%;
+    float: right;
 
     vertical-align: middle;
-}
-
-.control {
-    display: inline-block;
 }
 
 .player__main__song {
@@ -150,6 +147,10 @@
 
 .player__main__controls {
 
+}
+
+.player__main__controls__control {
+    display: inline-block;
 }
 
 .player__main__controls__dislike {
@@ -172,8 +173,149 @@
 
 }
 
-.playlist {
 
+.playlist {
+    background-color: white;
+    margin-top: 20px;
+    padding: 0 10px;
+    border: 1px solid #656565;
+}
+
+.playlist__entry {
+    background-color: lightgray;
+    height: 70px;
+    width: 100%;
+    margin: 10px 0;
+}
+
+.playlist__entry_playing {
+    background-color: #a9abd5;
+}
+
+.playlist__entry_hover {
+    background-color: #c8c8c8;
+}
+
+.playlist__entry__info {
+    position: absolute;
+    display: inline-block;
+    float: left;
+    /*background-color: yellow;*/
+    width: 100%;
+    height: 70px;
+
+}
+
+.playlist__entry__art {
+    background-image: url("http://ecx.images-amazon.com/images/I/61gOquV24GL._SL500_AA280_.jpg");
+    display: inline-block;
+    float: left;
+    width: 60px;
+    height: 60px;
+
+    margin: 5px 0 5px 15px;
+
+    background-repeat: no-repeat;
+    -moz-background-size: 100%;
+    -webkit-background-size: 100%;
+    background-size: 100%;
+    background-position: center;
+}
+
+.playlist__entry__art_dimmed {
+    -webkit-filter: opacity(0.4) blur(2px);
+    filter: opacity(0.4) blur(2px);
+}
+
+.playlist__entry__header {
+    /*background-color: bisque;*/
+    display: inline-block;
+    float: left;
+    height: 60px;
+    /*width: 80%;*/
+
+    margin: 5px 5px 5px 20px;
+
+}
+
+.playlist__entry__title__artist {
+    width: 100%;
+    /*background-color: aqua;*/
+    margin-top: 5px;
+}
+
+.playlist__entry__title__title {
+    width: 100%;
+    /*background-color: chocolate;*/
+    margin-top: 5px;
+}
+
+.playlist__entry__controls {
+    display: inline-block;
+    float: right;
+    height: 40px;
+    margin: 20px 20px 20px 0;
+    position: relative;
+}
+
+.playlist__entry__controls__control {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+
+    -moz-background-size: 100% 100%;
+    -webkit-background-size: 100% 100%;
+    background-size: 100% 100%;
+}
+
+.playlist__entry__controls__control:last-child {
+    margin-right: 0;
+}
+
+.playlist__entry__controls__dislike {
+    position: relative;
+    top: 5px;
+    background-image: url("/static/img/icons/dislike.png");
+}
+
+.playlist__entry__controls__dislike:hover {
+    background-image: url("/static/img/icons/dislike-red.png");
+}
+
+.playlist__entry__controls__like {
+    position: relative;
+    top: -5px;
+    background-image: url("/static/img/icons/like.png");
+}
+
+.playlist__entry__controls__like:hover {
+    background-image: url("/static/img/icons/like-green.png");
+}
+
+.playlist__entry__controls__playpause {
+    width: 40px;
+    height: 40px;
+    margin: 15px 0 15px 15px;
+    float: left;
+}
+
+.playlist__entry__controls__playpause_paused {
+    background-image: url("/static/img/icons/play.png");
+
+}
+
+.playlist__entry__controls__playpause_playing {
+    background-image: url("/static/img/icons/pause.png");
+
+}
+
+.playlist__entry__controls__playpause_paused_hover {
+    background-image: url("/static/img/icons/playpause-paused-hover.png");
+}
+
+.playlist__entry__controls__playpause_playing_hover {
+    background-image: url("/static/img/icons/playpause-playing-hover.png");
 }
 
 .main-footer {

@@ -115,12 +115,13 @@ class Db:
                 params = (user_last, song_last)
             elif song_last is not None and last_action is not None:
                 update_query = """UPDATE app_recommenderinfo SET last_known_user_id=%s, last_known_song_id=%s, last_known_user_event_id=%s  WHERE id=1"""
+                params = (user_last, song_last, last_action)
                 insert_query = [
                     """SET foreign_key_checks = 0""",
                     """INSERT INTO app_recommenderinfo (id, last_known_user_id, last_known_song_id, last_known_user_event_id) VALUES (1, %s, %s, %s)""",
                     """SET foreign_key_checks = 1"""
                 ]
-                params = [(), (user_last, song_last, last_action), ()]
+                insert_params = [(), params, ()]
 
         if count == 1:
             if update_query is not None and params is not None:

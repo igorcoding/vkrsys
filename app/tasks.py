@@ -68,7 +68,7 @@ def fetch_music(vk_uid, access_token):
         Song.objects.bulk_create_new(bulk)
 
     new_songs = Song.objects.filter(id__gt=p_last_id)
-    download_and_process_songs.delay(map(lambda s1: (s1.id, s1.url), new_songs))
+    # download_and_process_songs.delay(map(lambda s1: (s1.id, s1.url), new_songs))
 
 
 @shared_task
