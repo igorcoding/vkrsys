@@ -8,7 +8,10 @@
 
 {% block extra_scripts %}
     {% load staticfiles %}
-    <script type="application/javascript" src="{% static "js/player.js" %}"></script>
+    <script type="application/javascript" src="{% static "js/PlayerControl.js" %}"></script>
+    <script type="application/javascript" src="{% static "js/PlaylistEntry.js" %}"></script>
+    <script type="application/javascript" src="{% static "js/Playlist.js" %}"></script>
+    <script type="application/javascript" src="{% static "js/Player.js" %}"></script>
     <script type="application/javascript" src="{% static "js/main.js" %}"></script>
 
 {% endblock %}
@@ -65,7 +68,7 @@
                 <div id="main_playlist" class="playlist">
                     {% load range %}
                     {% for i in 10|get_range %}
-                    <div class="playlist__entry link" data-state="paused" data-song_id="123_456">
+                    <div class="playlist__entry link" data-song_id="123_456">
                         <div class="playlist__entry__info">
                             <div class="playlist__entry__controls__playpause playlist__entry__controls__playpause_paused playlist__entry__controls__control link"></div>
                             <div class="playlist__entry__art"></div>

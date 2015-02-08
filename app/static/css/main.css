@@ -278,7 +278,7 @@
 }
 
 .playlist__entry__controls__dislike:hover {
-    background-image: url("/static/img/icons/dislike-red.png");
+    background-image: url("/static/img/icons/dislike-active.png");
 }
 
 .playlist__entry__controls__like {
@@ -286,7 +286,7 @@
 }
 
 .playlist__entry__controls__like:hover {
-    background-image: url("/static/img/icons/like-green.png");
+    background-image: url("/static/img/icons/like-active.png");
 }
 
 .playlist__entry__controls__playpause {
