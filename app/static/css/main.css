@@ -274,8 +274,6 @@
 }
 
 .playlist__entry__controls__dislike {
-    position: relative;
-    top: 5px;
     background-image: url("/static/img/icons/dislike.png");
 }
 
@@ -284,8 +282,6 @@
 }
 
 .playlist__entry__controls__like {
-    position: relative;
-    top: -5px;
     background-image: url("/static/img/icons/like.png");
 }
 

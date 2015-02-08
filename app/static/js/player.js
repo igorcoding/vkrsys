@@ -156,13 +156,14 @@ Player.prototype.prePlay = function($entry) {
 Player.prototype.registerPlaylistEntryPlayClick = function() {
     var self = this;
     var playPauseClickCb = function(entry, isHoveringPlayPause, isHoveringEntry) {
+        entry = $(entry);
         var state = entry.data("state") || "paused";
+        console.log(state);
 
         var song_id = entry.data("song_id") || null;
         switch (state) {
             case "playing":
                 self.prePause(entry, isHoveringPlayPause, isHoveringEntry);
-
                 if (song_id) {
                     self.pause(song_id);
                 }
@@ -172,7 +173,6 @@ Player.prototype.registerPlaylistEntryPlayClick = function() {
                 self.DOM.Playlist.Entry.each(function() {
                     self.prePause($(this));
                 });
-
                 self.prePlay(entry);
 
                 if (song_id) {
@@ -181,16 +181,18 @@ Player.prototype.registerPlaylistEntryPlayClick = function() {
                 }
                 break;
         }
+        console.warn(entry.data("state"));
     };
 
-    this.DOM.Playlist.Entry.find('.playlist__entry__controls__playpause').click(function() {
+    this.DOM.Playlist.Entry.find('.playlist__entry__controls__playpause').click(function(event) {
+        event.stopPropagation();
         var $this = $(this);
         var entry = $this.closest(self.C.Playlist.Entry);
-        playPauseClickCb(entry, true, true);
+        playPauseClickCb(entry[0], false, true);
     });
 
-    this.DOM.Playlist.Entry.click(function() {
-        playPauseClickCb($(this), false, true);
+    this.DOM.Playlist.Entry.click(function(event) {
+        playPauseClickCb(this, false, true);
     });
 };
 
