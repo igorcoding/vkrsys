@@ -65,7 +65,8 @@ class HomePageView(MyView):
 
         params = {
             'username': "%s %s" % (request.user.first_name, request.user.last_name),
-            'userpic': userpic
+            'userpic': userpic,
+            'user_vk_url': 'https://vk.com/id' + user_vk_id
         }
 
         return self._render(request, self.template, params)
