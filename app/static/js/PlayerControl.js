@@ -6,7 +6,19 @@ function PlayerControl(playerId) {
 
     this.playingSongId = null;
     this.state = this.States.Paused;
+    this.playlist = null;
 }
+
+PlayerControl.prototype.getPlaylist = function() {
+    if (this.playlist) {
+        return this.playlist;
+    }
+    throw "Playlist is null";
+};
+
+PlayerControl.prototype.setPlaylist = function(playlist) {
+    this.playlist = playlist;
+};
 
 PlayerControl.prototype.States = {
     Paused: 'paused',
@@ -42,10 +54,6 @@ PlayerControl.prototype.C = {
     MainControlsPlayPause: '.player__main__controls__playpause',
     MainControlsNext: '.player__main__controls__next',
     MainControlsLike: '.player__main__controls__like'
-};
-
-PlayerControl.prototype.rawC = function(c) {
-    return c.substring(1);
 };
 
 PlayerControl.prototype.bindToDOM = function() {
@@ -89,16 +97,11 @@ PlayerControl.prototype.registerOnPlayClick = function() {
 
     playPause.click(function() {
         var $this = $(this);
-        var playPauseClass = self.rawC(self.C.MainControlsPlayPause);
         if (self.getState() === self.States.Playing) {
-            $this.removeClass(playPauseClass + '_playing');
-            $this.addClass(playPauseClass + '_paused');
-            self.setStatePaused();
-            self.pause();
+            self.visualPause($this);
+            self.pause(true);
         } else {
-            $this.removeClass(playPauseClass + '_paused');
-            $this.addClass(playPauseClass + '_playing');
-            self.setStatePlaying();
+            self.visualPlay($this);
             self.play();
         }
     });
@@ -130,23 +133,58 @@ PlayerControl.prototype.onProgressSlide = function() {
 
 
 
+PlayerControl.prototype.visualPlay = function($ppButton) {
+    if (!$ppButton) {
+        $ppButton = this.DOM.MainControlsPlayPause;
+    }
+    var playPauseClass = rawC(this.C.MainControlsPlayPause);
+    $ppButton.removeClass(playPauseClass + '_paused');
+    $ppButton.addClass(playPauseClass + '_playing');
+    this.setStatePlaying();
+};
+
+
+PlayerControl.prototype.visualPause = function($ppButton) {
+    if (!$ppButton) {
+        $ppButton = this.DOM.MainControlsPlayPause;
+    }
+    var playPauseClass = rawC(this.C.MainControlsPlayPause);
+    $ppButton.removeClass(playPauseClass + '_playing');
+    $ppButton.addClass(playPauseClass + '_paused');
+    this.setStatePaused();
+};
+
 
 PlayerControl.prototype.play = function(song_id) {
     var $audio = this.DOM.Audio;
     var audio = $audio[0];
+    if (!song_id && !this.playingSongId) {
+        this.playlist.playFirst();
+    } else if (!song_id) {
+        this.visualPlay();
+        this.playlist.playingEntry.play();
+    }
     if (!song_id || song_id === this.playingSongId) {  // continue playing
-        audio.onloadeddata = function() {
-            audio.play();
-        };
-        audio.load();
+        console.log("CONTINUING");
+        this.visualPlay();
+        //audio.onloadeddata = function() {
+        //    audio.play();
+        //};
+        //audio.load();
 
     } else {  // new song
+        this.visualPlay();
         this.playingSongId = song_id;
+
         // fetch audio url
     }
 };
 
-PlayerControl.prototype.pause = function() {
+PlayerControl.prototype.pause = function(stopPlaylist) {
+    this.visualPause();
+    if (stopPlaylist) {
+        this.playlist.pauseCurrent();
+    }
     var audio = this.DOM.Audio;
     audio.trigger('pause');
 };

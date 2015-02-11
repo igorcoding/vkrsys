@@ -36,8 +36,8 @@ Playlist.prototype.exploreEntries = function() {
 Playlist.prototype.registerEvents = function() {
     window.registerOnResize(this.onWindowResize, this);
     this.onWindowResize(window);
-    this.registerEntryHover();
-    this.registerPlayPauseHover();
+    //this.registerEntryHover();
+    //this.registerPlayPauseHover();
     this.registerEntryPlayPauseClick();
 };
 
@@ -47,33 +47,9 @@ Playlist.prototype.onWindowResize = function(w) {
     }
 };
 
-Playlist.prototype.registerEntryHover = function() {
-    _.forEach(this.entries, function(entry) {
-        entry.$obj.hover(function(event) {
-            event.stopPropagation();
-            entry.onHoverEnter.apply(entry);
-        }, function(event) {
-            event.stopPropagation();
-            entry.onHoverLeave.apply(entry);
-        });
-    });
-};
-
-Playlist.prototype.registerPlayPauseHover = function() {
-    _.forEach(this.entries, function(entry) {
-        entry.DOM.EntryControlsPlayPause.hover(function(event) {
-            event.stopPropagation();
-            entry.onPlayPauseHoverEnter.apply(entry);
-        }, function(event) {
-            event.stopPropagation();
-            entry.onPlayPauseHoverEnter.apply(entry);
-        });
-    });
-};
-
 Playlist.prototype.registerEntryPlayPauseClick = function() {
     var self = this;
-    var playPauseClickCb = function(entry, isHoveringPlayPause, isHoveringEntry) {
+    var playPauseClickCb = function(entry) {
         var state = entry.getState();
         console.log(state);
 
@@ -81,8 +57,7 @@ Playlist.prototype.registerEntryPlayPauseClick = function() {
         if (song_id) {
             switch (state) {
                 case PlaylistEntry.prototype.States.Playing:
-                    entry.visualPause(isHoveringPlayPause, isHoveringEntry);
-                    self.playingEntry = null;
+                    entry.visualPause();
 
                     self.playerControl.pause();
                     break;
@@ -94,7 +69,6 @@ Playlist.prototype.registerEntryPlayPauseClick = function() {
                     entry.visualPlay();
                     self.playingEntry = entry;
 
-                    self.playerControl.pause();
                     self.playerControl.play(song_id);
                     break;
             }
@@ -105,11 +79,21 @@ Playlist.prototype.registerEntryPlayPauseClick = function() {
     _.forEach(this.entries, function(entry) {
         entry.DOM.EntryControlsPlayPause.click(function(event) {
             event.stopPropagation();
-            playPauseClickCb(entry, false, true);
+            playPauseClickCb(entry);
         });
 
         entry.DOM.Entry.click(function() {
-            playPauseClickCb(entry, false, true);
+            playPauseClickCb(entry);
         })
     });
+};
+
+Playlist.prototype.playFirst = function() {
+    this.playingEntry = this.entries[0];
+    this.playingEntry.play();
+    this.playerControl.play(this.playingEntry.getSongId())
+};
+
+Playlist.prototype.pauseCurrent = function() {
+    this.playingEntry.pause();
 };

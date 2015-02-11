@@ -2,7 +2,7 @@
     $.fn.totalWidth = function() {
         var margin = this.margin();
         return this.width() + margin.left + margin.right;
-    }
+    };
 })(jQuery);
 
 jQuery(document).ready(function($) {
@@ -17,6 +17,10 @@ jQuery(document).ready(function($) {
     window.registerOnResize = function(func, ctx) {
         ctx = ctx || window;
         onResizeFunctions.push(func.bind(ctx));
+    };
+
+    window.rawC = function(c) {
+        return c.substring(1);
     };
 
     var player = new Player("#main_player", "#main_playlist");

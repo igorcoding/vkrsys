@@ -284,8 +284,12 @@
     background-color: #a9abd5;
 }
 
-.playlist__entry_hover {
+.playlist__entry_paused:hover {
     background-color: #c8c8c8;
+}
+
+.playlist__entry_playing:hover {
+    background-color: #a9abd5;
 }
 
 .playlist__entry__info {
@@ -398,11 +402,11 @@
 
 }
 
-.playlist__entry__controls__playpause_paused_hover {
+.playlist__entry__controls__playpause_paused:hover {
     background-image: url("/static/img/icons/playpause-paused-hover.png");
 }
 
-.playlist__entry__controls__playpause_playing_hover {
+.playlist__entry__controls__playpause_playing:hover {
     background-image: url("/static/img/icons/playpause-playing-hover.png");
 }
 

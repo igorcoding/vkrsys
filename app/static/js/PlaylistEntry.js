@@ -71,74 +71,35 @@ PlaylistEntry.prototype.onWindowResize = function(w) {
     entryHeader.width(minus);
 };
 
-PlaylistEntry.prototype.onHoverEnter = function() {
-    var art = this.$obj.find(this.C.EntryArt);
-    var playPause = this.$obj.find(this.C.EntryControlsPlayPause);
-
-    var state = this.getState();
-    if (state !== this.States.Playing) {
-        this.$obj.addClass('playlist__entry_hover');
-    }
-    this.onPlayPauseHoverEnter(playPause);
-    //art.addClass(dimmedClassName);
-    //playPause.show();
-};
-
-PlaylistEntry.prototype.onHoverLeave = function() {
-    var art = this.$obj.find(this.C.EntryArt);
-    var playPause = this.$obj.find(this.C.EntryControlsPlayPause);
-
-    this.$obj.removeClass('playlist__entry_hover');
-
-    this.onPlayPauseHoverLeave(playPause);
-    //art.removeClass(dimmedClassName);
-    //playPause.hide();
-};
-
-PlaylistEntry.prototype.onPlayPauseHoverEnter = function() {
-    var state = this.getState();
-    switch (state) {
-        case this.States.Playing:
-            this.DOM.EntryControlsPlayPause.addClass('playlist__entry__controls__playpause_playing_hover');
-            break;
-        case this.States.Paused:
-        default:
-            this.DOM.EntryControlsPlayPause.addClass('playlist__entry__controls__playpause_paused_hover');
-            break;
-    }
-};
-
-PlaylistEntry.prototype.onPlayPauseHoverLeave = function() {
-    this.DOM.EntryControlsPlayPause.removeClass('playlist__entry__controls__playpause_playing_hover');
-    this.DOM.EntryControlsPlayPause.removeClass('playlist__entry__controls__playpause_paused_hover');
-};
-
-PlaylistEntry.prototype.visualPause = function(isHoveringPlayPause, isHoveringEntry) {
+PlaylistEntry.prototype.visualPause = function() {
     var $playPause = this.DOM.EntryControlsPlayPause;
-    $playPause.removeClass('playlist__entry__controls__playpause_playing');
-    $playPause.removeClass('playlist__entry__controls__playpause_playing_hover');
-    $playPause.addClass('playlist__entry__controls__playpause_paused');
+    var ppClass = rawC(this.C.EntryControlsPlayPause);
+    var entryClass = rawC(this.C.Entry);
+    $playPause.removeClass(ppClass + '_playing');
+    $playPause.addClass(ppClass + '_paused');
 
-
-    this.$obj.removeClass('playlist__entry_playing');
-    if (isHoveringPlayPause) {
-        $playPause.addClass('playlist__entry__controls__playpause_paused_hover');
-    }
-    if (isHoveringEntry) {
-        this.$obj.addClass('playlist__entry_hover');
-    }
+    this.$obj.removeClass(entryClass + '_playing');
+    this.$obj.addClass(entryClass + '_paused');
 
     this.setStatePaused();
 };
 
 PlaylistEntry.prototype.visualPlay = function() {
     var $playPause = this.DOM.EntryControlsPlayPause;
-    $playPause.removeClass('playlist__entry__controls__playpause_paused');
-    $playPause.removeClass('playlist__entry__controls__playpause_paused_hover');
-    $playPause.addClass('playlist__entry__controls__playpause_playing');
-    $playPause.addClass('playlist__entry__controls__playpause_playing_hover');
-    this.$obj.removeClass('playlist__entry_hover');
-    this.$obj.addClass('playlist__entry_playing');
+    var ppClass = rawC(this.C.EntryControlsPlayPause);
+    var entryClass = rawC(this.C.Entry);
+    $playPause.removeClass(ppClass + '_paused');
+    $playPause.addClass(ppClass + '_playing');
+    this.$obj.removeClass(entryClass + '_hover');
+    this.$obj.addClass(entryClass + '_playing');
 
     this.setStatePlaying();
+};
+
+PlaylistEntry.prototype.play = function() {
+    this.visualPlay();
+};
+
+PlaylistEntry.prototype.pause = function() {
+    this.visualPause();
 };

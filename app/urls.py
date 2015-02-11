@@ -2,6 +2,7 @@ from django.conf.urls import patterns, url, include
 from django.contrib.auth.decorators import login_required
 
 from app import views
+from app import api
 
 urlpatterns = patterns('',
     url(r'^$', views.HomePageView.as_view(), name='index'),
@@ -9,5 +10,6 @@ urlpatterns = patterns('',
     url(r'^logout/', views.LogoutView.as_view(), name='logout'),
     url(r'^social/', include('social_auth.urls')),
 
-    url(r'^api/rate', views.Api.Rate.as_view(), name='api_rate'),
+    url(r'^api/rate', api.Rate.as_view(), name='api_rate'),
+    url(r'^api/song_url', api.GetSongUrl.as_view(), name='api_song_url'),
 )
