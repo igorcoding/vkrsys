@@ -3,7 +3,7 @@ import rsys
 import logging
 from recommender_api.db import Db
 
-from recommender_api.response import Responses, RespError
+from recommender_api.response import Responses, RespError, R
 from recommender_api.util import ok_on_success, model_initialized_required, generate
 
 from rsys_actions import RsysActions
@@ -25,26 +25,6 @@ class Recommender:
         self.logger = logging.getLogger(Recommender.__name__)
 
         self.router = {
-            # RsysActions.INIT: {
-            # 'params': ['users', 'items'],
-            #     'cb': self.on_init
-            # },
-            #
-            # RsysActions.USERS_ADD: {
-            #     'params': ['user_id'],
-            #     'cb': self.on_users_add
-            # },
-            #
-            # RsysActions.ITEM_ADD: {
-            #     'params': ['item_id'],
-            #     'cb': self.on_item_add
-            # },
-            #
-            # RsysActions.ITEMS_ADD: {
-            #     'params': ['items'],
-            #     'cb': self.on_items_add
-            # },
-
             RsysActions.RATE: {
                 'params': ['user_id', 'item_id', 'rating'],
                 'cb': self.on_rate
@@ -153,52 +133,10 @@ class Recommender:
         else:
             raise RespError(Responses.UNKNOWN_ACTION, action)
 
-    # def on_init(self, data):
-    #     u = data['users']
-    #     i = data['items']
-    #
-    #     if type(u) != list or type(i) != list:
-    #         raise RespError(Responses.USERS_ITEMS_NOT_AN_ARRAY)
-    #
-    #     u = list(set(u))
-    #     i = list(set(i))
-    #     self.users_arr = u
-    #     self.items_arr = i
-    #
-    #     self.users = dict(zip(u, xrange(len(u))))
-    #     self.items = dict(zip(i, xrange(len(i))))
-    #
-    #     self.config = rsys.SVDConfig(len(self.users), len(self.items), 0, 4, 0.005)
-    #     self.svd = rsys.SVD(self.config)
-    #
-    #     self.initialized = True
-
-    # @model_initialized_required
-    # def on_users_add(self, data):
-    #     u_id = data['user_id']
-    #     self.users[u_id] = len(self.users)
-    #     self.svd.add_user()
-    #
-    # @model_initialized_required
-    # def on_item_add(self, data):
-    #     i_id = data['item_id']
-    #     self.items[i_id] = len(self.items)
-    #     self.svd.add_item()
-    #
-    # @model_initialized_required
-    # def on_items_add(self, data):
-    #     items = data['items']
-    #
-    #     if type(items) != list:
-    #         return RespError(Responses.USERS_ITEMS_NOT_AN_ARRAY)
-    #
-    #     for item_id in items:
-    #         self.items[item_id] = len(self.items)
-    #
-    #     self.svd.add_items(len(self.items))
-
     def _prepare(self):
         self.last_u, self.last_i, self.last_action = self.db.get_lasts()
+        if self.last_action is None:
+            self.last_action = -1
         new_users = self.db.get_users_ids(self.last_u)
         new_items = self.db.get_items_ids(self.last_i)
 
@@ -223,23 +161,32 @@ class Recommender:
     def on_learn_online(self, data):
         self._prepare()
 
-        actions = self.db.get_user_actions('rate', self.last_action)
+        def mapper(obj):
+            return rsys.ItemScore(obj['user_id'],
+                                  obj['item_id'],
+                                  obj['rating'])
+
+        actions = self.db.get_user_actions('rate', self.last_action, mapper)
         pprint(actions)
+        if len(actions) > 0:
+            last_action = actions[-1][0] if len(actions) > 0 else None
+            self.db.save_lasts(last_action=last_action)
 
-        last_action = actions[-1][0] if len(actions) > 0 else None
-        self.db.save_lasts(last_action=last_action)
+            scores = [x[1] for x in actions]
 
-        scores = map(lambda action: rsys.ItemScore(action[1]['user_id'],
-                                                   action[1]['item_id'],
-                                                   action[1]['rating']), actions)
+            self.svd.learn_online(scores)
+            return None
 
-        self.svd.learn_online(scores)
+        return R(Responses.OK).em('Nothing to learn')
 
     @model_initialized_required
     def on_learn_offline(self, data):
         self._prepare()
 
-        scores = []
+        def mapper(user_id, item_id, rating):
+            return rsys.ItemScore(user_id, item_id, rating)
+
+        scores = self.db.get_all_ratings(mapper)
         self.svd.learn_offline(scores)
 
     @model_initialized_required
@@ -251,7 +198,7 @@ class Recommender:
             'item_id': r.item_id,
             'score': r.score
         }, self.svd.recommend(user_id, count))
-        return Responses.OK.d({
+        return R(Responses.OK).d({
             'user_id': data['user_id'],
             'count': len(recommendations),
             'recommendations': recommendations

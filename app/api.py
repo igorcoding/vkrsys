@@ -56,6 +56,11 @@ class Rate(View):
 
         try:
             rating_obj = Db.rate(user_id, song_id, d['direction'])
+            if rating_obj is None:
+                return JsonResponse({
+                    'status': 400,
+                    'msg': 'You have already rated this song'
+                }, status=400)
 
             return JsonResponse({
                 'status': 200
@@ -70,7 +75,7 @@ class Rate(View):
         except Exception as e:
             return JsonResponse({
                 'status': 500,
-                'reason': 'unknown error',
+                'reason': 'unknown error. ' + str(e.__class__),
                 'msg': e.message
             }, status=500)
 

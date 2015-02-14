@@ -1,4 +1,7 @@
+import json
 from pprint import pprint
+from django.conf import settings
+import requests
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
@@ -12,6 +15,7 @@ from social_auth.db.django_models import UserSocialAuth
 import vk
 from app import tasks
 from app.basicscripts import VkSocial, Db
+from app.models import Song
 
 
 class MyView(View):
@@ -60,14 +64,30 @@ class HomePageView(MyView):
         user_id = request.user.id
         access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
         userpic = VkSocial.get_userpic(user_id, user_vk_id, access_token)
-        res = tasks.fetch_music.delay(user_vk_id, access_token)
+        # res = tasks.fetch_music.delay(user_vk_id, access_token)
         # pprint(res.get())
+
+        api_resp = requests.post(settings.API_URL + 'recommend', json={
+            'user_id': user_id,
+            'count': 15
+        })
+
+        api_resp_json = json.loads(api_resp.text, encoding='utf-8')
+        recs = api_resp_json['data']['recommendations']
+        for r in recs:
+            song = Song.objects.get(pk=r['item_id'])
+            r['artist'] = song.artist
+            r['title'] = song.title
+            r['id'] = song.id
 
         params = {
             'username': "%s %s" % (request.user.first_name, request.user.last_name),
-            'userpic': userpic,
-            'user_vk_url': 'https://vk.com/id' + user_vk_id
+            'user_vk_url': 'https://vk.com/id' + user_vk_id,
+            'recs': recs
         }
+
+        if userpic:
+            params['userpic'] = userpic
 
         return self._render(request, self.template, params)
 

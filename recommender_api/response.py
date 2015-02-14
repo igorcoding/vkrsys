@@ -1,8 +1,12 @@
+import copy
+
+
 class ResponseResult:
     def __init__(self, code, status, msg, data=None):
         self.code = code
         self.status = status
         self.msg = msg
+        self.extra_msg = None
         self.data = data
 
     def to_res(self):
@@ -12,6 +16,8 @@ class ResponseResult:
         }
         if self.data is not None:
             d['data'] = self.data
+        if self.extra_msg is not None:
+            d['exra_msg'] = self.extra_msg
         return self.status, d
 
     def d(self, data):
@@ -20,6 +26,9 @@ class ResponseResult:
 
     def m(self, extra_msg):
         self.msg += extra_msg
+
+    def em(self, extra_msg):
+        self.extra_msg = extra_msg
 
 
 class Responses:
@@ -42,12 +51,16 @@ class Responses:
         pass
 
 
+def R(resp):
+    return copy.copy(resp)
+
+
 class RespError(ValueError):
 
     def __init__(self, *args, **kwargs):
         self.resp = None
         if len(args) > 0 and isinstance(args[0], ResponseResult):
-            self.resp = args[0]
+            self.resp = R(args[0])
             if len(args) > 1:
                 self.resp.msg += ''.join(args[1:])
         super(RespError, self).__init__(*args, **kwargs)

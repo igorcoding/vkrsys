@@ -16,14 +16,14 @@ from django.conf import settings
 
 from recommender_api.rsys_actions import RsysActions
 
-
-def catcher(f):
-    def wrapper(*args, **kwargs):
-        try:
-            return f(*args, **kwargs)
-        except Exception as e:
-            return None
-    return wrapper
+#
+# def catcher(f):
+#     def wrapper(*args, **kwargs):
+#         try:
+#             return f(*args, **kwargs)
+#         except Exception as e:
+#             return None
+#     return wrapper
 
 
 db = settings.DATABASES['default']
@@ -40,14 +40,14 @@ djv = Dejavu(config)
 
 
 @shared_task
-@catcher
+# @catcher
 def fetch_song_url(song_id, vk_uid, access_token):
     vkapi = vk.API(access_token=access_token)
     vkapi.audio.getById()
 
 
 @shared_task
-@catcher
+# @catcher
 def fetch_userpic(user_id, vk_uid, access_token):
     vkapi = vk.API(access_token=access_token)
     user_info = vkapi.users.get(user_ids=vk_uid, fields=['photo_50'])[0]
@@ -55,7 +55,7 @@ def fetch_userpic(user_id, vk_uid, access_token):
 
 
 @shared_task
-@catcher
+# @catcher
 def fetch_music(vk_uid, access_token):
     vkapi = vk.API(access_token=access_token)
     songs = vkapi.audio.get(owner_id=vk_uid, need_user=0)

@@ -13,7 +13,7 @@ import tornado.gen
 import tornado.ioloop
 from tornado.options import define, options
 from recommender import Recommender, RespError
-from recommender_api.response import Responses, RespError
+from recommender_api.response import Responses, RespError, R
 
 logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
 
@@ -74,7 +74,7 @@ class ApiHandler(ProcessMixin):
         elif hasattr(self, 'redir'):
             self.redirect(self.redir)
         else:
-            self.res = Responses.NO_BACKEND_RESPONSE.to_res()
+            self.res = R(Responses.NO_BACKEND_RESPONSE).to_res()
             self.set_status(self.res[0])
             self.finish(self.res[1])
         self.logger.info("Request: %s ===> Response: %s", str(req), str(self.res))
@@ -92,7 +92,7 @@ class ApiHandler(ProcessMixin):
         try:
             data = json.loads(self.request.body, encoding='utf-8')
         except ValueError as e:
-            self.res = Responses.MALFORMED_REQUEST.to_res()
+            self.res = R(Responses.MALFORMED_REQUEST).to_res()
             self.set_status(self.res[0])
             self.finish(self.res[1])
             return

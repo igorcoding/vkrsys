@@ -1,6 +1,7 @@
 import json
 from django.contrib.auth.models import User
 from django.core.cache import cache
+from django.db import IntegrityError
 from social_auth.db.django_models import UserSocialAuth
 from app import tasks
 from app.models import Rating, Song, UserAction
@@ -35,7 +36,7 @@ class VkSocial:
 
 
 class Db:
-    MAX_VOTES = 5
+    MAX_VOTES = 1
 
     UPVOTE_W = 0.4
     DOWNVOTE_W = 0.6
@@ -61,28 +62,25 @@ class Db:
         user = User.objects.get(pk=user_id)
         song = Song.objects.get(pk=song_id)
 
-        try:
-            rating_obj = Rating.objects.get(user=user, song=song)
-        except ObjectDoesNotExist:
-            rating_obj = None
-        if rating_obj is None:
-            rating_obj = Rating(user=user, song=song)
-
+        rating = -1
         if direction == 'up':
-            if rating_obj.up_votes < Db.MAX_VOTES:
-                rating_obj.up_votes += 1
+            rating = 1
         elif direction == 'down':
-            if rating_obj.down_votes < Db.MAX_VOTES:
-                rating_obj.down_votes += 1
+            rating = 0
         else:
             raise AttributeError("Unknown direction: %s" % direction)
 
-        rating_obj.rating = Db.compute_total_rating(rating_obj)
-        rating_obj.save()
+        rating_obj = Rating(user=user, song=song, rating=rating)
+
+        try:
+            rating_obj.save()
+        except IntegrityError:
+            return None
 
         Db.transact(user_id, song_id, RsysActions.RATE, {
             'user_id': user_id,
             'item_id': song_id,
+            'direction': direction,
             'rating': rating_obj.rating
         })
         return rating_obj

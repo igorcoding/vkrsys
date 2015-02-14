@@ -67,15 +67,16 @@
                 </div>
 
                 <div id="main_playlist" class="playlist">
-                    {% load range %}
-                    {% for i in 10|get_range %}
-                    <div class="playlist__entry playlist__entry_paused link" data-song_id="123_456">
+{#                    {% load range %}#}
+{#                    {% for i in 10|get_range %}#}
+                    {% for r in recs %}
+                    <div class="playlist__entry playlist__entry_paused link" data-song_id="{{ r.id }}" >
                         <div class="playlist__entry__info">
                             <div class="playlist__entry__controls__playpause playlist__entry__controls__playpause_paused playlist__entry__controls__control link"></div>
                             <div class="playlist__entry__art"></div>
                             <div class="playlist__entry__header">
-                                <div class="playlist__entry__title__artist">Green Day</div>
-                                <div class="playlist__entry__title__title">21 Guns</div>
+                                <div class="playlist__entry__title__artist">{{ r.artist }}</div>
+                                <div class="playlist__entry__title__title">{{ r.title }}</div>
                             </div>
                         </div>
                         <div class="playlist__entry__controls">

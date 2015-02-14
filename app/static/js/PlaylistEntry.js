@@ -8,6 +8,8 @@ function PlaylistEntry($obj, playlist) {
     this.DOM = {};
     this.bindToDOM();
     this.DOM.Entry = this.$obj;
+    this.artist = this.DOM.EntryHeaderArtist.text();
+    this.title = this.DOM.EntryHeaderTitle.text();
 }
 
 PlaylistEntry.prototype.States = {
@@ -102,4 +104,32 @@ PlaylistEntry.prototype.play = function() {
 
 PlaylistEntry.prototype.pause = function() {
     this.visualPause();
+};
+
+PlaylistEntry.prototype.rate = function(direction) {
+    if (direction !== 'up' && direction !== 'down') {
+        console.warn('Unknown direction: ' + direction);
+        return;
+    }
+    $.ajax('/api/rate', {
+        method: 'GET', // TODO: should be POST
+        data: {
+            song_id: this.getSongId(),
+            direction: direction
+        }
+    })
+        .done(function(data) {
+            console.log(data);
+        })
+        .fail(function(data) {
+            console.warn(data);
+        });
+};
+
+PlaylistEntry.prototype.like = function() {
+    this.rate('up');
+};
+
+PlaylistEntry.prototype.dislike = function() {
+    this.rate('down');
 };

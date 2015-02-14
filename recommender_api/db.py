@@ -134,7 +134,7 @@ class Db:
             if insert_query is not None and params is not None:
                 with closing(db.cursor()) as c:
                     for i in xrange(len(insert_query)):
-                        c.execute(insert_query[i], params[i])
+                        c.execute(insert_query[i], insert_params[i])
             else:
                 raise Exception("Unexpected behaviour of save_lasts")
         db.commit()
@@ -145,10 +145,14 @@ class Db:
         with closing(db.cursor()) as c:
             c.execute(
                 """SELECT last_known_user_id, last_known_song_id, last_known_user_event_id FROM app_recommenderinfo""")
+            if c.rowcount == 0:
+                return None, None, None
             last_u, last_i, last_event = c.fetchone()
         return last_u, last_i, last_event
 
     def get_users_ids(self, since_id=-1):
+        if since_id is None:
+            since_id = -1
         db = self.connect()
 
         with closing(db.cursor()) as c:
@@ -157,6 +161,8 @@ class Db:
         return ids
 
     def get_items_ids(self, since_id=-1):
+        if since_id is None:
+            since_id = -1
         db = self.connect()
 
         with closing(db.cursor()) as c:
@@ -164,13 +170,25 @@ class Db:
             ids = map(lambda entry: entry[0], c.fetchall())
         return ids
 
-    def get_user_actions(self, action, last_action=-1):
+    def get_user_actions(self, action, last_action=-1, mapper=None):
         db = self.connect()
+        if mapper is None:
+            mapper = lambda x: x
 
         with closing(db.cursor()) as c:
             c.execute("""SELECT id, action_json FROM app_useraction WHERE id > %s AND action_type = %s ORDER BY date""",
                       (last_action, action))
-            actions = map(lambda entry: (entry[0], json.loads(entry[1], encoding='utf-8')), c.fetchall())
+            actions = map(lambda entry: (entry[0], mapper(json.loads(entry[1], encoding='utf-8'))), c.fetchall())
         return actions
+
+    def get_all_ratings(self, mapper=None):
+        db = self.connect()
+
+        with closing(db.cursor()) as c:
+            c.execute("""SELECT user_id, song_id, rating FROM app_rating ORDER BY user_id, song_id""")
+            if mapper is None:
+                return c.fetchall()
+            else:
+                return map(lambda entry: mapper(entry[0], entry[1], entry[2]), c.fetchall())
 
 

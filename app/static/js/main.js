@@ -23,7 +23,7 @@ jQuery(document).ready(function($) {
         return c.substring(1);
     };
 
-    var player = new Player("#main_player", "#main_playlist");
+    window.player = new Player("#main_player", "#main_playlist");
     console.log(player);
 
 

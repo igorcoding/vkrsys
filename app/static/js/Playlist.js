@@ -5,6 +5,7 @@ function Playlist(playlistId, playerControl) {
     this.entries = [];
     this.$entries = null;
     this.playingEntry = null;
+    this.playingEntryId = null;
 
     this.bindToDOM();
     this.exploreEntries();
@@ -36,8 +37,6 @@ Playlist.prototype.exploreEntries = function() {
 Playlist.prototype.registerEvents = function() {
     window.registerOnResize(this.onWindowResize, this);
     this.onWindowResize(window);
-    //this.registerEntryHover();
-    //this.registerPlayPauseHover();
     this.registerEntryPlayPauseClick();
 };
 
@@ -49,7 +48,7 @@ Playlist.prototype.onWindowResize = function(w) {
 
 Playlist.prototype.registerEntryPlayPauseClick = function() {
     var self = this;
-    var playPauseClickCb = function(entry) {
+    var playPauseClickCb = function(entry, id) {
         var state = entry.getState();
         console.log(state);
 
@@ -68,32 +67,55 @@ Playlist.prototype.registerEntryPlayPauseClick = function() {
                     }
                     entry.visualPlay();
                     self.playingEntry = entry;
+                    this.playingEntryId = id;
 
-                    self.playerControl.play(song_id);
+                    self.playerControl.play(entry);
                     break;
             }
         }
         console.log(entry.getState());
     };
 
-    _.forEach(this.entries, function(entry) {
+    _.forEach(this.entries, function(entry, id) {
         entry.DOM.EntryControlsPlayPause.click(function(event) {
             event.stopPropagation();
-            playPauseClickCb(entry);
+            playPauseClickCb(entry, id);
         });
 
         entry.DOM.Entry.click(function() {
-            playPauseClickCb(entry);
+            playPauseClickCb(entry, id);
         })
     });
 };
 
-Playlist.prototype.playFirst = function() {
-    this.playingEntry = this.entries[0];
+Playlist.prototype.playById = function(id) {
+    if (id < 0) {
+        id = this.entries.length - 1;
+    }
+    if (id >= this.entries.length) {
+        id = 0;
+    }
+    if (this.playingEntry) {
+        this.playingEntry.pause();
+    }
+    this.playingEntryId = id;
+    this.playingEntry = this.entries[id];
     this.playingEntry.play();
-    this.playerControl.play(this.playingEntry.getSongId())
+    this.playerControl.play(this.playingEntry);
+};
+
+Playlist.prototype.playFirst = function() {
+    this.playById(0);
 };
 
 Playlist.prototype.pauseCurrent = function() {
     this.playingEntry.pause();
+};
+
+Playlist.prototype.next = function() {
+    this.playById(this.playingEntryId + 1);
+};
+
+Playlist.prototype.prev = function() {
+    this.playById(this.playingEntryId - 1);
 };

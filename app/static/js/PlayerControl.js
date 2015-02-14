@@ -4,7 +4,7 @@ function PlayerControl(playerId) {
     this.bindToDOM();
     this.registerEvents();
 
-    this.playingSongId = null;
+    this.playingSong = null;
     this.state = this.States.Paused;
     this.playlist = null;
 }
@@ -78,6 +78,7 @@ PlayerControl.prototype.registerEvents = function() {
     window.registerOnResize(this.onWindowResize, this);
     this.onWindowResize(window);
     this.registerOnPlayClick();
+    this.registerOnPrevNextClick();
     this.registerAudioEvents();
 };
 
@@ -101,9 +102,23 @@ PlayerControl.prototype.registerOnPlayClick = function() {
             self.visualPause($this);
             self.pause(true);
         } else {
-            self.visualPlay($this);
+            //self.visualPlay($this);
             self.play();
         }
+    });
+};
+
+PlayerControl.prototype.registerOnPrevNextClick = function() {
+    var self = this;
+    var prev = this.DOM.MainControlsPrev;
+    var next = this.DOM.MainControlsNext;
+
+    prev.click(function() {
+        self.playlist.prev();
+    });
+
+    next.click(function() {
+        self.playlist.next();
     });
 };
 
@@ -140,6 +155,7 @@ PlayerControl.prototype.visualPlay = function($ppButton) {
     var playPauseClass = rawC(this.C.MainControlsPlayPause);
     $ppButton.removeClass(playPauseClass + '_paused');
     $ppButton.addClass(playPauseClass + '_playing');
+    this.DOM.MainSongTitle.text(this.playingSong.artist + "  -  " + this.playingSong.title);
     this.setStatePlaying();
 };
 
@@ -155,16 +171,18 @@ PlayerControl.prototype.visualPause = function($ppButton) {
 };
 
 
-PlayerControl.prototype.play = function(song_id) {
+PlayerControl.prototype.play = function(song_entry) {
     var $audio = this.DOM.Audio;
     var audio = $audio[0];
-    if (!song_id && !this.playingSongId) {
+
+    var song_id = song_entry ? song_entry.getSongId() : undefined;
+    if (!song_id && !this.playingSong) {
         this.playlist.playFirst();
     } else if (!song_id) {
         this.visualPlay();
         this.playlist.playingEntry.play();
     }
-    if (!song_id || song_id === this.playingSongId) {  // continue playing
+    if (!song_id || this.playingSong && song_id === this.playingSong.getSongId()) {  // continue playing
         console.log("CONTINUING");
         this.visualPlay();
         //audio.onloadeddata = function() {
@@ -173,8 +191,8 @@ PlayerControl.prototype.play = function(song_id) {
         //audio.load();
 
     } else {  // new song
+        this.playingSong = song_entry;
         this.visualPlay();
-        this.playingSongId = song_id;
 
         // fetch audio url
     }
