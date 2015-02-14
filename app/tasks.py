@@ -9,6 +9,7 @@ from pprint import pprint
 from celery import shared_task
 from django.contrib.auth.models import User
 import vk
+from vk.api import VkAPIMethodError
 from app.models import Song
 import requests
 
@@ -42,8 +43,18 @@ djv = Dejavu(config)
 @shared_task
 # @catcher
 def fetch_song_url(song_id, vk_uid, access_token):
+    s = Song.objects.get(pk=song_id)
+    vk_song_id = '%d_%d' % (s.owner_id, s.song_id)
+
     vkapi = vk.API(access_token=access_token)
-    vkapi.audio.getById()
+    try:
+        audio_info = vkapi.audio.getById(audios=vk_song_id)
+        s.url = audio_info[0]['url']
+        s.save()
+        return s.url
+    except VkAPIMethodError as e:
+        pprint(e.message)
+
 
 
 @shared_task

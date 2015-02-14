@@ -69,7 +69,7 @@ class HomePageView(MyView):
 
         api_resp = requests.post(settings.API_URL + 'recommend', json={
             'user_id': user_id,
-            'count': 15
+            'count': 30
         })
 
         api_resp_json = json.loads(api_resp.text, encoding='utf-8')
@@ -83,7 +83,8 @@ class HomePageView(MyView):
         params = {
             'username': "%s %s" % (request.user.first_name, request.user.last_name),
             'user_vk_url': 'https://vk.com/id' + user_vk_id,
-            'recs': recs
+            'recs': recs,
+            'first_song': recs[0]
         }
 
         if userpic:

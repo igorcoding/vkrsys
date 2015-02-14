@@ -3,7 +3,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.generic import View
-from app.basicscripts import Db
+from app import tasks
+from app.basicscripts import Db, VkSocial
 
 
 def ensure_present(d, args):
@@ -18,13 +19,32 @@ def ensure_present(d, args):
 
 
 class GetSongUrl(View):
-    PARAMS = ['song_id', 'direction']
+    PARAMS = ['song_id']
 
     @method_decorator(login_required)
     def get(self, request):
         user_id = request.user.id
+        d = request.GET
+        absent = ensure_present(d, self.PARAMS)
+        if absent:
+            return JsonResponse({
+                'status': 400,
+                'reason': 'required params are not present',
+                'absent': absent
+            }, status=400)
 
-        pass
+        access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
+        try:
+            url = tasks.fetch_song_url(d['song_id'], user_vk_id, access_token)
+            return JsonResponse({
+                'status': 200,
+                'url': url
+            }, status=200)
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                'status': 404,
+                'reason': 'song not found'
+            }, status=404)
 
 
 class Rate(View):

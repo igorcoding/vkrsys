@@ -44,7 +44,9 @@ PlaylistEntry.prototype.C = {
     EntryHeader: '.playlist__entry__header',
     EntryHeaderArtist: '.playlist__entry__title__artist',
     EntryHeaderTitle: '.playlist__entry__title__title',
-    EntryControlsPlayPause: '.playlist__entry__controls__playpause'
+    EntryControlsPlayPause: '.playlist__entry__controls__playpause',
+    EntryControlsLike: '.playlist__entry__controls__like',
+    EntryControlsDislike: '.playlist__entry__controls__dislike'
 };
 
 PlaylistEntry.prototype.bindToDOM = function() {

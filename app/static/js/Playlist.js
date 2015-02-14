@@ -37,7 +37,7 @@ Playlist.prototype.exploreEntries = function() {
 Playlist.prototype.registerEvents = function() {
     window.registerOnResize(this.onWindowResize, this);
     this.onWindowResize(window);
-    this.registerEntryPlayPauseClick();
+    this.registerEntryControlsClick();
 };
 
 Playlist.prototype.onWindowResize = function(w) {
@@ -46,7 +46,7 @@ Playlist.prototype.onWindowResize = function(w) {
     }
 };
 
-Playlist.prototype.registerEntryPlayPauseClick = function() {
+Playlist.prototype.registerEntryControlsClick = function() {
     var self = this;
     var playPauseClickCb = function(entry, id) {
         var state = entry.getState();
@@ -84,7 +84,17 @@ Playlist.prototype.registerEntryPlayPauseClick = function() {
 
         entry.DOM.Entry.click(function() {
             playPauseClickCb(entry, id);
-        })
+        });
+
+        entry.DOM.EntryControlsLike.click(function(event) {
+            event.stopPropagation();
+            entry.like();
+        });
+
+        entry.DOM.EntryControlsDislike.click(function(event) {
+            event.stopPropagation();
+            entry.dislike();
+        });
     });
 };
 

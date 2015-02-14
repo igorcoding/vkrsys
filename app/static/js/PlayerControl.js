@@ -79,6 +79,7 @@ PlayerControl.prototype.registerEvents = function() {
     this.onWindowResize(window);
     this.registerOnPlayClick();
     this.registerOnPrevNextClick();
+    this.registerOnRateClick();
     this.registerAudioEvents();
 };
 
@@ -119,6 +120,24 @@ PlayerControl.prototype.registerOnPrevNextClick = function() {
 
     next.click(function() {
         self.playlist.next();
+    });
+};
+
+PlayerControl.prototype.registerOnRateClick = function() {
+    var self = this;
+    var like = this.DOM.MainControlsLike;
+    var dislike = this.DOM.MainControlsDislike;
+
+    like.click(function() {
+        if (self.playingSong) {
+            self.playingSong.like();
+        }
+    });
+
+    dislike.click(function() {
+        if (self.playingSong) {
+            self.playingSong.dislike();
+        }
     });
 };
 
@@ -172,29 +191,43 @@ PlayerControl.prototype.visualPause = function($ppButton) {
 
 
 PlayerControl.prototype.play = function(song_entry) {
+    var self = this;
     var $audio = this.DOM.Audio;
     var audio = $audio[0];
 
     var song_id = song_entry ? song_entry.getSongId() : undefined;
     if (!song_id && !this.playingSong) {
+        console.log(1);
         this.playlist.playFirst();
+        return;
     } else if (!song_id) {
+        console.log(2);
         this.visualPlay();
         this.playlist.playingEntry.play();
     }
     if (!song_id || this.playingSong && song_id === this.playingSong.getSongId()) {  // continue playing
+        console.log(3);
         console.log("CONTINUING");
         this.visualPlay();
+        audio.play();
         //audio.onloadeddata = function() {
         //    audio.play();
         //};
         //audio.load();
 
     } else {  // new song
-        this.playingSong = song_entry;
-        this.visualPlay();
+        console.log(4);
 
         // fetch audio url
+        this.fetchAudioUrl(song_id, function(url) {
+            self.playingSong = song_entry;
+            self.visualPlay();
+            audio.src = url;
+            audio.onloadeddata = function() {
+                audio.play();
+            };
+            audio.load();
+        });
     }
 };
 
@@ -203,6 +236,21 @@ PlayerControl.prototype.pause = function(stopPlaylist) {
     if (stopPlaylist) {
         this.playlist.pauseCurrent();
     }
-    var audio = this.DOM.Audio;
-    audio.trigger('pause');
+    var audio = this.DOM.Audio[0];
+    audio.pause();
+};
+
+PlayerControl.prototype.fetchAudioUrl = function(song_id, cb) {
+    $.ajax('/api/song_url', {
+        method: 'GET',
+        data: {
+            song_id: song_id
+        }
+    })
+        .done(function(d) {
+            cb(d['url']);
+        })
+        .fail(function(d) {
+            console.warn(d);
+        });
 };
