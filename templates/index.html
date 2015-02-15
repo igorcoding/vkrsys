@@ -44,12 +44,12 @@
 
                     <div class="player__main">
                         <audio class="player__main__audio" controls preload="none">
-                          <source src="https://cs1-46v4.vk-cdn.net/p2/1f2fcf97c48985.mp3?extra=S0B1js7SDQxXLqghiOyFoofzfn9YpHavJyGcDtaUmXHE2iZCSfJE-PwtIojxX2I0EOpVga2rPxK8eEYgXTF7hqTTsrGQH5c1qg" type="audio/mpeg">
+                          <source src="" type="audio/mpeg">
                           Your browser does not support the audio element.
                         </audio>
                         <div class="player__main__song">
                             <div class="player__main__song__title">
-                                {{ first_song.artist }} - {{ first_song.title }}
+                                {{ recs.0.1 }} - {{ recs.0.2 }}
                             </div>
                             <div class="player__main__song__progressbar_outer">
                                 <div class="player__main__song__progressbar"></div>
@@ -70,13 +70,13 @@
 {#                    {% load range %}#}
 {#                    {% for i in 10|get_range %}#}
                     {% for r in recs %}
-                    <div class="playlist__entry playlist__entry_paused link" data-song_id="{{ r.id }}" >
+                    <div class="playlist__entry playlist__entry_paused link" data-song_id="{{ r.0 }}" >
                         <div class="playlist__entry__info">
                             <div class="playlist__entry__controls__playpause playlist__entry__controls__playpause_paused playlist__entry__controls__control link"></div>
                             <div class="playlist__entry__art"></div>
                             <div class="playlist__entry__header">
-                                <div class="playlist__entry__title__artist">{{ r.artist }}</div>
-                                <div class="playlist__entry__title__title">{{ r.title }}</div>
+                                <div class="playlist__entry__title__artist">{{ r.1 }}</div>
+                                <div class="playlist__entry__title__title">{{ r.2 }}</div>
                             </div>
                         </div>
                         <div class="playlist__entry__controls">

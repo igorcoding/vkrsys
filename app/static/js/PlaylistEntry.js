@@ -45,6 +45,7 @@ PlaylistEntry.prototype.C = {
     EntryHeaderArtist: '.playlist__entry__title__artist',
     EntryHeaderTitle: '.playlist__entry__title__title',
     EntryControlsPlayPause: '.playlist__entry__controls__playpause',
+    EntryControls: '.playlist__entry__controls',
     EntryControlsLike: '.playlist__entry__controls__like',
     EntryControlsDislike: '.playlist__entry__controls__dislike'
 };
@@ -73,6 +74,14 @@ PlaylistEntry.prototype.onWindowResize = function(w) {
                                        - entryHeaderMargin.right
                                        - playPause.totalWidth() - 1;
     entryHeader.width(minus);
+};
+
+PlaylistEntry.prototype.onHoverEnter = function() {
+    this.DOM.EntryControls.show();
+};
+
+PlaylistEntry.prototype.onHoverLeave = function() {
+    this.DOM.EntryControls.hide();
 };
 
 PlaylistEntry.prototype.visualPause = function() {

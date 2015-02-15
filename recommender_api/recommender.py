@@ -1,7 +1,7 @@
 from pprint import pprint
 import rsys
 import logging
-from recommender_api.db import Db
+from recommender_api.db import Db, TableNotCreated
 
 from recommender_api.response import Responses, RespError, R
 from recommender_api.util import ok_on_success, model_initialized_required, generate
@@ -41,7 +41,7 @@ class Recommender:
             },
 
             RsysActions.RECOMMEND: {
-                'params': ['user_id', 'count'],
+                'params': ['user_id'],
                 'cb': self.on_recommend
             }
         }
@@ -94,6 +94,13 @@ class Recommender:
             return float(obj)
         except ValueError:
             raise RespError(Responses.PARAMS_NOT_NUMERIC)
+
+    @staticmethod
+    def _cast_to_bool(obj):
+        try:
+            return bool(obj)
+        except ValueError:
+            raise RespError(Responses.MALFORMED_REQUEST)
 
     def initialize(self):
         users = self.db.get_users_ids()
@@ -193,13 +200,32 @@ class Recommender:
     def on_recommend(self, data):
         self._prepare()
         user_id = self._check_user_id(data['user_id'])
-        count = self._cast_to_int(data['count'])
-        recommendations = map(lambda r: {
-            'item_id': r.item_id,
-            'score': r.score
-        }, self.svd.recommend(user_id, count))
-        return R(Responses.OK).d({
-            'user_id': data['user_id'],
-            'count': len(recommendations),
-            'recommendations': recommendations
-        })
+        return_recs = self._cast_to_bool(data['return_recs']) if 'return_recs' in data else False
+        refresh = self._cast_to_bool(data['refresh']) if 'refresh' in data else False
+        count = 0
+
+        recs = self.svd.recommend(user_id, count)
+        try:
+            if refresh:
+                self.db.destroy_recommendations(user_id)
+            count = self.db.save_recommendations(user_id, recs)
+        except TableNotCreated:
+            return R(Responses.NOT_OK).em("Couldn't create table.")
+
+        if count > 0:
+            r = R(Responses.OK).d({
+                'user_id': data['user_id'],
+                'count': count
+            })
+
+            if return_recs:
+                recommendations = map(lambda r: {
+                    'item_id': r.item_id,
+                    'score': r.score
+                }, recs)
+                r.data['recommendations'] = recommendations
+            return r
+        else:
+            return R(Responses.NOT_OK).d({
+                'user_id': data['user_id']
+            }).em('Already have recommendations for this user')

@@ -67,24 +67,25 @@ class HomePageView(MyView):
         # res = tasks.fetch_music.delay(user_vk_id, access_token)
         # pprint(res.get())
 
-        api_resp = requests.post(settings.API_URL + 'recommend', json={
-            'user_id': user_id,
-            'count': 30
-        })
+        recs = Db.get_recommendations(user_id, 30)
 
-        api_resp_json = json.loads(api_resp.text, encoding='utf-8')
-        recs = api_resp_json['data']['recommendations']
-        for r in recs:
-            song = Song.objects.get(pk=r['item_id'])
-            r['artist'] = song.artist
-            r['title'] = song.title
-            r['id'] = song.id
+        # api_resp = tasks.api_request('recommend', {
+        #     'user_id': user_id,
+        #     'count': 30
+        # })
+
+        # # TODO: replace with join
+        # recs = api_resp['data']['recommendations']
+        # for r in recs:
+        #     song = Song.objects.get(pk=r['item_id'])
+        #     r['artist'] = song.artist
+        #     r['title'] = song.title
+        #     r['id'] = song.id
 
         params = {
             'username': "%s %s" % (request.user.first_name, request.user.last_name),
             'user_vk_url': 'https://vk.com/id' + user_vk_id,
-            'recs': recs,
-            'first_song': recs[0]
+            'recs': recs
         }
 
         if userpic:

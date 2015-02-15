@@ -78,9 +78,9 @@ class Rate(View):
             rating_obj = Db.rate(user_id, song_id, d['direction'])
             if rating_obj is None:
                 return JsonResponse({
-                    'status': 400,
+                    'status': 201,
                     'msg': 'You have already rated this song'
-                }, status=400)
+                }, status=200)
 
             return JsonResponse({
                 'status': 200

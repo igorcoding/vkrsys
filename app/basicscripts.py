@@ -1,12 +1,13 @@
 import json
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.db import IntegrityError
+from django.db import IntegrityError, connection
 from social_auth.db.django_models import UserSocialAuth
 from app import tasks
 from app.models import Rating, Song, UserAction
 from django.core.exceptions import ObjectDoesNotExist
 from recommender_api.rsys_actions import RsysActions
+
 
 
 class VkSocial:
@@ -93,4 +94,27 @@ class Db:
                             action_json=json.dumps(activity, ensure_ascii=False))
 
         action.save()
+
+    @staticmethod
+    def _custom_raw_sql(q, params=list()):
+        with connection.cursor() as c:
+            c.execute(q, list(params))
+            return c.fetchall()
+
+    @staticmethod
+    def get_recommendations(user_id, refresh=True, limit=30, offset=0):
+        api_resp = tasks.api_request('recommend', {
+            'user_id': user_id,
+            'refresh': refresh
+        })
+
+        if not api_resp or api_resp['code'] != 200 and api_resp['code'] != 201:
+            return None
+
+        q = """select app_song.song_id, app_song.artist, app_song.title, app_song.duration, app_song.genre  from recs join
+               app_song on app_song.id = recs.song_id where user_id = %s
+               ORDER BY score desc limit %s offset %s""" % (user_id, limit, offset)
+
+        recs = Db._custom_raw_sql(q)
+        return recs
 

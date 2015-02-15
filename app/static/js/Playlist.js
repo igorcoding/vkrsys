@@ -37,7 +37,7 @@ Playlist.prototype.exploreEntries = function() {
 Playlist.prototype.registerEvents = function() {
     window.registerOnResize(this.onWindowResize, this);
     this.onWindowResize(window);
-    this.registerEntryControlsClick();
+    this.registerThings();
 };
 
 Playlist.prototype.onWindowResize = function(w) {
@@ -46,12 +46,10 @@ Playlist.prototype.onWindowResize = function(w) {
     }
 };
 
-Playlist.prototype.registerEntryControlsClick = function() {
+Playlist.prototype.registerThings = function() {
     var self = this;
     var playPauseClickCb = function(entry, id) {
         var state = entry.getState();
-        console.log(state);
-
         var song_id = entry.getSongId();
         if (song_id) {
             switch (state) {
@@ -67,15 +65,16 @@ Playlist.prototype.registerEntryControlsClick = function() {
                     }
                     entry.visualPlay();
                     self.playingEntry = entry;
-                    this.playingEntryId = id;
+                    self.playingEntryId = id;
 
                     self.playerControl.play(entry);
                     break;
             }
         }
-        console.log(entry.getState());
+        console.log('[Playlist] song = ' + entry.getSongId() + '; new state = ' + entry.getState());
     };
 
+    //for (var id = 0; id < this.entries.length; ++id) {}
     _.forEach(this.entries, function(entry, id) {
         entry.DOM.EntryControlsPlayPause.click(function(event) {
             event.stopPropagation();
@@ -95,6 +94,9 @@ Playlist.prototype.registerEntryControlsClick = function() {
             event.stopPropagation();
             entry.dislike();
         });
+
+        entry.DOM.Entry.hover(entry.onHoverEnter.bind(entry),
+                              entry.onHoverLeave.bind(entry));
     });
 };
 

@@ -89,7 +89,7 @@ PlayerControl.prototype.onWindowResize = function(w) {
                                 - this.DOM.Art.totalWidth()
                                 - playerMainMargin.left
                                 - playerMainMargin.right
-                                - 4 - 10; // 4 is for 4 borders by 1px
+                                - 4 - 1; // 4 is for 4 borders by 1px
     this.DOM.Main.width(mainWidth);
 };
 
@@ -154,6 +154,9 @@ PlayerControl.prototype.registerAudioEvents = function() {
 PlayerControl.prototype.onAudioTimeUpdate = function(audio) {
     var normedTime = audio.currentTime / audio.duration * 10000;
     this.DOM.MainSongProgressBar.slider('value', normedTime);
+    if (normedTime === 10000) {
+        this.playlist.next();
+    }
 };
 
 PlayerControl.prototype.onProgressSlide = function() {
@@ -189,6 +192,19 @@ PlayerControl.prototype.visualPause = function($ppButton) {
     this.setStatePaused();
 };
 
+PlayerControl.prototype.actualPlay = function($audio) {
+    $audio[0].volume = 0;
+    $audio[0].play();
+    $audio.animate({volume: 1}, 500, function() {
+
+    });
+};
+
+PlayerControl.prototype.actualPause = function($audio) {
+    $audio.animate({volume: 0}, 500, function() {
+        $audio[0].pause();
+    });
+};
 
 PlayerControl.prototype.play = function(song_entry) {
     var self = this;
@@ -197,34 +213,30 @@ PlayerControl.prototype.play = function(song_entry) {
 
     var song_id = song_entry ? song_entry.getSongId() : undefined;
     if (!song_id && !this.playingSong) {
-        console.log(1);
         this.playlist.playFirst();
         return;
     } else if (!song_id) {
-        console.log(2);
         this.visualPlay();
         this.playlist.playingEntry.play();
     }
     if (!song_id || this.playingSong && song_id === this.playingSong.getSongId()) {  // continue playing
-        console.log(3);
-        console.log("CONTINUING");
+        console.log("[Player] continuing");
         this.visualPlay();
-        audio.play();
+        this.actualPlay($audio);
         //audio.onloadeddata = function() {
         //    audio.play();
         //};
         //audio.load();
 
     } else {  // new song
-        console.log(4);
-
+        console.log("[Player] new song");
         // fetch audio url
         this.fetchAudioUrl(song_id, function(url) {
             self.playingSong = song_entry;
             self.visualPlay();
             audio.src = url;
             audio.onloadeddata = function() {
-                audio.play();
+                self.actualPlay($audio);
             };
             audio.load();
         });
@@ -236,8 +248,10 @@ PlayerControl.prototype.pause = function(stopPlaylist) {
     if (stopPlaylist) {
         this.playlist.pauseCurrent();
     }
-    var audio = this.DOM.Audio[0];
-    audio.pause();
+
+    var $audio = this.DOM.Audio;
+    this.actualPause($audio);
+    console.log("[Player] pause");
 };
 
 PlayerControl.prototype.fetchAudioUrl = function(song_id, cb) {

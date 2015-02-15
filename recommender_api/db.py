@@ -16,7 +16,14 @@ def safe_db_call(f):
     return wrapper
 
 
+class TableNotCreated(Exception):
+    def __init__(self, *args, **kwargs):
+        super(TableNotCreated, self).__init__(*args, **kwargs)
+
+
 class Db:
+    RECS_TABLE_NAME = 'recs'
+
     def __init__(self, config_filename):
         config = ConfigParser.ConfigParser()
         config.read(config_filename)
@@ -190,5 +197,96 @@ class Db:
                 return c.fetchall()
             else:
                 return map(lambda entry: mapper(entry[0], entry[1], entry[2]), c.fetchall())
+
+    def check_table_exists(self, table_name):
+        db = self.connect()
+        q = """SELECT COUNT(*)
+               FROM information_schema.tables
+               WHERE table_schema = %s
+               AND table_name = %s"""
+
+        with closing(db.cursor()) as c:
+            c.execute(q, (self._conn_info['db'], table_name))
+            res = int(c.fetchone()[0])
+        return res > 0
+
+    def create_recommendations_table(self, table_name):
+        db = self.connect()
+        q = """CREATE TABLE %s (
+               id int(11) NOT NULL AUTO_INCREMENT,
+               user_id int(11) NOT NULL,
+               song_id int(11) NOT NULL,
+               score double NOT NULL,
+               PRIMARY KEY (id),
+               UNIQUE KEY user_id_song_id_unqiue (user_id, song_id),
+               KEY song_id_key (song_id),
+               KEY user_id_key (user_id),
+               KEY score_key (score),
+               CONSTRAINT song_id_fk FOREIGN KEY (song_id) REFERENCES app_song (id),
+               CONSTRAINT user_id_fk FOREIGN KEY (user_id) REFERENCES auth_user (id)
+               ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+            """ % (table_name,)
+        res = None
+        with closing(db.cursor()) as c:
+            try:
+                c.execute(q)
+                db.commit()
+                res = True
+            except Exception as e:
+                pprint(e)
+                db.rollback()
+                res = False
+
+        self.disconnect()
+        return res
+
+    def destroy_recommendations(self, user_id):
+        if not self.check_table_exists(self.RECS_TABLE_NAME):
+            return True
+
+        q = """DELETE FROM %s WHERE user_id = %%s""" % self.RECS_TABLE_NAME
+        db = self.connect()
+
+        with closing(db.cursor()) as c:
+            try:
+                c.execute(q, (user_id,))
+                db.commit()
+                res = True
+            except Exception as e:
+                pprint(e)
+                db.rollback()
+                res = False
+
+        self.disconnect()
+        return res
+
+    def save_recommendations(self, user_id, recs):
+        if not self.check_table_exists(self.RECS_TABLE_NAME):
+            res = self.create_recommendations_table(self.RECS_TABLE_NAME)
+            if not res:
+                raise TableNotCreated()
+
+        values = []
+        for r in recs:
+            value = '(%d, %d, %f)'
+            values.append(value % (user_id, r.item_id, r.score))
+
+        values_str = ','.join(values)
+        q = """INSERT INTO %s (user_id, song_id, score) VALUES %s""" % (self.RECS_TABLE_NAME, values_str)
+
+        db = self.connect()
+
+        with closing(db.cursor()) as c:
+            try:
+                c.execute(q)
+                db.commit()
+                res = c.rowcount
+            except Exception as e:
+                pprint(e)
+                db.rollback()
+                res = -1
+
+        self.disconnect()
+        return res
 
 

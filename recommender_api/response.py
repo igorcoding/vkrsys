@@ -26,9 +26,11 @@ class ResponseResult:
 
     def m(self, extra_msg):
         self.msg += extra_msg
+        return self
 
     def em(self, extra_msg):
         self.extra_msg = extra_msg
+        return self
 
 
 class Responses:
