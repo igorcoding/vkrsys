@@ -119,6 +119,7 @@ class Recommend(View):
 
         return JsonResponse({
             'status': 200,
+            'count': len(recs),
             'result': render_to_string(templ, dict(recs=recs))
         })
 

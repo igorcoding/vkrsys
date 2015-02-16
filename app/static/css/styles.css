@@ -16,3 +16,13 @@ html, body {
 .link:hover {
     cursor: pointer;
 }
+
+.loader {
+    display: inherit;
+    margin: 200px auto;
+}
+
+.loader_nomargin {
+    display: inherit;
+    margin: 20px auto;
+}

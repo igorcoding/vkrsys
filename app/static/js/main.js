@@ -26,20 +26,22 @@ jQuery(document).ready(function($) {
 
     window.contentLoader = new ContentLoader();
     contentLoader.fetchUserpic();
-    contentLoader.loadInitialRecommendations(function() {
+    contentLoader.loadInitialRecommendations(function(addedCount) {
         window.player = new Player("#main_player", "#main_playlist");
         console.log(player);
     });
 
-    //$window.scroll(function() {
-    //    var documentHeight = $(document).height();
-    //    var height = $(window).scrollTop();
-    //
-    //    if(height > documentHeight - 100) {
-    //        setTimeout(function() {
-    //            contentLoader.loadNextRecommendations();
-    //        }, 1000);
-    //    }
-    //});
+    $window.scroll(function() {
+        //var documentHeight = $(document).height();
+        //var height = $(window).scrollTop();
+        //
+        //console.log('documentHeight: ', documentHeight);
+        //console.log('height: ', height);
+        if($(window).scrollTop() == $(document).height() - $(window).height()) {
+            setTimeout(function() {
+                contentLoader.loadNextRecommendations();
+            }, 1000);
+        }
+    });
 
 });

@@ -2,14 +2,15 @@ function ContentLoader() {
     this.$obj = $(document);
     this.DOM = {};
     this.bindToDOM();
-    this.limit = 30;
+    this.limit = 500;
     this.offset = 0;
 }
 
 ContentLoader.prototype.C = {
     UserAvatar: '.main-header__toolbar__user__avatar',
     MainContentInner: '.main-content__inner',
-    PlaylistContents: '.playlist'
+    PlaylistContents: '.playlist',
+    Loader: '.loader'
 };
 
 ContentLoader.prototype.bindToDOM = function() {
@@ -28,8 +29,8 @@ ContentLoader.prototype.fetchUserpic = function() {
         method: 'GET'
     })
         .done(function(d) {
-            console.log(d);
             if (d.status === 200) {
+                console.log('[userpic] loaded');
                 self.DOM.UserAvatar.css('background-image', 'url(' + d.url + ')')
             } else if (d.status !== 501) {
                 setTimeout(function() {
@@ -49,9 +50,10 @@ ContentLoader.prototype.loadInitialRecommendations = function(cb) {
 
     this.offset = 0;
     this.loadRecommendations(this.limit, this.offset, true, function(d) {
-        self.DOM.MainContentInner.html(d.result);
+        self.DOM.Loader.addClass(rawC(self.C.Loader) + '_nomargin');
+        self.DOM.MainContentInner.prepend(d.result);
         self.bindToDOM();
-        cb();
+        cb(d.count);
     });
 };
 
@@ -60,11 +62,15 @@ ContentLoader.prototype.loadNextRecommendations = function(cb) {
     cb = cb || function() {};
 
     this.loadRecommendations(this.limit, this.offset, false, function(d) {
-        console.log(d);
-        console.log(self.DOM.PlaylistContents);
+        //console.log(d);
+        //console.log(self.DOM.PlaylistContents);
         self.DOM.PlaylistContents.append(d.result);
         window.player.playlist.exploreEntries();
-        cb();
+
+        if (d.count == 0) {
+            self.DOM.Loader.hide();
+        }
+        cb(d.count);
     });
 };
 

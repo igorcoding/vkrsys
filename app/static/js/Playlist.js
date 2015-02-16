@@ -33,12 +33,13 @@ Playlist.prototype.exploreEntries = function() {
     this.$entries.each(function() {
         self.entries.push(new PlaylistEntry($(this), self));
     });
+    this.registerThings();
 };
 
 Playlist.prototype.registerEvents = function() {
     window.registerOnResize(this.onWindowResize, this);
     this.onWindowResize(window);
-    this.registerThings();
+    //this.registerThings();
 };
 
 Playlist.prototype.onWindowResize = function(w) {

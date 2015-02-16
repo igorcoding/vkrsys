@@ -32,6 +32,7 @@
     float: right;
     height: 40px;
     line-height: 40px;
+    margin-right: 5px;
 }
 
 .main-header__toolbar__user {
@@ -97,6 +98,10 @@
 
     -webkit-filter: invert(100%);
     filter: invert(100%);
+}
+
+.main-content__inner_no-data {
+    text-align: center;
 }
 
 .main-content {
