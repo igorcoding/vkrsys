@@ -10,6 +10,8 @@ urlpatterns = patterns('',
     url(r'^logout/', views.LogoutView.as_view(), name='logout'),
     url(r'^social/', include('social_auth.urls')),
 
-    url(r'^api/rate', api.Rate.as_view(), name='api_rate'),
+    url(r'^api/userpic', api.GetUserpic.as_view(), name='api_userpic'),
     url(r'^api/song_url', api.GetSongUrl.as_view(), name='api_song_url'),
+    url(r'^api/rate', api.Rate.as_view(), name='api_rate'),
+    url(r'^api/recommend', api.Recommend.as_view(), name='api_recommend'),
 )

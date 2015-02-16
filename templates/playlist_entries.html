@@ -1,0 +1,17 @@
+{% for r in recs %}
+<div class="playlist__entry playlist__entry_paused link" data-song_id="{{ r.0 }}" >
+    <div class="playlist__entry__info">
+        <div class="playlist__entry__controls__playpause playlist__entry__controls__playpause_paused playlist__entry__controls__control link"></div>
+        <div class="playlist__entry__art"></div>
+        <div class="playlist__entry__header">
+            <div class="playlist__entry__title__artist">{{ r.1 }}</div>
+            <div class="playlist__entry__title__title">{{ r.2 }}</div>
+        </div>
+    </div>
+    <div class="playlist__entry__controls">
+        <div class="playlist__entry__controls__dislike playlist__entry__controls__control link"></div>
+        <div class="playlist__entry__controls__like playlist__entry__controls__control link"></div>
+    </div>
+
+</div>
+{% endfor %}

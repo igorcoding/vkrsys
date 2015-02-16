@@ -63,33 +63,18 @@ class HomePageView(MyView):
     def get(self, request):
         user_id = request.user.id
         access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
-        userpic = VkSocial.get_userpic(user_id, user_vk_id, access_token)
         # res = tasks.fetch_music.delay(user_vk_id, access_token)
         # pprint(res.get())
 
         recs = Db.get_recommendations(user_id, 30)
-
-        # api_resp = tasks.api_request('recommend', {
-        #     'user_id': user_id,
-        #     'count': 30
-        # })
-
-        # # TODO: replace with join
-        # recs = api_resp['data']['recommendations']
-        # for r in recs:
-        #     song = Song.objects.get(pk=r['item_id'])
-        #     r['artist'] = song.artist
-        #     r['title'] = song.title
-        #     r['id'] = song.id
-
         params = {
             'username': "%s %s" % (request.user.first_name, request.user.last_name),
             'user_vk_url': 'https://vk.com/id' + user_vk_id,
             'recs': recs
         }
 
-        if userpic:
-            params['userpic'] = userpic
+        # if userpic:
+        #     params['userpic'] = userpic
 
         return self._render(request, self.template, params)
 

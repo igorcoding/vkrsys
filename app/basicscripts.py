@@ -9,7 +9,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from recommender_api.rsys_actions import RsysActions
 
 
-
 class VkSocial:
     VK_PROVIDER = 'vk-oauth'
 
@@ -25,15 +24,7 @@ class VkSocial:
             return access_token, user_vk_id
         return None
 
-    @staticmethod
-    def get_userpic(user_id, user_vk_id, access_token):
-        cache_key = 'userpic_%s' % user_vk_id
-        userpic = cache.get(cache_key)
-        if userpic is None:
-            userpic_res = tasks.fetch_userpic.delay(user_id, user_vk_id, access_token)
-            userpic = userpic_res.get()
-            cache.set(cache_key, userpic, 60 * 30)
-        return userpic
+
 
 
 class Db:
@@ -111,8 +102,9 @@ class Db:
         if not api_resp or api_resp['code'] != 200 and api_resp['code'] != 201:
             return None
 
-        q = """select app_song.song_id, app_song.artist, app_song.title, app_song.duration, app_song.genre  from recs join
+        q = """select app_song.id, app_song.artist, app_song.title, app_song.duration, app_song.genre  from recs join
                app_song on app_song.id = recs.song_id where user_id = %s
+               and (user_id, app_song.id) not in (select user_id, song_id from app_rating)
                ORDER BY score desc limit %s offset %s""" % (user_id, limit, offset)
 
         recs = Db._custom_raw_sql(q)

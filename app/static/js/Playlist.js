@@ -29,6 +29,7 @@ Playlist.prototype.bindToDOM = function() {
 Playlist.prototype.exploreEntries = function() {
     var self = this;
     this.$entries = this.$obj.find(PlaylistEntry.prototype.C.Entry);
+    this.entries = [];
     this.$entries.each(function() {
         self.entries.push(new PlaylistEntry($(this), self));
     });

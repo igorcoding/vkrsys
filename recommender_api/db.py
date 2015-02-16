@@ -218,7 +218,7 @@ class Db:
                song_id int(11) NOT NULL,
                score double NOT NULL,
                PRIMARY KEY (id),
-               UNIQUE KEY user_id_song_id_unqiue (user_id, song_id),
+               UNIQUE KEY user_id_song_id_unique (user_id, song_id),
                KEY song_id_key (song_id),
                KEY user_id_key (user_id),
                KEY score_key (score),

@@ -17,14 +17,14 @@ from django.conf import settings
 
 from recommender_api.rsys_actions import RsysActions
 
-#
-# def catcher(f):
-#     def wrapper(*args, **kwargs):
-#         try:
-#             return f(*args, **kwargs)
-#         except Exception as e:
-#             return None
-#     return wrapper
+
+def catcher(f):
+    def wrapper(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except Exception as e:
+            return None
+    return wrapper
 
 
 db = settings.DATABASES['default']
@@ -60,9 +60,12 @@ def fetch_song_url(song_id, vk_uid, access_token):
 @shared_task
 # @catcher
 def fetch_userpic(user_id, vk_uid, access_token):
-    vkapi = vk.API(access_token=access_token)
-    user_info = vkapi.users.get(user_ids=vk_uid, fields=['photo_50'])[0]
-    return user_info['photo_50']
+    try:
+        vkapi = vk.API(access_token=access_token)
+        user_info = vkapi.users.get(user_ids=vk_uid, fields=['photo_50'])[0]
+        return user_info['photo_50']
+    except VkAPIMethodError:
+        return None
 
 
 @shared_task
@@ -105,7 +108,7 @@ def fetch_music(vk_uid, access_token):
 @shared_task
 def api_request(action, data):
     url = settings.API_URL + action
-    resp = requests.get(url, params=data)
+    resp = requests.post(url, json=data)
     jresp = json.loads(resp.text, encoding='utf-8')
     return jresp
 
