@@ -310,7 +310,7 @@
 
 }
 
-.playlist__entry__art {
+.playlist__entry__info__art {
     background-image: url("http://ecx.images-amazon.com/images/I/61gOquV24GL._SL500_AA280_.jpg");
     display: inline-block;
     float: left;
@@ -326,12 +326,12 @@
     background-position: center;
 }
 
-.playlist__entry__art_dimmed {
+.playlist__entry__info__art_dimmed {
     -webkit-filter: opacity(0.4) blur(2px);
     filter: opacity(0.4) blur(2px);
 }
 
-.playlist__entry__header {
+.playlist__entry__info__header {
     /*background-color: bisque;*/
     display: inline-block;
     float: left;

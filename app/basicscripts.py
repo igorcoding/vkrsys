@@ -93,14 +93,15 @@ class Db:
             return c.fetchall()
 
     @staticmethod
-    def get_recommendations(user_id, refresh=True, limit=30, offset=0):
-        api_resp = tasks.api_request('recommend', {
-            'user_id': user_id,
-            'refresh': refresh
-        })
+    def get_recommendations(user_id, limit=30, offset=0, refresh=True, initial=False):
+        if not initial:
+            api_resp = tasks.api_request('recommend', {
+                'user_id': user_id,
+                'refresh': refresh
+            })
 
-        if not api_resp or api_resp['code'] != 200 and api_resp['code'] != 201:
-            return None
+            if not api_resp or api_resp['code'] != 200 and api_resp['code'] != 201:
+                return None
 
         q = """select app_song.id, app_song.artist, app_song.title, app_song.duration, app_song.genre  from recs join
                app_song on app_song.id = recs.song_id where user_id = %s

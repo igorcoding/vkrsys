@@ -2,7 +2,7 @@ function ContentLoader() {
     this.$obj = $(document);
     this.DOM = {};
     this.bindToDOM();
-    this.limit = 500;
+    this.limit = 30;
     this.offset = 0;
 }
 

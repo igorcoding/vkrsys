@@ -255,6 +255,7 @@ PlayerControl.prototype.pause = function(stopPlaylist) {
 };
 
 PlayerControl.prototype.fetchAudioUrl = function(song_id, cb) {
+    console.log(song_id);
     $.ajax('/api/song_url', {
         method: 'GET',
         data: {

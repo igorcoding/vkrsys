@@ -30,25 +30,30 @@ Playlist.prototype.exploreEntries = function() {
     var self = this;
     this.$entries = this.$obj.find(PlaylistEntry.prototype.C.Entry);
     this.entries = [];
+    var id = -1;
     this.$entries.each(function() {
-        self.entries.push(new PlaylistEntry($(this), self));
+        var $this = $(this);
+        var entry = new PlaylistEntry($this, self);
+        ++id;
+        self.entries.push(entry);
+        self.registerThings($this, entry, id);
     });
-    this.registerThings();
 };
 
 Playlist.prototype.registerEvents = function() {
     window.registerOnResize(this.onWindowResize, this);
     this.onWindowResize(window);
-    //this.registerThings();
 };
 
 Playlist.prototype.onWindowResize = function(w) {
-    for (var i = 0; i < this.entries.length; ++i) {
-        this.entries[i].onWindowResize(w);
-    }
+    console.log('onResize');
+    PlaylistEntry.prototype.onWindowResize(w, this.$obj.find(PlaylistEntry.prototype.C.EntryInfo));
+    //for (var i = 0; i < this.entries.length; ++i) {
+    //    this.entries[i].onWindowResize(w);
+    //}
 };
 
-Playlist.prototype.registerThings = function() {
+Playlist.prototype.registerThings = function($entry, entry, id) {
     var self = this;
     var playPauseClickCb = function(entry, id) {
         var state = entry.getState();
@@ -77,29 +82,31 @@ Playlist.prototype.registerThings = function() {
     };
 
     //for (var id = 0; id < this.entries.length; ++id) {}
-    _.forEach(this.entries, function(entry, id) {
-        entry.DOM.EntryControlsPlayPause.click(function(event) {
-            event.stopPropagation();
-            playPauseClickCb(entry, id);
-        });
-
-        entry.DOM.Entry.click(function() {
-            playPauseClickCb(entry, id);
-        });
-
-        entry.DOM.EntryControlsLike.click(function(event) {
-            event.stopPropagation();
-            entry.like();
-        });
-
-        entry.DOM.EntryControlsDislike.click(function(event) {
-            event.stopPropagation();
-            entry.dislike();
-        });
-
-        entry.DOM.Entry.hover(entry.onHoverEnter.bind(entry),
-                              entry.onHoverLeave.bind(entry));
+    //_.forEach(this.entries, function(entry, id) {
+    entry.DOM.EntryControlsPlayPause.click(function(event) {
+        event.stopPropagation();
+        playPauseClickCb(entry, id);
     });
+
+    entry.DOM.Entry.click(function() {
+        playPauseClickCb(entry, id);
+    });
+
+    entry.DOM.EntryControlsLike.click(function(event) {
+        event.stopPropagation();
+        entry.like();
+    });
+
+    entry.DOM.EntryControlsDislike.click(function(event) {
+        event.stopPropagation();
+        entry.dislike();
+    });
+
+    entry.DOM.Entry.hover(entry.onHoverEnter.bind(entry),
+                          entry.onHoverLeave.bind(entry));
+    //});
+
+    //entry.onWindowResize(window);
 };
 
 Playlist.prototype.playById = function(id) {

@@ -40,8 +40,8 @@ PlaylistEntry.prototype.getSongId = function() {
 PlaylistEntry.prototype.C = {
     Entry: '.playlist__entry',
     EntryInfo: '.playlist__entry__info',
-    EntryArt: '.playlist__entry__art',
-    EntryHeader: '.playlist__entry__header',
+    EntryArt: '.playlist__entry__info__art',
+    EntryHeader: '.playlist__entry__info__header',
     EntryHeaderArtist: '.playlist__entry__title__artist',
     EntryHeaderTitle: '.playlist__entry__title__title',
     EntryControlsPlayPause: '.playlist__entry__controls__playpause',
@@ -60,10 +60,10 @@ PlaylistEntry.prototype.bindToDOM = function() {
     }
 };
 
-PlaylistEntry.prototype.onWindowResize = function(w) {
-    var entryInfo = this.DOM.EntryInfo;
-    var entryArt = this.DOM.EntryArt;
-    var entryHeader = this.DOM.EntryHeader;
+PlaylistEntry.prototype.onWindowResize = function(w, entryInfo) {
+    entryInfo = entryInfo || this.DOM.EntryInfo;
+    var entryArt = entryInfo ? entryInfo.find(this.C.EntryArt) : this.DOM.EntryArt;
+    var entryHeader = entryInfo ? entryInfo.find(this.C.EntryHeader) : this.DOM.EntryHeader;
     var entryHeaderMargin = entryHeader.margin();
     var playPause = entryInfo.find(this.C.EntryControlsPlayPause);
 

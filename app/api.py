@@ -17,10 +17,10 @@ def ensure_present(d, args):
 
     if len(absent) > 0:
         return JsonResponse({
-                                'status': 400,
-                                'reason': 'required params are not present',
-                                'absent': absent
-                            }, status=400)
+            'status': 400,
+            'reason': 'required params are not present',
+            'absent': absent
+        }, status=400)
     return None
 
 
@@ -80,14 +80,14 @@ class GetSongUrl(View):
         try:
             url = tasks.fetch_song_url(d['song_id'], user_vk_id, access_token)
             return JsonResponse({
-                                    'status': 200,
-                                    'url': url
-                                }, status=200)
+                'status': 200,
+                'url': url
+            }, status=200)
         except ObjectDoesNotExist:
             return JsonResponse({
-                                    'status': 404,
-                                    'reason': 'song not found'
-                                }, status=404)
+                'status': 404,
+                'reason': 'song not found'
+            }, status=404)
 
 
 class Recommend(View):
@@ -113,7 +113,7 @@ class Recommend(View):
                 'reason': 'Malformed request'
             }, status=400)
 
-        recs = Db.get_recommendations(user_id, limit=limit, offset=offset)
+        recs = Db.get_recommendations(user_id, limit=limit, offset=offset, initial=initial)
 
         templ = self.INITIAL_TEMPLATE_NAME if initial else self.PLAYLIST_ENTRIES_TEMPLATE_NAME
 
@@ -143,39 +143,39 @@ class Rate(View):
             song_id = int(d['song_id'])
         except ValueError:
             return JsonResponse({
-                                    'status': 400,
-                                    'reason': 'song_id is not numeric'
-                                }, status=400)
+                'status': 400,
+                'reason': 'song_id is not numeric'
+            }, status=400)
 
         try:
             rating_obj = Db.rate(user_id, song_id, d['direction'])
             if rating_obj is None:
                 return JsonResponse({
-                                        'status': 201,
-                                        'msg': 'You have already rated this song'
-                                    }, status=200)
+                    'status': 201,
+                    'msg': 'You have already rated this song'
+                }, status=200)
 
             return JsonResponse({
-                                    'status': 200
-                                }, status=200)
+                'status': 200
+            }, status=200)
 
         except ObjectDoesNotExist as e:
             return JsonResponse({
-                                    'status': 404,
-                                    'reason': 'unknown entry',
-                                    'msg': e.message
-                                }, status=404)
+                'status': 404,
+                'reason': 'unknown entry',
+                'msg': e.message
+            }, status=404)
         except Exception as e:
             return JsonResponse({
-                                    'status': 500,
-                                    'reason': 'unknown error. ' + str(e.__class__),
-                                    'msg': e.message
-                                }, status=500)
+                'status': 500,
+                'reason': 'unknown error. ' + str(e.__class__),
+                'msg': e.message
+            }, status=500)
 
     @method_decorator(login_required)
     def post(self, request):
         return JsonResponse({
-                                'status': 405
-                            }, status=405)
+            'status': 405
+        }, status=405)
 
 
