@@ -46,11 +46,7 @@ Playlist.prototype.registerEvents = function() {
 };
 
 Playlist.prototype.onWindowResize = function(w) {
-    console.log('onResize');
     PlaylistEntry.prototype.onWindowResize(w, this.$obj.find(PlaylistEntry.prototype.C.EntryInfo));
-    //for (var i = 0; i < this.entries.length; ++i) {
-    //    this.entries[i].onWindowResize(w);
-    //}
 };
 
 Playlist.prototype.registerThings = function($entry, entry, id) {

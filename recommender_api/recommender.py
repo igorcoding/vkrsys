@@ -10,10 +10,7 @@ from rsys_actions import RsysActions
 
 
 class Recommender:
-    # BROKER_URL = 'amqp://vkmruser:vkmruserpass@localhost/vkmrvhost'
-
     def __init__(self):
-        # self.listener = Listener(self.BROKER_URL, self.on_message)
         self.users = None
         self.items = None
         self.initialized = False

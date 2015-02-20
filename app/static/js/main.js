@@ -32,7 +32,6 @@ jQuery(document).ready(function($) {
 
         $window.scroll(function() {
             if($(window).scrollTop() == $(document).height() - $(window).height()) {
-                console.log('onScroll');
                 setTimeout(function() {
                     contentLoader.loadNextRecommendations();
                 }, 1000);
