@@ -9,13 +9,14 @@
 
 {% block extra_scripts %}
     {% load staticfiles %}
-    <script type="application/javascript" src="{% static "js/lib/jquery-ui.min.js" %}"></script>
-    <script type="application/javascript" src="{% static "js/ContentLoader.js" %}"></script>
-    <script type="application/javascript" src="{% static "js/PlayerControl.js" %}"></script>
-    <script type="application/javascript" src="{% static "js/PlaylistEntry.js" %}"></script>
-    <script type="application/javascript" src="{% static "js/Playlist.js" %}"></script>
-    <script type="application/javascript" src="{% static "js/Player.js" %}"></script>
-    <script type="application/javascript" src="{% static "js/main.js" %}"></script>
+{#    <script type="application/javascript" src="{% static "js/lib/jquery-ui.min.js" %}"></script>#}
+{#    <script type="application/javascript" src="{% static "js/ContentLoader.js" %}"></script>#}
+{#    <script type="application/javascript" src="{% static "js/PlayerControl.js" %}"></script>#}
+{#    <script type="application/javascript" src="{% static "js/PlaylistEntry.js" %}"></script>#}
+{#    <script type="application/javascript" src="{% static "js/Playlist.js" %}"></script>#}
+{#    <script type="application/javascript" src="{% static "js/Player.js" %}"></script>#}
+{#    <script type="application/javascript" src="{% static "js/index.js" %}"></script>#}
+    <script type="application/javascript" data-main="/static/js/index.js" src="{% static "js/lib/require.js" %}"></script>
 
 {% endblock %}
 
