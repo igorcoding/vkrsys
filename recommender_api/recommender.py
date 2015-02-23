@@ -113,9 +113,9 @@ class Recommender:
         self.config.set_items_ids(items)
 
         mysql_conf = rsys.exporters.SVDMySQLConfig()
-        mysql_conf.user = "vkrsys_user"
-        mysql_conf.password = "vkrsys_password"
-        mysql_conf.db_name = "vkrsys"
+        mysql_conf.user = self.db.conn_info['user']
+        mysql_conf.password = self.db.conn_info['passwd']
+        mysql_conf.db_name = self.db.conn_info['db']
         mysql_conf.users_table = "auth_user"
         mysql_conf.items_table = "app_song"
 

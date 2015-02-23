@@ -27,7 +27,7 @@ class Db:
     def __init__(self, config_filename):
         config = ConfigParser.ConfigParser()
         config.read(config_filename)
-        self._conn_info = {
+        self.conn_info = {
             'host': config.get('db', 'HOST'),
             'port': int(config.get('db', 'PORT')),
             'user': config.get('db', 'USER'),
@@ -39,7 +39,7 @@ class Db:
 
     def connect(self):
         if self.db is None:
-            self.db = MySQLdb.connect(**self._conn_info)
+            self.db = MySQLdb.connect(**self.conn_info)
         return self.db
 
     def disconnect(self, db=None):
@@ -206,7 +206,7 @@ class Db:
                AND table_name = %s"""
 
         with closing(db.cursor()) as c:
-            c.execute(q, (self._conn_info['db'], table_name))
+            c.execute(q, (self.conn_info['db'], table_name))
             res = int(c.fetchone()[0])
         return res > 0
 
