@@ -13,7 +13,7 @@ import tornado.gen
 import tornado.ioloop
 from tornado.options import define, options
 from recommender import Recommender, RespError
-from recommender_api.response import Responses, RespError, R
+from response import Responses, RespError, R
 
 logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
 

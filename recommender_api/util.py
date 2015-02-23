@@ -1,4 +1,4 @@
-from recommender_api.response import Responses, RespError, R
+from response import Responses, RespError, R
 
 
 def ok_on_success(f):

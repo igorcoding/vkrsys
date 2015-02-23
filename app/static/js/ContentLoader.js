@@ -54,7 +54,7 @@ ContentLoader.prototype.loadInitialRecommendations = function(cb) {
         self.DOM.MainContentInner.prepend(d.result);
         self.bindToDOM();
         cb(d.count);
-    });
+    }, self.loadInitialRecommendations.bind(self));
 };
 
 ContentLoader.prototype.loadNextRecommendations = function(cb) {
@@ -71,17 +71,17 @@ ContentLoader.prototype.loadNextRecommendations = function(cb) {
             self.DOM.Loader.hide();
         }
         cb(d.count);
-    });
+    }, self.loadNextRecommendations.bind(self));
 };
 
-ContentLoader.prototype.loadRecommendations = function(limit, offset, initial, cb) {
+ContentLoader.prototype.loadRecommendations = function(limit, offset, initial, cb, funcToRetry) {
     var self = this;
     cb = cb || function() {};
 
     var retrial = function(timeout) {
         setTimeout(function() {
             console.log('[recommend] Retrying to fetch recommendations');
-            self.loadInitialRecommendations();
+            funcToRetry();
         }, timeout);
     };
 

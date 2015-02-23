@@ -1,10 +1,11 @@
 from pprint import pprint
 import rsys
+import rsys.exporters
 import logging
-from recommender_api.db import Db, TableNotCreated
+from db import Db, TableNotCreated
 
-from recommender_api.response import Responses, RespError, R
-from recommender_api.util import ok_on_success, model_initialized_required, generate
+from response import Responses, RespError, R
+from util import ok_on_success, model_initialized_required, generate
 
 from rsys_actions import RsysActions
 
@@ -105,12 +106,21 @@ class Recommender:
         last_action = self.db.get_last_action()
 
         self.db.save_lasts(users[-1], items[-1], last_action)
-        # TODO: go to db and fetch all factors and load them into self.svd
         self.config = rsys.SVDConfig(len(users), len(items), 0, 4, 0.005)
         self.config.set_print_result(False)
 
         self.config.set_users_ids(users)
         self.config.set_items_ids(items)
+
+        mysql_conf = rsys.exporters.SVDMySQLConfig()
+        mysql_conf.user = "vkrsys_user"
+        mysql_conf.password = "vkrsys_password"
+        mysql_conf.db_name = "vkrsys"
+        mysql_conf.users_table = "auth_user"
+        mysql_conf.items_table = "app_song"
+
+        self.config.set_mysql_exporter(mysql_conf)
+
         self.svd = rsys.SVD(self.config)
 
         self.users = dict(zip(users, generate(1, len(users))))
