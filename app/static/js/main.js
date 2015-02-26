@@ -1,5 +1,5 @@
-define(['jquery', 'jquery_ui', 'jquery_sizes', 'jquery_totalWidth', 'ContentLoader', 'Player'],
-    function($, jquery_ui, jquery_sizes, jquery_totalWidth, ContentLoader, Player) {
+define(['jquery', 'jquery_ui', 'jquery_sizes', 'jquery_plugins', 'ContentLoader', 'Player'],
+    function($, jquery_ui, jquery_sizes, jquery_plugins, ContentLoader, Player) {
         $(document).ready(function($) {
             var $window = $(window);
             window.onResizeFunctions = [];

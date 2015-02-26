@@ -5,7 +5,7 @@ require.config({
         jquery: "lib/jquery.min",
         jquery_ui: "lib/jquery-ui.min",
         jquery_sizes: "lib/jquery.sizes.min",
-        jquery_totalWidth: "lib/jquery.totalWidth",
+        jquery_plugins: "lib/jquery.plugins",
         lodash: "lib/lodash.min"
     },
     shim: {
@@ -24,7 +24,7 @@ require.config({
             exports: '$'
         },
 
-        'jquery_totalWidth': {
+        "jquery_plugins": {
             deps: ['jquery'],
             exports: '$'
         }
