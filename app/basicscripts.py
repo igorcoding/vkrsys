@@ -105,7 +105,6 @@ class Db:
 
         q = """select app_song.id, app_song.artist, app_song.title, app_song.duration, app_song.genre  from recs join
                app_song on app_song.id = recs.song_id where user_id = %s
-               and (user_id, app_song.id) not in (select user_id, song_id from app_rating)
                ORDER BY score desc limit %s offset %s""" % (user_id, limit, offset)
 
         recs = Db._custom_raw_sql(q)

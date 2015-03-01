@@ -63,9 +63,9 @@ class Recommender:
         except ValueError:
             raise RespError(Responses.PARAMS_NOT_NUMERIC)
 
-        try:
-            return self.users[data_user_id]
-        except KeyError:
+        if data_user_id in self.users:
+            return data_user_id
+        else:
             raise RespError(Responses.USER_ITEM_NOT_FOUND)
 
     def _check_item_id(self, data_item_id):
@@ -74,9 +74,9 @@ class Recommender:
         except ValueError:
             raise RespError(Responses.PARAMS_NOT_NUMERIC)
 
-        try:
-            return self.items[data_item_id]
-        except KeyError:
+        if data_item_id in self.items:
+            return data_item_id
+        else:
             raise RespError(Responses.USER_ITEM_NOT_FOUND)
 
     @staticmethod
@@ -106,7 +106,7 @@ class Recommender:
         last_action = self.db.get_last_action()
 
         self.db.save_lasts(users[-1], items[-1], last_action)
-        self.config = rsys.SVDConfig(len(users), len(items), 0, 4, 0.005)
+        self.config = rsys.SVDConfig(len(users), len(items), -1, 4, 0.005)
         self.config.set_print_result(False)
 
         self.config.set_users_ids(users)
@@ -162,6 +162,12 @@ class Recommender:
         self.svd.add_items(new_items)
         self.db.disconnect()
 
+        for u in new_users:
+            self.users[u] = 1
+
+        for i in new_items:
+            self.items[i] = 1
+
     @model_initialized_required
     def on_rate(self, data):
         self._prepare()
@@ -201,6 +207,19 @@ class Recommender:
             return rsys.ItemScore(user_id, item_id, rating)
 
         scores = self.db.get_all_ratings(mapper)
+
+        # with open('my_data.dat', mode='w') as f:
+        #     for s in scores:
+        #         f.write("%d::%d::%d::0\n" % (s.user_id, s.item_id, s.score))
+        #
+        # with open('my_data_users.dat', mode='w') as f:
+        #     for u in self.users.keys():
+        #         f.write("%d\n" % (u,))
+        #
+        # with open('my_data_items.dat', mode='w') as f:
+        #     for i in self.items.keys():
+        #         f.write("%d\n" % (i,))
+
         self.svd.learn_offline(scores)
 
     @model_initialized_required
