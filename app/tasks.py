@@ -15,8 +15,6 @@ import requests
 
 from django.conf import settings
 
-from recommender_api.rsys_actions import RsysActions
-
 
 def catcher(f):
     def wrapper(*args, **kwargs):
