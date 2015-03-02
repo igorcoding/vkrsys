@@ -17,6 +17,7 @@ class Recommender:
         self.initialized = False
 
         self.config = None
+        self.mysql_conf = None
         self.svd = None
         self.db = Db('../config.conf')
 
@@ -112,14 +113,14 @@ class Recommender:
         self.config.set_users_ids(users)
         self.config.set_items_ids(items)
 
-        mysql_conf = rsys.exporters.SVDMySQLConfig()
-        mysql_conf.user = self.db.conn_info['user']
-        mysql_conf.password = self.db.conn_info['passwd']
-        mysql_conf.db_name = self.db.conn_info['db']
-        mysql_conf.users_table = "auth_user"
-        mysql_conf.items_table = "app_song"
+        self.mysql_conf = rsys.exporters.SVDMySQLConfig()
+        self.mysql_conf.user = self.db.conn_info['user']
+        self.mysql_conf.password = self.db.conn_info['passwd']
+        self.mysql_conf.db_name = self.db.conn_info['db']
+        self.mysql_conf.users_table = "auth_user"
+        self.mysql_conf.items_table = "app_song"
 
-        self.config.set_mysql_exporter(mysql_conf)
+        self.config.set_mysql_exporter(self.mysql_conf)
 
         self.svd = rsys.SVD(self.config)
 
@@ -181,6 +182,8 @@ class Recommender:
     def on_learn_online(self, data):
         self._prepare()
 
+        # TODO: replace with single learn call
+
         def mapper(obj):
             return rsys.ItemScore(obj['user_id'],
                                   obj['item_id'],
@@ -203,11 +206,6 @@ class Recommender:
     def on_learn_offline(self, data):
         self._prepare()
 
-        def mapper(user_id, item_id, rating):
-            return rsys.ItemScore(user_id, item_id, rating)
-
-        scores = self.db.get_all_ratings(mapper)
-
         # with open('my_data.dat', mode='w') as f:
         #     for s in scores:
         #         f.write("%d::%d::%d::0\n" % (s.user_id, s.item_id, s.score))
@@ -220,7 +218,10 @@ class Recommender:
         #     for i in self.items.keys():
         #         f.write("%d\n" % (i,))
 
-        self.svd.learn_offline(scores)
+        mysql_source = \
+            rsys.ds.MySQLSource(self.mysql_conf,
+                                "SELECT user_id, song_id, rating FROM app_rating ORDER BY user_id, song_id")
+        self.svd.learn_offline(mysql_source)
 
     @model_initialized_required
     def on_recommend(self, data):
