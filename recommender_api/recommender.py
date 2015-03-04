@@ -182,8 +182,6 @@ class Recommender:
     def on_learn_online(self, data):
         self._prepare()
 
-        # TODO: replace with single learn call
-
         def mapper(obj):
             return rsys.ItemScore(obj['user_id'],
                                   obj['item_id'],

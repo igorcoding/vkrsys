@@ -63,7 +63,7 @@ class HomePageView(MyView):
     def get(self, request):
         user_id = request.user.id
         access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
-        # res = tasks.fetch_music.delay(user_vk_id, access_token)
+        res = tasks.fetch_music.delay(user_vk_id, access_token)
         # pprint(res.get())
 
         recs = Db.get_recommendations(user_id, 30)

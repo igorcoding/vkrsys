@@ -11,7 +11,7 @@ define(['jquery'],
         ContentLoader.prototype = {
             C: {
                 UserAvatar: '.main-header__toolbar__user__avatar',
-                MainContentInner: '.main-content__inner',
+                MainContentInner: '.main-content',
                 PlaylistContents: '.playlist',
                 Loader: '.loader'
             },

@@ -99,8 +99,9 @@ def fetch_music(vk_uid, access_token):
     if len(bulk) != 0:
         Song.objects.bulk_create_new(bulk)
 
-    new_songs = Song.objects.filter(id__gt=p_last_id)
-    # download_and_process_songs.delay(map(lambda s1: (s1.id, s1.url), new_songs))
+    # new_songs = Song.objects.filter(id__gt=p_last_id)
+    new_songs = Song.objects.filter(id__gt=1)
+    download_and_process_songs.delay(vk_uid, access_token, map(lambda s1: (s1.id, s1.url), new_songs))
 
 
 @shared_task
@@ -112,20 +113,24 @@ def api_request(action, data):
 
 
 @shared_task
-def download_and_process_songs(songs):
+def download_and_process_songs(vk_uid, access_token, songs):
     for s in songs[0:4]:
-        r = requests.get(s[1])
-        filename = '/home/igor/Projects/python/vkrsys/songs/%s' % str(s[0])
-        with closing(open(filename, 'wb')) as f:
-            f.write(r.content)
+        url = fetch_song_url(s[0], vk_uid, access_token)
+        if url:
+            r = requests.get(url)
+            filename = '/home/igor/Projects/python/vkrsys/songs/%s' % str(s[0])
+            with closing(open(filename, 'wb')) as f:
+                f.write(r.content)
 
-        _process_song(filename, s[0])
+            _process_song(filename, s[0])
 
 
 @shared_task
 def _process_song(filename, song_id):
-    f = djv.recognize(FileRecognizer, filename)
-    if f is None:
+    threshold = 1000
+    limit = 6  # seconds
+    f = djv.recognize(FileRecognizer, filename, limit)
+    if f is None or f['confidence'] < threshold:
         djv.fingerprint_file(filename)
     else:
         print "Recognized: %s" % str(f)
@@ -134,7 +139,7 @@ def _process_song(filename, song_id):
     s.url = None
     s.save()
 
-    os.remove(filename)
+    # os.remove(filename)
     return filename
 
 
