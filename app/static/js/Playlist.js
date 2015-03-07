@@ -27,10 +27,13 @@ define(['jquery', 'PlaylistEntry'],
                 }
             },
 
-            exploreEntries: function () {
+            exploreEntries: function (count) {
                 var self = this;
                 this.$entries = this.$obj.find(PlaylistEntry.prototype.C.Entry);
-                this.entries = [];
+                if (count && this.entries.length > 0) {
+                    this.$entries = this.$entries.slice(this.entries.length, this.entries.length + count);
+                }
+                //this.entries = [];
                 var id = -1;
                 this.$entries.each(function () {
                     var $this = $(this);

@@ -69,7 +69,7 @@ define(['jquery'],
                     //console.log(d);
                     //console.log(self.DOM.PlaylistContents);
                     self.DOM.PlaylistContents.append(d.result);
-                    window.player.playlist.exploreEntries();
+                    window.player.playlist.exploreEntries(d.count);
 
                     if (d.count == 0) {
                         self.DOM.Loader.hide();

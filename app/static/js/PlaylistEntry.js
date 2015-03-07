@@ -17,6 +17,7 @@ define(['jquery'],
 
             this.playPauseVisible = this.DOM.EntryControlsPlayPause.css('display') != 'none';
             this.forceShowPlayPause = false;
+            this.hovering = false;
         }
 
         PlaylistEntry.prototype = {
@@ -100,11 +101,13 @@ define(['jquery'],
             },
 
             onHoverEnter: function () {
+                this.hovering = true;
                 this.DOM.EntryControls.show();
                 this.displayPlayPause();
             },
 
             onHoverLeave: function () {
+                this.hovering = false;
                 this.DOM.EntryControls.hide();
                 this.hidePlayPause();
             },
@@ -137,6 +140,9 @@ define(['jquery'],
 
                 this.setStatePaused();
                 this.forceShowPlayPause = false;
+                if (!this.hovering) {
+                    this.hidePlayPause();
+                }
             },
 
             visualPlay: function () {
@@ -150,6 +156,7 @@ define(['jquery'],
 
                 this.setStatePlaying();
                 this.forceShowPlayPause = true;
+                this.displayPlayPause();
             },
 
             play: function () {

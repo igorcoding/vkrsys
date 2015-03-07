@@ -176,6 +176,7 @@
     font-size: 12px;
     width: 75%;
     margin: 0 auto;
+    cursor: pointer;
     /*height: 40px;*/
     /*line-height: 40px;*/
 }
