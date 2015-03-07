@@ -12,10 +12,12 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 import os
 import ConfigParser
 from datetime import timedelta
+import urlparse
 from celery.schedules import crontab
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 CONFIG_PATH = os.path.join(BASE_DIR, 'config.conf')
+SONGS_PATH = os.path.join(BASE_DIR, 'songs')
 
 config = ConfigParser.ConfigParser()
 config.read(CONFIG_PATH)
@@ -161,6 +163,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'app/static')
+SONGS_ARTS_PATH = os.path.join(STATIC_ROOT, 'arts')
+SONGS_ARTS_URL = urlparse.urljoin(STATIC_URL, 'arts/')
+SONGS_DEFAULT_ART_URL = urlparse.urljoin(STATIC_URL, 'default.png')
+
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static"),
 )

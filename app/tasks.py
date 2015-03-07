@@ -2,19 +2,22 @@ from __future__ import absolute_import
 from contextlib import closing
 import json
 import os
-from dejavu import Dejavu
-from dejavu.recognize import FileRecognizer
 from pprint import pprint
+from urllib3.exceptions import TimeoutError
+import urlparse
 
+from dejavu import Dejavu
+
+from dejavu.recognize import FileRecognizer
 from celery import shared_task
-from django.contrib.auth.models import User
+from requests.exceptions import ReadTimeout
 import vk
 from vk.api import VkAPIMethodError
-from app.models import Song
 import requests
-
 from django.conf import settings
 
+from app.models import Song
+from mutagen import File
 
 def catcher(f):
     def wrapper(*args, **kwargs):
@@ -70,11 +73,16 @@ def fetch_userpic(user_id, vk_uid, access_token):
 # @catcher
 def fetch_music(vk_uid, access_token):
     vkapi = vk.API(access_token=access_token)
-    songs = vkapi.audio.get(owner_id=vk_uid, need_user=0)
+    try:
+        songs = vkapi.audio.get(owner_id=vk_uid, need_user=0)
+    except ReadTimeout:
+        songs = {
+            'items': []
+        }
 
     last_song = Song.objects.order_by('id').last()
     if last_song is None:
-        p_last_id = -1
+        p_last_id = 1
     else:
         p_last_id = last_song.id
 
@@ -82,6 +90,7 @@ def fetch_music(vk_uid, access_token):
     bulk = []
     for s in songs['items']:
         song = Song(
+            id=p_last_id,
             owner_id=s['owner_id'],
             song_id=s['id'],
             artist=s['artist'],
@@ -91,7 +100,9 @@ def fetch_music(vk_uid, access_token):
         if 'genre_id' in s:
             song.genre = s['genre_id']
 
-        bulk.append(song)
+        if download_and_process_song(s):
+            bulk.append(song)
+            p_last_id += 1
         if len(bulk) >= batch_limit:
             Song.objects.bulk_create_new(bulk)
             bulk = []
@@ -101,7 +112,7 @@ def fetch_music(vk_uid, access_token):
 
     # new_songs = Song.objects.filter(id__gt=p_last_id)
     new_songs = Song.objects.filter(id__gt=1)
-    download_and_process_songs.delay(vk_uid, access_token, map(lambda s1: (s1.id, s1.url), new_songs))
+    download_and_process_songs(vk_uid, access_token, map(lambda s1: (s1.id, s1.url), new_songs))
 
 
 @shared_task
@@ -112,34 +123,51 @@ def api_request(action, data):
     return jresp
 
 
-@shared_task
-def download_and_process_songs(vk_uid, access_token, songs):
-    for s in songs[0:4]:
-        url = fetch_song_url(s[0], vk_uid, access_token)
-        if url:
-            r = requests.get(url)
-            filename = '/home/igor/Projects/python/vkrsys/songs/%s' % str(s[0])
-            with closing(open(filename, 'wb')) as f:
+def download_and_process_song(s):
+    song_path = os.path.join(settings.SONGS_PATH, '%d.mp3' % s.id)
+    if type(s.url) == unicode and not os.path.exists(song_path):
+        try:
+            r = requests.get(s.url)
+            with closing(open(song_path, 'wb')) as f:
                 f.write(r.content)
+        except ReadTimeout:
+            print 'No Connection'
 
-            _process_song(filename, s[0])
+    if _process_song(song_path) is None:
+        art_path = os.path.join(settings.SONGS_ARTS_PATH, '%d.png' % s.id)
+        if os.path.exists(song_path):
+            if not os.path.exists(art_path):
+                f = File(song_path)
+                if f and 'APIC:' in f.tags:
+                    artwork = f.tags['APIC:'].data
+                    with closing(open(art_path, 'wb')) as img:
+                        img.write(artwork)
+                    s.art_url = urlparse.urljoin(settings.SONGS_ARTS_URL, '%d.png' % s.id)
+            fingerprint_song.delay(song_path)
+            return True
+    return False
+
+
+def download_and_process_songs(vk_uid, access_token, songs):
+    print 'Started download_and_process_songs'
+    for s in songs[:200]:
+        download_and_process_song.delay(vk_uid, access_token, s)
 
 
 @shared_task
-def _process_song(filename, song_id):
+def fingerprint_song(filename):
+    djv.fingerprint_file(filename)
+
+
+def _process_song(filename):
     threshold = 1000
     limit = 6  # seconds
     f = djv.recognize(FileRecognizer, filename, limit)
     if f is None or f['confidence'] < threshold:
-        djv.fingerprint_file(filename)
+        return None
     else:
         print "Recognized: %s" % str(f)
 
-    s = Song.objects.get(id=song_id)
-    s.url = None
-    s.save()
-
-    # os.remove(filename)
     return filename
 
 

@@ -8,5 +8,5 @@ python-memcached==1.53
 tornado==4.0.2
 requests==2.5.3
 RandomWords
-
+mutagen
 

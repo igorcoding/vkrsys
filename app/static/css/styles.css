@@ -26,3 +26,8 @@ html, body {
     display: inherit;
     margin: 20px auto;
 }
+
+.ellipsis {
+    color: #5d5d5d;
+    font-size: 18px;
+}

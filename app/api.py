@@ -70,7 +70,6 @@ class GetSongUrl(View):
 
     @method_decorator(login_required)
     def get(self, request):
-        user_id = request.user.id
         d = request.GET
         absent = ensure_present(d, self.PARAMS)
         if absent:
@@ -78,7 +77,8 @@ class GetSongUrl(View):
 
         access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
         try:
-            url = tasks.fetch_song_url(d['song_id'], user_vk_id, access_token)
+            song_id = d['song_id']
+            url = tasks.fetch_song_url(song_id, user_vk_id, access_token)
             return JsonResponse({
                 'status': 200,
                 'url': url

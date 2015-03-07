@@ -103,8 +103,8 @@ class Db:
             if not api_resp or api_resp['code'] != 200 and api_resp['code'] != 201:
                 return None
 
-        q = """select app_song.id, app_song.artist, app_song.title, app_song.duration, app_song.genre  from recs join
-               app_song on app_song.id = recs.song_id where user_id = %s
+        q = """select app_song.id, app_song.artist, app_song.title, app_song.duration, app_song.genre, app_song.art_url
+               from recs join app_song on app_song.id = recs.song_id where user_id = %s
                ORDER BY score desc limit %s offset %s""" % (user_id, limit, offset)
 
         recs = Db._custom_raw_sql(q)

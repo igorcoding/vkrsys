@@ -129,7 +129,7 @@
 .player__art {
     display: inline-block;
     float: left;
-    background-color: gold;
+    /*background-color: gold;*/
 
     background-image: url("http://ecx.images-amazon.com/images/I/61gOquV24GL._SL500_AA280_.jpg");
     background-repeat: no-repeat;
@@ -289,7 +289,7 @@
 }
 
 .playlist__entry_playing {
-    background-color: #a9abd5;
+    background-color: rgba(99, 106, 218, 0.55);
 }
 
 .playlist__entry_paused:hover {
@@ -297,7 +297,7 @@
 }
 
 .playlist__entry_playing:hover {
-    background-color: #a9abd5;
+    background-color: rgba(99, 106, 218, 0.55);
 }
 
 .playlist__entry__info {
@@ -311,7 +311,7 @@
 }
 
 .playlist__entry__info__art {
-    background-image: url("http://ecx.images-amazon.com/images/I/61gOquV24GL._SL500_AA280_.jpg");
+    /*background-image: url("http://ecx.images-amazon.com/images/I/61gOquV24GL._SL500_AA280_.jpg");*/
     display: inline-block;
     float: left;
     width: 60px;
@@ -324,11 +324,13 @@
     -webkit-background-size: 100%;
     background-size: 100%;
     background-position: center;
+    border-radius: 100%;
+    z-index: 20;
 }
 
 .playlist__entry__info__art_dimmed {
-    -webkit-filter: opacity(0.4) blur(2px);
-    filter: opacity(0.4) blur(2px);
+    -webkit-filter: opacity(0.4) blur(3px);
+    filter: opacity(0.4) blur(3px);
 }
 
 .playlist__entry__info__header {
@@ -346,6 +348,7 @@
     width: 100%;
     /*background-color: aqua;*/
     margin-top: 5px;
+    font-weight: bolder;
 }
 
 .playlist__entry__title__title {
@@ -394,11 +397,19 @@
 }
 
 .playlist__entry__controls__playpause {
-    width: 40px;
-    height: 40px;
-    margin: 15px 0 15px 15px;
+    width: 50px;
+    height: 50px;
+    margin: 5px 0 5px 15px;
     float: left;
+
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    display: none;
+
+    z-index: 22;
 }
+
 
 .playlist__entry__controls__playpause_paused {
     background-image: url("/static/img/icons/play.png");

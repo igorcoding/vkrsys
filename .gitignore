@@ -3,6 +3,8 @@ config.conf
 .idea/
 app/migrations/*.py
 songs/
+app/static/arts/*
+!app/static/arts/default.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

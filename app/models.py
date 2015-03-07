@@ -1,3 +1,5 @@
+from contextlib import closing
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models, connection, transaction
 from django.db.models.signals import post_save
@@ -26,34 +28,31 @@ class SongManager(models.Manager):
         try:
             if not recs:
                 return 0
-            cursor = connection.cursor()
-
-            # lock and empty tmp table
-            sql = """
-            BEGIN;
-            START TRANSACTION;
-            TRUNCATE TABLE app_songtmp;
-            COMMIT;
-            """
-            cursor.execute(sql)
-            cursor.close()
+            with closing(connection.cursor()) as cursor:
+                # lock and empty tmp table
+                sql = """
+                BEGIN;
+                START TRANSACTION;
+                TRUNCATE TABLE app_songtmp;
+                COMMIT;
+                """
+                cursor.execute(sql)
 
             # write to tmp table
             SongTmp.objects.bulk_create(recs)
 
-            cursor = connection.cursor()
-            sql = """BEGIN;
-            START TRANSACTION;
+            with closing(connection.cursor()) as cursor:
+                sql = """BEGIN;
+                START TRANSACTION;
 
-            INSERT INTO app_song (owner_id,song_id,artist,title,duration,genre,url)
-            SELECT owner_id,song_id,artist,title,duration,genre,url FROM app_songtmp WHERE NOT EXISTS (
-                SELECT 1 FROM app_song WHERE app_songtmp.owner_id = app_song.owner_id AND
-                                             app_songtmp.song_id = app_song.song_id
-            );
-            COMMIT;
-            """
-            cursor.execute(sql)
-            cursor.close()
+                INSERT INTO app_song (owner_id,song_id,artist,title,duration,genre,url,art_url)
+                SELECT owner_id,song_id,artist,title,duration,genre,url,art_url FROM app_songtmp WHERE NOT EXISTS (
+                    SELECT 1 FROM app_song WHERE app_songtmp.owner_id = app_song.owner_id AND
+                                                 app_songtmp.song_id = app_song.song_id
+                );
+                COMMIT;
+                """
+                cursor.execute(sql)
             transaction.commit_unless_managed()
             # statusmessage is of form 'INSERT 0 1'
             # return int(cursor.cursor.cursor.statusmessage.split(' ').pop())
@@ -69,6 +68,7 @@ class SongBase(models.Model):
     duration = models.SmallIntegerField()
     genre = models.SmallIntegerField(null=True)
     url = models.CharField(max_length=255, null=True)
+    art_url = models.CharField(max_length=255, null=False, default=settings.SONGS_DEFAULT_ART_URL)
 
     class Meta:
         unique_together = ('owner_id', 'song_id')

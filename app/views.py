@@ -5,7 +5,7 @@ import requests
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
-from django.http.response import JsonResponse
+from django.http.response import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.template import RequestContext
 from django.utils.decorators import method_decorator
@@ -63,8 +63,6 @@ class HomePageView(MyView):
     def get(self, request):
         user_id = request.user.id
         access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
-        res = tasks.fetch_music.delay(user_vk_id, access_token)
-        # pprint(res.get())
 
         recs = Db.get_recommendations(user_id, 30)
         params = {
@@ -73,10 +71,16 @@ class HomePageView(MyView):
             'recs': recs
         }
 
-        # if userpic:
-        #     params['userpic'] = userpic
-
         return self._render(request, self.template, params)
+
+
+def music_fetch(request):
+    user_id = request.user.id
+    access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
+
+    res = tasks.fetch_music.delay(user_vk_id, access_token)
+    # pprint(res.get())
+    return HttpResponse("hey")
 
 
 class LogoutView(MyView):

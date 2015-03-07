@@ -63,8 +63,7 @@ define(['jquery'],
 
             loadNextRecommendations: function (cb) {
                 var self = this;
-                cb = cb || function () {
-                };
+                cb = cb || function () {};
 
                 this.loadRecommendations(this.limit, this.offset, false, function (d) {
                     //console.log(d);

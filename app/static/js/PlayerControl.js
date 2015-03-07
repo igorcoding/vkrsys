@@ -9,6 +9,9 @@ define(['jquery'],
             this.playingSong = null;
             this.state = this.States.Paused;
             this.playlist = null;
+
+            this.progressManualSliding = false;
+            this.SLIDER_MAX = 10000;
         }
 
         PlayerControl.prototype = {
@@ -46,8 +49,10 @@ define(['jquery'],
                     orientation: "horizontal",
                     range: "min",
                     max: 10000,
-                    slide: this.onProgressSlide.bind(this),
-                    change: null
+                    start: this.onProgressSlideStart.bind(this),
+                    stop: this.onProgressSlideStop.bind(this),
+                    //slide: this.onProgressSlide.bind(this),
+                    change: this.onProgressSlideChange.bind(this)
                 });
             },
 
@@ -156,20 +161,30 @@ define(['jquery'],
             },
 
             onAudioTimeUpdate: function (audio) {
-                var normedTime = audio.currentTime / audio.duration * 10000;
-                this.DOM.MainSongProgressBar.slider('value', normedTime);
-                if (normedTime === 10000) {
-                    this.playlist.next();
+                if (!this.progressManualSliding) {
+                    var normedTime = audio.currentTime / audio.duration * this.SLIDER_MAX;
+                    this.DOM.MainSongProgressBar.slider('value', normedTime);
+                    if (normedTime === this.SLIDER_MAX) {
+                        this.playlist.next();
+                    }
                 }
             },
 
-            onProgressSlide: function () {
-                //var audio = this.DOM.Audio[0];
-                //audio.pause();
-                //var normedTime = this.DOM.MainSongProgressBar.slider('value');
-                //var time = normedTime / 10000 * audio.duration;
-                //audio.currentTime = time;
-                //audio.play();
+            onProgressSlideStart: function(event, ui) {
+                this.progressManualSliding = true;
+            },
+
+            onProgressSlideStop: function(event, ui) {
+
+            },
+
+            onProgressSlideChange: function() {
+                if (this.progressManualSliding) {
+                    var audio = this.DOM.Audio[0];
+                    var normedTime = this.DOM.MainSongProgressBar.slider('value');
+                    audio.currentTime = normedTime / this.SLIDER_MAX * audio.duration;
+                    this.progressManualSliding = false;
+                }
             },
 
             visualPlay: function ($ppButton) {
@@ -180,6 +195,9 @@ define(['jquery'],
                 $ppButton.removeClass(playPauseClass + '_paused');
                 $ppButton.addClass(playPauseClass + '_playing');
                 this.DOM.MainSongTitle.text(this.playingSong.artist + "  -  " + this.playingSong.title);
+                this.DOM.Art.css({
+                    'background-image': 'url(' + this.playingSong.artUrl + ')'
+                });
                 this.setStatePlaying();
             },
 

@@ -12,6 +12,11 @@ define(['jquery'],
             this.DOM.Entry = this.$obj;
             this.artist = this.DOM.EntryHeaderArtist.text();
             this.title = this.DOM.EntryHeaderTitle.text();
+            this.normalizeTextsLengths();
+            this.artUrl = this.DOM.EntryArt.data('art_url');
+
+            this.playPauseVisible = this.DOM.EntryControlsPlayPause.css('display') != 'none';
+            this.forceShowPlayPause = false;
         }
 
         PlaylistEntry.prototype = {
@@ -48,14 +53,15 @@ define(['jquery'],
                 var entryArt = entryInfo ? entryInfo.find(this.C.EntryArt) : this.DOM.EntryArt;
                 var entryHeader = entryInfo ? entryInfo.find(this.C.EntryHeader) : this.DOM.EntryHeader;
                 var entryHeaderMargin = entryHeader.margin();
-                var playPause = entryInfo.find(this.C.EntryControlsPlayPause);
+                //var playPause = entryInfo.find(this.C.EntryControlsPlayPause);
+                var likeDislike = entryInfo.find(this.C.EntryControls);
 
                 entryInfo.width(entryInfo.parent().width());
 
                 var minus = entryInfo.width() - entryArt.totalWidth()
                     - entryHeaderMargin.left
                     - entryHeaderMargin.right
-                    - playPause.totalWidth() - 1;
+                    - 150 - 1;
                 entryHeader.width(minus);
             },
 
@@ -79,13 +85,44 @@ define(['jquery'],
                 return this.$obj.data('song_id') || null;
             },
 
+            normalizeTextsLengths: function() {
+                var max = 60;
+                var ellipsis = '<span class="ellipsis">...</span>';
+                if (this.artist.length > max) {
+                    this.DOM.EntryHeaderArtist.html(this.artist.slice(0, max+1) + ellipsis);
+                    this.DOM.EntryHeaderArtist.attr("alt", this.artist);
+                }
+
+                if (this.title.length > max) {
+                    this.DOM.EntryHeaderTitle.html(this.title.slice(0, max+1) + ellipsis);
+                    this.DOM.EntryHeaderTitle.attr("alt", this.title);
+                }
+            },
 
             onHoverEnter: function () {
                 this.DOM.EntryControls.show();
+                this.displayPlayPause();
             },
 
             onHoverLeave: function () {
                 this.DOM.EntryControls.hide();
+                this.hidePlayPause();
+            },
+
+            displayPlayPause: function() {
+                if (!this.playPauseVisible) {
+                    this.DOM.EntryControlsPlayPause.show();
+                    this.DOM.EntryArt.addClass('playlist__entry__info__art_dimmed');
+                    this.playPauseVisible = true;
+                }
+            },
+
+            hidePlayPause: function() {
+                if (this.playPauseVisible && !this.forceShowPlayPause) {
+                    this.DOM.EntryControlsPlayPause.hide();
+                    this.DOM.EntryArt.removeClass('playlist__entry__info__art_dimmed');
+                    this.playPauseVisible = false;
+                }
             },
 
             visualPause: function () {
@@ -99,6 +136,7 @@ define(['jquery'],
                 this.$obj.addClass(entryClass + '_paused');
 
                 this.setStatePaused();
+                this.forceShowPlayPause = false;
             },
 
             visualPlay: function () {
@@ -111,6 +149,7 @@ define(['jquery'],
                 this.$obj.addClass(entryClass + '_playing');
 
                 this.setStatePlaying();
+                this.forceShowPlayPause = true;
             },
 
             play: function () {
