@@ -376,6 +376,14 @@
     margin-top: 5px;
 }
 
+.playlist__entry__duration {
+    float: right;
+    height: 70px;
+    line-height: 70px;
+    margin: 0 20px 0 0;
+    position: relative;
+}
+
 .playlist__entry__controls {
     display: none;
     float: right;

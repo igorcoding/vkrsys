@@ -19,6 +19,10 @@ define(['jquery', 'jquery_ui', 'jquery_sizes', 'jquery_plugins', 'ContentLoader'
                 return c.substring(1);
             };
 
+            window.durationToTime = function(duration) {
+                return duration;
+            };
+
             window.contentLoader = new ContentLoader();
             contentLoader.fetchUserpic();
             contentLoader.loadInitialRecommendations(function(addedCount) {

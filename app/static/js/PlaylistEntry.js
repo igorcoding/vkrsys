@@ -19,6 +19,9 @@ define(['jquery'],
             this.playPauseVisible = this.DOM.EntryControlsPlayPause.css('display') != 'none';
             this.forceShowPlayPause = false;
             this.hovering = false;
+
+            this.duration = 0;
+            this.countDuration();
         }
 
         PlaylistEntry.prototype = {
@@ -30,6 +33,7 @@ define(['jquery'],
             C: {
                 Entry: '.playlist__entry',
                 EntryInfo: '.playlist__entry__info',
+                EntryDuration: '.playlist__entry__duration',
                 EntryArt: '.playlist__entry__info__art',
                 EntryHeader: '.playlist__entry__info__header',
                 EntryHeaderArtist: '.playlist__entry__title__artist',
@@ -39,7 +43,7 @@ define(['jquery'],
                 EntryControlsLikeJs: '.js-playlist__entry__controls__like',
                 EntryControlsLike: '.playlist__entry__controls__like',
                 EntryControlsDislikeJs: '.js-playlist__entry__controls__dislike',
-                EntryControlsDislike: '.playlist__entry__controls__dislike'
+                EntryControlsDislike: '.playlist__entry__controls__dislike',
             },
 
             bindToDOM: function () {
@@ -121,6 +125,20 @@ define(['jquery'],
                     this.DOM.EntryHeaderTitle.html(this.title.slice(0, max+1) + ellipsis);
                     this.DOM.EntryHeaderTitle.attr("alt", this.title);
                 }
+            },
+
+            countDuration: function() {
+                this.duration = parseInt(this.DOM.EntryDuration.text());
+                this.DOM.EntryDuration.text(this.durationToTime());
+            },
+
+            durationToTime: function() {
+                var minutes = Math.floor(this.duration / 60);
+                var seconds = this.duration - minutes * 60;
+                if (seconds < 10) {
+                    seconds = "0" + String(seconds);
+                }
+                return minutes + ":" + seconds;
             },
 
             onHoverEnter: function () {

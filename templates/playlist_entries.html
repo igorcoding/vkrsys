@@ -1,5 +1,5 @@
 {% for r in recs %}
-<div class="playlist__entry playlist__entry_paused link" data-song_id="{{ r.0 }}" data-rated="{% if r.6 != None %}1{% else %}0{% endif %}" data-rating="{{ r.6 }}">
+<div class="playlist__entry playlist__entry_paused link" data-song_id="{{ r.0 }}" data-rated="{% if r.6 != None %}1{% else %}0{% endif %}" data-rating="{{ r.6 }}" data-duration="{{ r.3 }}">
     <div class="playlist__entry__info">
         <div class="playlist__entry__controls__playpause playlist__entry__controls__playpause_paused playlist__entry__controls__control link"></div>
         <div class="playlist__entry__info__art" style="background-image: url('{{ r.5 }}')" data-art_url="{{ r.5 }}"></div>
@@ -8,6 +8,7 @@
             <div class="playlist__entry__title__title">{{ r.2 }}</div>
         </div>
     </div>
+    <div class="playlist__entry__duration">{{ r.3 }}</div>
     <div class="playlist__entry__controls">
         {% if r.6 == None %}
             <div class="js-playlist__entry__controls__dislike playlist__entry__controls__dislike playlist__entry__controls__control link"></div>
