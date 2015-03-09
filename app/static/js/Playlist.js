@@ -92,12 +92,12 @@ define(['jquery', 'PlaylistEntry'],
                     playPauseClickCb(entry, id);
                 });
 
-                entry.DOM.EntryControlsLike.click(function (event) {
+                entry.DOM.EntryControlsLikeJs.click(function (event) {
                     event.stopPropagation();
                     entry.like();
                 });
 
-                entry.DOM.EntryControlsDislike.click(function (event) {
+                entry.DOM.EntryControlsDislikeJs.click(function (event) {
                     event.stopPropagation();
                     entry.dislike();
                 });

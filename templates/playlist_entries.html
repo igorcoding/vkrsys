@@ -1,5 +1,5 @@
 {% for r in recs %}
-<div class="playlist__entry playlist__entry_paused link" data-song_id="{{ r.0 }}" >
+<div class="playlist__entry playlist__entry_paused link" data-song_id="{{ r.0 }}" data-rated="{% if r.6 != None %}1{% else %}0{% endif %}" data-rating="{{ r.6 }}">
     <div class="playlist__entry__info">
         <div class="playlist__entry__controls__playpause playlist__entry__controls__playpause_paused playlist__entry__controls__control link"></div>
         <div class="playlist__entry__info__art" style="background-image: url('{{ r.5 }}')" data-art_url="{{ r.5 }}"></div>
@@ -9,8 +9,16 @@
         </div>
     </div>
     <div class="playlist__entry__controls">
-        <div class="playlist__entry__controls__dislike playlist__entry__controls__control link"></div>
-        <div class="playlist__entry__controls__like playlist__entry__controls__control link"></div>
+        {% if r.6 == None %}
+            <div class="js-playlist__entry__controls__dislike playlist__entry__controls__dislike playlist__entry__controls__control link"></div>
+            <div class="js-playlist__entry__controls__like playlist__entry__controls__like playlist__entry__controls__control link"></div>
+        {% elif r.6 == 0 %}
+            <div class="js-playlist__entry__controls__dislike playlist__entry__controls__dislike_active playlist__entry__controls__control link"></div>
+            <div class="js-playlist__entry__controls__like playlist__entry__controls__like_inactive playlist__entry__controls__control link"></div>
+        {% elif r.6 == 1 %}
+            <div class="js-playlist__entry__controls__dislike  playlist__entry__controls__dislike_inactive playlist__entry__controls__control link"></div>
+            <div class="js-playlist__entry__controls__like playlist__entry__controls__like_active playlist__entry__controls__control link"></div>
+        {% endif %}
     </div>
 
 </div>

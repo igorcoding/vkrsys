@@ -173,12 +173,10 @@
 
 .player__main__song__progressbar_outer {
     position: relative;
-    font-size: 12px;
+    font-size: 10px;
     width: 75%;
     margin: 0 auto;
     cursor: pointer;
-    /*height: 40px;*/
-    /*line-height: 40px;*/
 }
 
 .player__main__song__progressbar {
@@ -227,6 +225,16 @@
     background-image: url("/static/img/icons/dislike-active.png");
 }
 
+.player__main__controls__dislike_inactive {
+    background-image: url("/static/img/icons/dislike.png");
+    margin-right: 10px;
+}
+
+.player__main__controls__dislike_active {
+    background-image: url("/static/img/icons/dislike-active.png");
+    margin-right: 10px;
+}
+
 .player__main__controls__prev {
     background-image: url("/static/img/icons/prev.png");
 
@@ -272,6 +280,16 @@
 
 .player__main__controls__like:hover {
     background-image: url("/static/img/icons/like-active.png");
+}
+
+.player__main__controls__like_inactive {
+    background-image: url("/static/img/icons/like.png");
+    margin-left: 10px;
+}
+
+.player__main__controls__like_active {
+    background-image: url("/static/img/icons/like-active.png");
+    margin-left: 10px;
 }
 
 
@@ -389,11 +407,27 @@
     background-image: url("/static/img/icons/dislike-active.png");
 }
 
+.playlist__entry__controls__dislike_inactive {
+    background-image: url("/static/img/icons/dislike.png");
+}
+
+.playlist__entry__controls__dislike_active {
+    background-image: url("/static/img/icons/dislike-active.png");
+}
+
 .playlist__entry__controls__like {
     background-image: url("/static/img/icons/like.png");
 }
 
 .playlist__entry__controls__like:hover {
+    background-image: url("/static/img/icons/like-active.png");
+}
+
+.playlist__entry__controls__like_inactive {
+    background-image: url("/static/img/icons/like.png");
+}
+
+.playlist__entry__controls__like_active {
     background-image: url("/static/img/icons/like-active.png");
 }
 

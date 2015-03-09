@@ -24,10 +24,12 @@ define(['jquery'],
                 MainSongTitle: '.player__main__song__title',
                 MainSongProgressBar: '.player__main__song__progressbar',
                 MainControls: '.player__main__controls',
-                MainControlsDislike: '.player__main__controls__dislike',
                 MainControlsPrev: '.player__main__controls__prev',
                 MainControlsPlayPause: '.player__main__controls__playpause',
                 MainControlsNext: '.player__main__controls__next',
+                MainControlsDislikeJs: '.js-player__main__controls__dislike',
+                MainControlsDislike: '.player__main__controls__dislike',
+                MainControlsLikeJs: '.js-player__main__controls__like',
                 MainControlsLike: '.player__main__controls__like'
             },
 
@@ -132,10 +134,27 @@ define(['jquery'],
                 });
             },
 
+            applyRate: function(rating) {
+                this.DOM.MainControlsLikeJs.removeClass(rawC(this.C.MainControlsLike));
+                this.DOM.MainControlsDislikeJs.removeClass(rawC(this.C.MainControlsDislike));
+                this.DOM.MainControlsLikeJs.removeClass(rawC(this.C.MainControlsLike) + '_inactive');
+                this.DOM.MainControlsLikeJs.removeClass(rawC(this.C.MainControlsLike) + '_active');
+                this.DOM.MainControlsDislikeJs.removeClass(rawC(this.C.MainControlsDislike) + '_inactive');
+                this.DOM.MainControlsDislikeJs.removeClass(rawC(this.C.MainControlsDislike) + '_active');
+
+                if (rating == 1) {
+                    this.DOM.MainControlsLikeJs.addClass(rawC(this.C.MainControlsLike) + '_active');
+                    this.DOM.MainControlsDislikeJs.addClass(rawC(this.C.MainControlsDislike) + '_inactive');
+                } else if (rating == 0) {
+                    this.DOM.MainControlsLikeJs.addClass(rawC(this.C.MainControlsLike) + '_inactive');
+                    this.DOM.MainControlsDislikeJs.addClass(rawC(this.C.MainControlsDislike) + '_active');
+                }
+            },
+
             registerOnRateClick: function () {
                 var self = this;
-                var like = this.DOM.MainControlsLike;
-                var dislike = this.DOM.MainControlsDislike;
+                var like = this.DOM.MainControlsLikeJs;
+                var dislike = this.DOM.MainControlsDislikeJs;
 
                 like.click(function () {
                     if (self.playingSong) {
@@ -187,10 +206,23 @@ define(['jquery'],
                 }
             },
 
-            visualPlay: function ($ppButton) {
-                if (!$ppButton) {
-                    $ppButton = this.DOM.MainControlsPlayPause;
+            initRateButtons: function() {
+                if (this.playingSong.isRated) {
+                    var rating = this.playingSong.getRating();
+                    this.applyRate(rating);
+                } else {
+                    this.DOM.MainControlsLikeJs.removeClass(rawC(this.C.MainControlsLike) + '_inactive');
+                    this.DOM.MainControlsLikeJs.removeClass(rawC(this.C.MainControlsLike) + '_active');
+                    this.DOM.MainControlsDislikeJs.removeClass(rawC(this.C.MainControlsDislike) + '_inactive');
+                    this.DOM.MainControlsDislikeJs.removeClass(rawC(this.C.MainControlsDislike) + '_active');
+
+                    this.DOM.MainControlsLikeJs.addClass(rawC(this.C.MainControlsLike));
+                    this.DOM.MainControlsDislikeJs.addClass(rawC(this.C.MainControlsDislike));
                 }
+            },
+
+            initPlay: function() {
+                var $ppButton = this.DOM.MainControlsPlayPause;
                 var playPauseClass = rawC(this.C.MainControlsPlayPause);
                 $ppButton.removeClass(playPauseClass + '_paused');
                 $ppButton.addClass(playPauseClass + '_playing');
@@ -198,6 +230,11 @@ define(['jquery'],
                 this.DOM.Art.css({
                     'background-image': 'url(' + this.playingSong.artUrl + ')'
                 });
+                this.initRateButtons();
+            },
+
+            visualPlay: function ($ppButton) {
+                this.initPlay($ppButton);
                 this.setStatePlaying();
             },
 

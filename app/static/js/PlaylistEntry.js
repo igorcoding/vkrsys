@@ -14,6 +14,7 @@ define(['jquery'],
             this.title = this.DOM.EntryHeaderTitle.text();
             this.normalizeTextsLengths();
             this.artUrl = this.DOM.EntryArt.data('art_url');
+            this.isRated = Boolean(parseInt(this.$obj.data('rated')));
 
             this.playPauseVisible = this.DOM.EntryControlsPlayPause.css('display') != 'none';
             this.forceShowPlayPause = false;
@@ -35,7 +36,9 @@ define(['jquery'],
                 EntryHeaderTitle: '.playlist__entry__title__title',
                 EntryControlsPlayPause: '.playlist__entry__controls__playpause',
                 EntryControls: '.playlist__entry__controls',
+                EntryControlsLikeJs: '.js-playlist__entry__controls__like',
                 EntryControlsLike: '.playlist__entry__controls__like',
+                EntryControlsDislikeJs: '.js-playlist__entry__controls__dislike',
                 EntryControlsDislike: '.playlist__entry__controls__dislike'
             },
 
@@ -84,6 +87,26 @@ define(['jquery'],
 
             getSongId: function () {
                 return this.$obj.data('song_id') || null;
+            },
+
+            setRated: function(rate) {
+                this.$obj.data('rated', 1);
+                this.DOM.EntryControlsLikeJs.removeClass(rawC(this.C.EntryControlsLike));
+                this.DOM.EntryControlsDislikeJs.removeClass(rawC(this.C.EntryControlsDislike));
+
+                if (rate === 'up') {
+                    this.DOM.EntryControlsLikeJs.addClass(rawC(this.C.EntryControlsLike) + '_active');
+                    this.DOM.EntryControlsDislikeJs.addClass(rawC(this.C.EntryControlsDislike) + '_inactive');
+                    this.playlist.playerControl.applyRate(1);
+                } else if (rate === 'down') {
+                    this.DOM.EntryControlsLikeJs.addClass(rawC(this.C.EntryControlsLike) + '_inactive');
+                    this.DOM.EntryControlsDislikeJs.addClass(rawC(this.C.EntryControlsDislike) + '_active');
+                    this.playlist.playerControl.applyRate(0);
+                }
+            },
+
+            getRating: function() {
+                return this.$obj.data('rating');
             },
 
             normalizeTextsLengths: function() {
@@ -152,6 +175,7 @@ define(['jquery'],
                 $playPause.removeClass(ppClass + '_paused');
                 $playPause.addClass(ppClass + '_playing');
                 this.$obj.removeClass(entryClass + '_hover');
+                this.$obj.removeClass(entryClass + '_paused');
                 this.$obj.addClass(entryClass + '_playing');
 
                 this.setStatePlaying();
@@ -168,6 +192,13 @@ define(['jquery'],
             },
 
             rate: function (direction) {
+                var self = this;
+                if (this.isRated) {
+                    alert('not possible');
+                    // TODO: may be some sort of notification
+                    return;
+                }
+
                 if (direction !== 'up' && direction !== 'down') {
                     console.warn('Unknown direction: ' + direction);
                     return;
@@ -181,6 +212,8 @@ define(['jquery'],
                 })
                     .done(function (data) {
                         console.log(data);
+                        self.setRated(direction);
+                        self.isRated = true;
                     })
                     .fail(function (data) {
                         console.warn(data);
