@@ -114,7 +114,7 @@ define(['jquery'],
             },
 
             normalizeTextsLengths: function() {
-                var max = 60;
+                var max = 50;
                 var ellipsis = '<span class="ellipsis">...</span>';
                 if (this.artist.length > max) {
                     this.DOM.EntryHeaderArtist.html(this.artist.slice(0, max+1) + ellipsis);

@@ -165,7 +165,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'app/static')
 SONGS_ARTS_PATH = os.path.join(STATIC_ROOT, 'arts')
 SONGS_ARTS_URL = urlparse.urljoin(STATIC_URL, 'arts/')
-SONGS_DEFAULT_ART_URL = urlparse.urljoin(STATIC_URL, 'default.png')
+SONGS_DEFAULT_ART_URL = urlparse.urljoin(SONGS_ARTS_URL, 'default.png')
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static"),

@@ -45,8 +45,8 @@ class SongManager(models.Manager):
                 sql = """BEGIN;
                 START TRANSACTION;
 
-                INSERT INTO app_song (owner_id,song_id,artist,title,duration,genre,url,art_url)
-                SELECT owner_id,song_id,artist,title,duration,genre,url,art_url FROM app_songtmp WHERE NOT EXISTS (
+                INSERT INTO app_song (owner_id,song_id,artist,title,duration,genre,url,art_url,fingerprinted)
+                SELECT owner_id,song_id,artist,title,duration,genre,url,art_url,fingerprinted FROM app_songtmp WHERE NOT EXISTS (
                     SELECT 1 FROM app_song WHERE app_songtmp.owner_id = app_song.owner_id AND
                                                  app_songtmp.song_id = app_song.song_id
                 );
@@ -69,6 +69,7 @@ class SongBase(models.Model):
     genre = models.SmallIntegerField(null=True)
     url = models.CharField(max_length=255, null=True)
     art_url = models.CharField(max_length=255, null=False, default=settings.SONGS_DEFAULT_ART_URL)
+    fingerprinted = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('owner_id', 'song_id')

@@ -90,7 +90,6 @@ def fetch_music(vk_uid, access_token):
     bulk = []
     for s in songs['items']:
         song = Song(
-            id=p_last_id,
             owner_id=s['owner_id'],
             song_id=s['id'],
             artist=s['artist'],
@@ -100,9 +99,9 @@ def fetch_music(vk_uid, access_token):
         if 'genre_id' in s:
             song.genre = s['genre_id']
 
-        if download_and_process_song(s):
-            bulk.append(song)
-            p_last_id += 1
+        # if download_and_process_song(song):
+        bulk.append(song)
+        # p_last_id += 1
         if len(bulk) >= batch_limit:
             Song.objects.bulk_create_new(bulk)
             bulk = []
@@ -112,7 +111,8 @@ def fetch_music(vk_uid, access_token):
 
     # new_songs = Song.objects.filter(id__gt=p_last_id)
     new_songs = Song.objects.filter(id__gt=1)
-    download_and_process_songs(vk_uid, access_token, map(lambda s1: (s1.id, s1.url), new_songs))
+    # download_and_process_songs(vk_uid, access_token, map(lambda s1: (s1.id, s1.url), new_songs))
+    download_and_process_songs(vk_uid, access_token, new_songs)
 
 
 @shared_task
@@ -123,18 +123,22 @@ def api_request(action, data):
     return jresp
 
 
+@shared_task
 def download_and_process_song(s):
-    song_path = os.path.join(settings.SONGS_PATH, '%d.mp3' % s.id)
-    if type(s.url) == unicode and not os.path.exists(song_path):
+    s_id = s['id']
+    s_url = s['url']
+    song = Song.objects.get(pk=s_id)
+    song_path = os.path.join(settings.SONGS_PATH, '%d.mp3' % s_id)
+    if type(s_url) == unicode and not os.path.exists(song_path):
         try:
-            r = requests.get(s.url)
+            r = requests.get(s_url)
             with closing(open(song_path, 'wb')) as f:
                 f.write(r.content)
         except ReadTimeout:
             print 'No Connection'
 
-    if _process_song(song_path) is None:
-        art_path = os.path.join(settings.SONGS_ARTS_PATH, '%d.png' % s.id)
+    if _process_song(song_path, s) is None:
+        art_path = os.path.join(settings.SONGS_ARTS_PATH, '%d.png' % s_id)
         if os.path.exists(song_path):
             if not os.path.exists(art_path):
                 f = File(song_path)
@@ -142,7 +146,8 @@ def download_and_process_song(s):
                     artwork = f.tags['APIC:'].data
                     with closing(open(art_path, 'wb')) as img:
                         img.write(artwork)
-                    s.art_url = urlparse.urljoin(settings.SONGS_ARTS_URL, '%d.png' % s.id)
+                    song.art_url = urlparse.urljoin(settings.SONGS_ARTS_URL, '%d.png' % s_id)
+                    song.save()
             fingerprint_song.delay(song_path)
             return True
     return False
@@ -151,15 +156,15 @@ def download_and_process_song(s):
 def download_and_process_songs(vk_uid, access_token, songs):
     print 'Started download_and_process_songs'
     for s in songs[:200]:
-        download_and_process_song.delay(vk_uid, access_token, s)
+        download_and_process_song.delay(dict(id=s.id, url=s.url))
 
 
 @shared_task
 def fingerprint_song(filename):
-    djv.fingerprint_file(filename)
+    djv.fingerprint_file(filename, id_in_filename=True)
 
 
-def _process_song(filename):
+def _process_song(filename, song):
     threshold = 1000
     limit = 6  # seconds
     f = djv.recognize(FileRecognizer, filename, limit)
@@ -167,6 +172,7 @@ def _process_song(filename):
         return None
     else:
         print "Recognized: %s" % str(f)
+        song.delete()
 
     return filename
 
