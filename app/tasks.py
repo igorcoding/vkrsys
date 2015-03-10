@@ -19,6 +19,7 @@ from django.conf import settings
 from app.models import Song
 from mutagen import File
 
+
 def catcher(f):
     def wrapper(*args, **kwargs):
         try:

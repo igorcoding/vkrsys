@@ -14,5 +14,6 @@ urlpatterns = patterns('',
     url(r'^api/userpic', api.GetUserpic.as_view(), name='api_userpic'),
     url(r'^api/song_url', api.GetSongUrl.as_view(), name='api_song_url'),
     url(r'^api/rate', api.Rate.as_view(), name='api_rate'),
+    url(r'^api/characterise', api.ListenCharacterise.as_view(), name='api_characterise'),
     url(r'^api/recommend', api.Recommend.as_view(), name='api_recommend'),
 )

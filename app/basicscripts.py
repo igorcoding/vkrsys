@@ -4,7 +4,7 @@ from django.core.cache import cache
 from django.db import IntegrityError, connection
 from social_auth.db.django_models import UserSocialAuth
 from app import tasks
-from app.models import Rating, Song, UserAction
+from app.models import Rating, Song, UserAction, ListenCharacteristic
 from django.core.exceptions import ObjectDoesNotExist
 from recommender_api.rsys_actions import RsysActions
 
@@ -54,7 +54,6 @@ class Db:
         user = User.objects.get(pk=user_id)
         song = Song.objects.get(pk=song_id)
 
-        rating = -1
         if direction == 'up':
             rating = 1
         elif direction == 'down':
@@ -62,20 +61,62 @@ class Db:
         else:
             raise AttributeError("Unknown direction: %s" % direction)
 
-        rating_obj = Rating(user=user, song=song, rating=rating)
+        try:
+            rating_obj = Rating.objects.get(user=user, song=song)
+        except ObjectDoesNotExist:
+            rating_obj = Rating(user=user, song=song)
+
+        rating_obj.rating = rating
+        rating_obj.is_implicit = False
 
         try:
             rating_obj.save()
         except IntegrityError:
             return None
 
-        Db.transact(user_id, song_id, RsysActions.RATE, {
+        Db.transact(user_id, song_id, 'rate', {
             'user_id': user_id,
             'item_id': song_id,
             'direction': direction,
             'rating': rating_obj.rating
         })
         return rating_obj
+
+    @staticmethod
+    def listen_characterise(user_id, payload):
+        song_id = payload['song_id']
+        hops_count = payload['hops_count']
+        duration = payload['duration']
+
+        user = User.objects.get(pk=user_id)
+        song = Song.objects.get(pk=song_id)
+
+        o = ListenCharacteristic(user=user, song=song,
+                                 hops_count=hops_count, listen_duration=duration)
+
+        try:
+            o.save()
+        except IntegrityError:
+            return None
+
+        try:
+            rate_o = Rating.objects.get(user=user, song=song)
+        except ObjectDoesNotExist:
+            rate_o = Rating(user=user, song=song)
+
+        rate_o.is_implicit = True
+        rate_o.rating = float(duration) / float(song.duration)
+
+        rate_o.save()
+
+        Db.transact(user_id, song_id, 'characterise', {
+            'user_id': user_id,
+            'item_id': song_id,
+            'hops_count': hops_count,
+            'duration': duration
+        })
+
+        return o
 
     @staticmethod
     def transact(user_id, song_id, action_type, activity):

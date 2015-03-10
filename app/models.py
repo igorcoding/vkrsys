@@ -96,12 +96,18 @@ class UserAction(models.Model):
 class Rating(models.Model):
     user = models.ForeignKey(User)
     song = models.ForeignKey(Song)
-    up_votes = models.IntegerField(default=0)
-    down_votes = models.IntegerField(default=0)
     rating = models.FloatField(default=0.0)
+    is_implicit = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('user', 'song')
+
+
+class ListenCharacteristic(models.Model):
+    user = models.ForeignKey(User)
+    song = models.ForeignKey(Song)
+    hops_count = models.IntegerField()
+    listen_duration = models.IntegerField()
 
 
 class RecommenderInfo(models.Model):

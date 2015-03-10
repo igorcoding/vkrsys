@@ -1,3 +1,4 @@
+import json
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
@@ -5,8 +6,10 @@ from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.views.generic import View
+from django.views.decorators.csrf import csrf_exempt
 from app import tasks
 from app.basicscripts import Db, VkSocial
+
 
 
 def ensure_present(d, args):
@@ -122,6 +125,46 @@ class Recommend(View):
             'count': len(recs),
             'result': render_to_string(templ, dict(recs=recs))
         })
+
+
+class ListenCharacterise(View):
+    PARAMS = ['song_id', 'hops_count', 'duration']
+
+    @method_decorator(login_required)
+    def post(self, request):
+        user_id = request.user.id
+        # if request.is_ajax():
+        payload = json.loads(request.body)
+        absent = ensure_present(payload, self.PARAMS)
+        if absent:
+            return absent
+
+        try:
+            rating_obj = Db.listen_characterise(user_id, payload)
+            if rating_obj is None:
+                return JsonResponse({
+                    'status': 201,
+                    'msg': 'You have already rated this song'
+                }, status=200)
+
+            return JsonResponse({
+                'status': 200
+            }, status=200)
+
+        except ObjectDoesNotExist as e:
+            return JsonResponse({
+                'status': 404,
+                'reason': 'unknown entry',
+                'msg': e.message
+            }, status=404)
+        except Exception as e:
+            return JsonResponse({
+                'status': 500,
+                'reason': 'unknown error. ' + str(e.__class__),
+                'msg': e.message
+            }, status=500)
+
+        pass
 
 
 class Rate(View):
