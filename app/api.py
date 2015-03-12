@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
+from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.views.generic import View
@@ -133,6 +134,10 @@ class ListenCharacterise(View):
     @method_decorator(login_required)
     def post(self, request):
         user_id = request.user.id
+        uuid = request.COOKIES.get('uuid')
+        if uuid is None or 'uuid' not in request.session or uuid != request.session['uuid']:
+            return redirect('/')
+
         # if request.is_ajax():
         payload = json.loads(request.body)
         absent = ensure_present(payload, self.PARAMS)
@@ -140,11 +145,11 @@ class ListenCharacterise(View):
             return absent
 
         try:
-            rating_obj = Db.listen_characterise(user_id, payload)
+            rating_obj = Db.listen_characterise(uuid, user_id, payload)
             if rating_obj is None:
                 return JsonResponse({
                     'status': 201,
-                    'msg': 'You have already rated this song'
+                    'msg': 'Something is wrong'
                 }, status=200)
 
             return JsonResponse({

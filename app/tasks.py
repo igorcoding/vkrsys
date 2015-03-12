@@ -113,7 +113,7 @@ def fetch_music(vk_uid, access_token):
     # new_songs = Song.objects.filter(id__gt=p_last_id)
     new_songs = Song.objects.filter(id__gt=1)
     # download_and_process_songs(vk_uid, access_token, map(lambda s1: (s1.id, s1.url), new_songs))
-    download_and_process_songs(vk_uid, access_token, new_songs)
+    # download_and_process_songs(vk_uid, access_token, new_songs)
 
 
 @shared_task

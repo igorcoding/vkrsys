@@ -20,7 +20,13 @@ define(['jquery'],
             this.forceShowPlayPause = false;
             this.hovering = false;
 
+            this.id = this.getSongId();
+            this.hops_count = 0;
+            this.lastListenedTime = 0;
+            this.listenedDuration = 0;
             this.duration = 0;
+            this.characteriseDelayMax = 50;
+            this.characteriseDelay = this.characteriseDelayMax;
             this.countDuration();
         }
 
@@ -207,6 +213,40 @@ define(['jquery'],
 
             pause: function () {
                 this.visualPause();
+            },
+
+            waitForCharacteriseDelay: function(force) {
+                if (force) {
+                    this.characteriseDelay = this.characteriseDelayMax;
+                    return true;
+                }
+                if (--this.characteriseDelay > 0) {
+                    return false;
+                } else {
+                    this.characteriseDelay = this.characteriseDelayMax;
+                    return true;
+                }
+            },
+
+            characterise: function(force) {
+                if (this.waitForCharacteriseDelay(force)) {
+                    var self = this;
+                    $.ajax('/api/characterise', {
+                        method: 'POST',
+                        contentType: "application/json",
+                        data: JSON.stringify({
+                            song_id: this.id,
+                            hops_count: this.hops_count,
+                            duration: this.listenedDuration
+                        })
+                    })
+                        .done(function (data) {
+                            console.log(data);
+                        })
+                        .fail(function (data) {
+                            console.warn(data);
+                        });
+                }
             },
 
             rate: function (direction) {

@@ -83,7 +83,7 @@ class Db:
         return rating_obj
 
     @staticmethod
-    def listen_characterise(user_id, payload):
+    def listen_characterise(uuid, user_id, payload):
         song_id = payload['song_id']
         hops_count = payload['hops_count']
         duration = payload['duration']
@@ -91,23 +91,39 @@ class Db:
         user = User.objects.get(pk=user_id)
         song = Song.objects.get(pk=song_id)
 
-        o = ListenCharacteristic(user=user, song=song,
-                                 hops_count=hops_count, listen_duration=duration)
+        try:
+            o = ListenCharacteristic.objects.get(uuid=uuid)
+        except ObjectDoesNotExist:
+            o = ListenCharacteristic(uuid=uuid)
+
+        o.user = user
+        o.song = song
+        o.hops_count = hops_count
+        o.listen_duration = duration
 
         try:
             o.save()
         except IntegrityError:
             return None
 
+        avg_duration = 0.0
+        characters = ListenCharacteristic.objects.filter(user=user, song=song)
+        for ch in characters:
+            avg_duration += ch.listen_duration
+        avg_duration /= len(characters)
+
         try:
             rate_o = Rating.objects.get(user=user, song=song)
+            is_new = False
         except ObjectDoesNotExist:
             rate_o = Rating(user=user, song=song)
+            is_new = True
 
-        rate_o.is_implicit = True
-        rate_o.rating = float(duration) / float(song.duration)
+        if is_new:
+            rate_o.is_implicit = True
+            rate_o.rating = avg_duration / float(song.duration)
 
-        rate_o.save()
+            rate_o.save()
 
         Db.transact(user_id, song_id, 'characterise', {
             'user_id': user_id,

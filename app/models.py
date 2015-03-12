@@ -104,10 +104,13 @@ class Rating(models.Model):
 
 
 class ListenCharacteristic(models.Model):
+    uuid = models.CharField(max_length=40, unique=True)
     user = models.ForeignKey(User)
     song = models.ForeignKey(Song)
     hops_count = models.IntegerField()
     listen_duration = models.IntegerField()
+
+
 
 
 class RecommenderInfo(models.Model):

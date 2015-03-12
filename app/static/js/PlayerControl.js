@@ -11,7 +11,9 @@ define(['jquery'],
             this.playlist = null;
 
             this.progressManualSliding = false;
+            this.afterManualSlide = false;
             this.SLIDER_MAX = 10000;
+            this.prevAudioTime = -1;
         }
 
         PlayerControl.prototype = {
@@ -181,11 +183,23 @@ define(['jquery'],
 
             onAudioTimeUpdate: function (audio) {
                 if (!this.progressManualSliding) {
+                    if (this.prevAudioTime == -1) {
+                        this.prevAudioTime = audio.currentTime;
+                    }
+                    if (!this.afterManualSlide) {
+                        this.playingSong.listenedDuration += audio.currentTime - this.playingSong.lastListenedTime;
+                        this.playingSong.characterise();
+                    }
+
+                    console.log(this.playingSong.listenedDuration);
                     var normedTime = audio.currentTime / audio.duration * this.SLIDER_MAX;
                     this.DOM.MainSongProgressBar.slider('value', normedTime);
                     if (normedTime === this.SLIDER_MAX) {
                         this.playlist.next();
                     }
+
+                    this.playingSong.lastListenedTime = audio.currentTime;
+                    this.afterManualSlide = false;
                 }
             },
 
@@ -203,6 +217,7 @@ define(['jquery'],
                     var normedTime = this.DOM.MainSongProgressBar.slider('value');
                     audio.currentTime = normedTime / this.SLIDER_MAX * audio.duration;
                     this.progressManualSliding = false;
+                    this.afterManualSlide = true;
                 }
             },
 
@@ -258,6 +273,7 @@ define(['jquery'],
             },
 
             actualPause: function ($audio) {
+                this.playingSong.characterise(true);
                 $audio.animate({volume: 0}, 500, function () {
                     $audio[0].pause();
                 });

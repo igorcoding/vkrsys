@@ -16,6 +16,7 @@ import vk
 from app import tasks
 from app.basicscripts import VkSocial, Db
 from app.models import Song
+import uuid
 
 
 class MyView(View):
@@ -71,7 +72,11 @@ class HomePageView(MyView):
             'recs': recs
         }
 
-        return self._render(request, self.template, params)
+        user_uuid = uuid.uuid4()
+        request.session['uuid'] = str(user_uuid)
+        response = self._render(request, self.template, params)
+        response.set_cookie(key='uuid', value=user_uuid)
+        return response
 
 
 def music_fetch(request):
