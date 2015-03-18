@@ -1,4 +1,5 @@
 import json
+
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
@@ -7,10 +8,11 @@ from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.views.generic import View
-from django.views.decorators.csrf import csrf_exempt
-from app import tasks
-from app.basicscripts import Db, VkSocial
+from requests import ConnectionError
+from requests.exceptions import ReadTimeout
 
+from app import tasks
+from app.views.basicscripts import Db, VkSocial
 
 
 def ensure_present(d, args):
@@ -87,6 +89,11 @@ class GetSongUrl(View):
                 'status': 200,
                 'url': url
             }, status=200)
+        except (ConnectionError, ReadTimeout):
+            return JsonResponse({
+                'status': 500,
+                'reason': 'Connection Error'
+            }, status=500)
         except ObjectDoesNotExist:
             return JsonResponse({
                 'status': 404,

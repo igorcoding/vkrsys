@@ -14,7 +14,6 @@ define(['jquery'],
             this.title = this.DOM.EntryHeaderTitle.text();
             this.normalizeTextsLengths();
             this.artUrl = this.DOM.EntryArt.data('art_url');
-            this.isRated = Boolean(parseInt(this.$obj.data('rated')));
 
             this.playPauseVisible = this.DOM.EntryControlsPlayPause.css('display') != 'none';
             this.forceShowPlayPause = false;
@@ -100,7 +99,7 @@ define(['jquery'],
             },
 
             setRated: function(rate) {
-                this.$obj.data('rated', 1);
+                this.$obj.data('rated', '1');
                 this.DOM.EntryControlsLikeJs.removeClass(rawC(this.C.EntryControlsLike));
                 this.DOM.EntryControlsDislikeJs.removeClass(rawC(this.C.EntryControlsDislike));
 
@@ -108,15 +107,25 @@ define(['jquery'],
                     this.DOM.EntryControlsLikeJs.addClass(rawC(this.C.EntryControlsLike) + '_active');
                     this.DOM.EntryControlsDislikeJs.addClass(rawC(this.C.EntryControlsDislike) + '_inactive');
                     this.playlist.playerControl.applyRate(1);
+                    this.setRating(1);
                 } else if (rate === 'down') {
                     this.DOM.EntryControlsLikeJs.addClass(rawC(this.C.EntryControlsLike) + '_inactive');
                     this.DOM.EntryControlsDislikeJs.addClass(rawC(this.C.EntryControlsDislike) + '_active');
                     this.playlist.playerControl.applyRate(0);
+                    this.setRating(0);
                 }
             },
 
             getRating: function() {
                 return this.$obj.data('rating');
+            },
+
+            setRating: function(rating) {
+                this.$obj.data('rating', rating);
+            },
+
+            isRated: function() {
+                return Boolean(parseInt(this.$obj.data('rated')));
             },
 
             normalizeTextsLengths: function() {
@@ -251,7 +260,7 @@ define(['jquery'],
 
             rate: function (direction) {
                 var self = this;
-                if (this.isRated) {
+                if (this.isRated()) {
                     alert('not possible');
                     // TODO: may be some sort of notification
                     return;
@@ -271,7 +280,6 @@ define(['jquery'],
                     .done(function (data) {
                         console.log(data);
                         self.setRated(direction);
-                        self.isRated = true;
                     })
                     .fail(function (data) {
                         console.warn(data);

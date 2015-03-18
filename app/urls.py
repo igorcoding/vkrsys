@@ -1,8 +1,7 @@
 from django.conf.urls import patterns, url, include
-from django.contrib.auth.decorators import login_required
 
 from app import views
-from app import api
+from app.views import api
 
 urlpatterns = patterns('',
     url(r'^$', views.HomePageView.as_view(), name='index'),

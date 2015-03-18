@@ -34,6 +34,7 @@ VK_APP_ID = config.get('vk', 'VK_APP_ID')
 VK_API_SECRET = config.get('vk', 'VK_API_SECRET')
 VK_EXTRA_SCOPE = [
     'audio',
+    'friends'
 ]
 
 

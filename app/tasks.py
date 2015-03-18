@@ -43,7 +43,6 @@ djv = Dejavu(config)
 
 
 @shared_task
-# @catcher
 def fetch_song_url(song_id, vk_uid, access_token):
     s = Song.objects.get(pk=song_id)
     vk_song_id = '%d_%d' % (s.owner_id, s.song_id)
@@ -60,7 +59,6 @@ def fetch_song_url(song_id, vk_uid, access_token):
 
 
 @shared_task
-# @catcher
 def fetch_userpic(user_id, vk_uid, access_token):
     try:
         vkapi = vk.API(access_token=access_token)
@@ -69,6 +67,12 @@ def fetch_userpic(user_id, vk_uid, access_token):
     except VkAPIMethodError:
         return None
 
+
+@shared_task
+def fetch_friends_music(user_id, vk_uid, access_token):
+    vkapi = vk.API(access_token=access_token)
+
+    pass
 
 @shared_task
 # @catcher

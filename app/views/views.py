@@ -1,22 +1,14 @@
-import json
-from pprint import pprint
-from django.conf import settings
-import requests
+import uuid
+
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist
-from django.http.response import JsonResponse, HttpResponse
+from django.http.response import HttpResponse
 from django.shortcuts import render, redirect
-from django.template import RequestContext
 from django.utils.decorators import method_decorator
 from django.views.generic import View
 from django.contrib.auth import logout
-from social_auth.db.django_models import UserSocialAuth
-import vk
+
 from app import tasks
-from app.basicscripts import VkSocial, Db
-from app.models import Song
-import uuid
+from app.views.basicscripts import VkSocial, Db
 
 
 class MyView(View):

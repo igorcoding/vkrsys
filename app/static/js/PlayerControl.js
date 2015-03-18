@@ -222,7 +222,7 @@ define(['jquery'],
             },
 
             initRateButtons: function() {
-                if (this.playingSong.isRated) {
+                if (this.playingSong.isRated()) {
                     var rating = this.playingSong.getRating();
                     this.applyRate(rating);
                 } else {
@@ -248,8 +248,8 @@ define(['jquery'],
                 this.initRateButtons();
             },
 
-            visualPlay: function ($ppButton) {
-                this.initPlay($ppButton);
+            visualPlay: function () {
+                this.initPlay();
                 this.setStatePlaying();
             },
 
