@@ -1,8 +1,11 @@
 import json
+from django.conf import settings
+from django.contrib.auth import logout
 
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.urlresolvers import reverse
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
@@ -15,19 +18,28 @@ from app import tasks
 from app.views.basicscripts import Db, VkSocial
 
 
-def ensure_present(d, args):
-    absent = []
-    for arg in args:
-        if arg not in d:
-            absent.append(arg)
+def ensure_present(required, attr_name='GET'):
+    def real_wrapper(f):
+        def wrapper(*args, **kwargs):
+            d = getattr(args[0], attr_name)
+            if attr_name not in ['GET', 'POST']:
+                d = json.loads(d, encoding='utf-8')
+                args += (d, )
+            absent = []
+            for arg in required:
+                if arg not in d:
+                    absent.append(arg)
 
-    if len(absent) > 0:
-        return JsonResponse({
-            'status': 400,
-            'reason': 'required params are not present',
-            'absent': absent
-        }, status=400)
-    return None
+            if len(absent) > 0:
+                return JsonResponse({
+                    'status': 400,
+                    'reason': 'required params are not present',
+                    'absent': absent
+                }, status=400)
+            else:
+                return f(*args, **kwargs)
+        return wrapper
+    return real_wrapper
 
 
 class GetUserpic(View):
@@ -37,23 +49,18 @@ class GetUserpic(View):
         'unknown': 500
     }
 
-    MSG = {
-        200: 'ok',
-        501: 'token expired',
-        500: 'unknown'
-    }
+    MSG = dict(zip(STATUS.values(), STATUS.keys()))
 
-    def _get_userpic(self, user_id, user_vk_id, access_token):
+    def _get_userpic(self, request, user_id, user_vk_id, access_token):
         cache_key = 'userpic_%s' % user_vk_id
         userpic = cache.get(cache_key)
         status = 200
         if userpic is None:
             try:
-                userpic_res = tasks.fetch_userpic.delay(user_id, user_vk_id, access_token)
-                userpic = userpic_res.get()
+                userpic = tasks.fetch_userpic(user_id, user_vk_id, access_token)
                 cache.set(cache_key, userpic, 60 * 30)
                 if userpic is None:
-                    status = self.STATUS['token_expired']
+                    return None
             except:
                 status = self.STATUS['unknown']
         return status, userpic
@@ -62,7 +69,9 @@ class GetUserpic(View):
     def get(self, request):
         user_id = request.user.id
         access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
-        status, userpic = self._get_userpic(user_id, user_vk_id, access_token)
+        status, userpic = self._get_userpic(request, user_id, user_vk_id, access_token)
+        if status is None:
+            return redirect(settings.VK_LOGIN_URL)
 
         return JsonResponse({
             'status': status,
@@ -75,20 +84,18 @@ class GetSongUrl(View):
     PARAMS = ['song_id']
 
     @method_decorator(login_required)
+    @method_decorator(ensure_present(PARAMS))
     def get(self, request):
-        d = request.GET
-        absent = ensure_present(d, self.PARAMS)
-        if absent:
-            return absent
-
         access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
         try:
-            song_id = d['song_id']
+            song_id = request.GET['song_id']
             url = tasks.fetch_song_url(song_id, user_vk_id, access_token)
-            return JsonResponse({
-                'status': 200,
-                'url': url
-            }, status=200)
+            if url is not None:
+                return JsonResponse({
+                    'status': 200,
+                    'url': url
+                }, status=200)
+            return redirect(settings.VK_LOGIN_URL)
         except (ConnectionError, ReadTimeout):
             return JsonResponse({
                 'status': 500,
@@ -107,12 +114,10 @@ class Recommend(View):
     PLAYLIST_ENTRIES_TEMPLATE_NAME = 'playlist_entries.html'
 
     @method_decorator(login_required)
+    @method_decorator(ensure_present(PARAMS))
     def get(self, request):
         user_id = request.user.id
         d = request.GET
-        absent = ensure_present(d, self.PARAMS)
-        if absent:
-            return absent
 
         try:
             limit = int(d['limit'])
@@ -139,20 +144,15 @@ class ListenCharacterise(View):
     PARAMS = ['song_id', 'hops_count', 'duration']
 
     @method_decorator(login_required)
-    def post(self, request):
+    @method_decorator(ensure_present(PARAMS, 'body'))
+    def post(self, request, *args, **kwargs):
         user_id = request.user.id
         uuid = request.COOKIES.get('uuid')
         if uuid is None or 'uuid' not in request.session or uuid != request.session['uuid']:
             return redirect('/')
 
-        # if request.is_ajax():
-        payload = json.loads(request.body)
-        absent = ensure_present(payload, self.PARAMS)
-        if absent:
-            return absent
-
         try:
-            rating_obj = Db.listen_characterise(uuid, user_id, payload)
+            rating_obj = Db.listen_characterise(uuid, user_id, args[0])
             if rating_obj is None:
                 return JsonResponse({
                     'status': 201,
@@ -184,15 +184,10 @@ class Rate(View):
     ACTION_TYPE = 'rate'
 
     @method_decorator(login_required)
-    def get(self, request):
-        # TODO: move to POST probably
-
+    @method_decorator(ensure_present(PARAMS, 'body'))
+    def post(self, request, *args):
         user_id = request.user.id
-
-        d = request.GET
-        absent = ensure_present(d, self.PARAMS)
-        if absent:
-            return absent
+        d = args[0]
 
         try:
             song_id = int(d['song_id'])
@@ -226,11 +221,5 @@ class Rate(View):
                 'reason': 'unknown error. ' + str(e.__class__),
                 'msg': e.message
             }, status=500)
-
-    @method_decorator(login_required)
-    def post(self, request):
-        return JsonResponse({
-            'status': 405
-        }, status=405)
 
 

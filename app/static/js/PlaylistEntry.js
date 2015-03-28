@@ -271,11 +271,11 @@ define(['jquery'],
                     return;
                 }
                 $.ajax('/api/rate', {
-                    method: 'GET', // TODO: should be POST
-                    data: {
+                    method: 'POST',
+                    data: JSON.stringify({
                         song_id: this.getSongId(),
                         direction: direction
-                    }
+                    })
                 })
                     .done(function (data) {
                         console.log(data);

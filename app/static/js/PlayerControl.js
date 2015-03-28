@@ -191,7 +191,7 @@ define(['jquery'],
                         this.playingSong.characterise();
                     }
 
-                    console.log(this.playingSong.listenedDuration);
+                    //console.log(this.playingSong.listenedDuration);
                     var normedTime = audio.currentTime / audio.duration * this.SLIDER_MAX;
                     this.DOM.MainSongProgressBar.slider('value', normedTime);
                     if (normedTime === this.SLIDER_MAX) {
@@ -336,6 +336,10 @@ define(['jquery'],
                     }
                 })
                     .done(function (d) {
+                        if (d.redirect) {
+                            window.location.href = d.redirect;
+                            return;
+                        }
                         cb(d['url']);
                     })
                     .fail(function (d) {

@@ -54,7 +54,7 @@ def fetch_song_url(song_id, vk_uid, access_token):
         s.save()
         return s.url
     except VkAPIMethodError as e:
-        pprint(e.message)
+        return None
 
 
 

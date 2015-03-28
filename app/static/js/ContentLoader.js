@@ -32,6 +32,10 @@ define(['jquery'],
                     method: 'GET'
                 })
                     .done(function (d) {
+                        if (d.redirect) {
+                            window.location.href = d.redirect;
+                            return;
+                        }
                         if (d.status === 200) {
                             console.log('[userpic] loaded');
                             self.DOM.UserAvatar.css('background-image', 'url(' + d.url + ')')

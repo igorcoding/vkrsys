@@ -37,6 +37,8 @@ VK_EXTRA_SCOPE = [
     'friends'
 ]
 
+VK_LOGIN_URL = '/social/login/vk-oauth/'
+
 
 # Celery Daemon
 BROKER_URL = config.get('celery', 'BROKER_URL')
