@@ -121,6 +121,7 @@ class Recommender:
         self.mysql_conf.items_table = "app_song"
 
         self.config.set_mysql_exporter(self.mysql_conf)
+        self.config.set_predictor('sigmoid')
 
         self.svd = rsys.SVD(self.config)
 

@@ -1,5 +1,5 @@
-define(['jquery'],
-    function($) {
+define(['jquery', 'toastr'],
+    function($, toastr) {
         function PlaylistEntry($obj, playlist) {
             if (!$obj) {
                 throw '$obj cannot be empty!';
@@ -261,9 +261,9 @@ define(['jquery'],
             rate: function (direction) {
                 var self = this;
                 if (this.isRated()) {
-                    alert('not possible');
+                    //alert('not possible');
                     // TODO: may be some sort of notification
-                    return;
+                    //return;
                 }
 
                 if (direction !== 'up' && direction !== 'down') {
@@ -279,7 +279,12 @@ define(['jquery'],
                 })
                     .done(function (data) {
                         console.log(data);
-                        self.setRated(direction);
+                        if (data.status == 200) {
+                            toastr.success(data.msg);
+                            self.setRated(direction);
+                        } else {
+                            toastr.warning(data.msg);
+                        }
                     })
                     .fail(function (data) {
                         console.warn(data);

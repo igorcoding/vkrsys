@@ -31,3 +31,7 @@ html, body {
     color: #5d5d5d;
     font-size: 18px;
 }
+
+.toast-top-right {
+    top: 60px !important;
+}

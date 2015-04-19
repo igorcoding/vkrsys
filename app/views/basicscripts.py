@@ -63,6 +63,8 @@ class Db:
 
         try:
             rating_obj = Rating.objects.get(user=user, song=song)
+            if not rating_obj.is_implicit:
+                return None
         except ObjectDoesNotExist:
             rating_obj = Rating(user=user, song=song)
 

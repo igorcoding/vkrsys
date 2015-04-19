@@ -6,7 +6,8 @@ require.config({
         jquery_ui: "lib/jquery-ui.min",
         jquery_sizes: "lib/jquery.sizes.min",
         jquery_plugins: "lib/jquery.plugins",
-        lodash: "lib/lodash.min"
+        lodash: "lib/lodash.min",
+        toastr: "lib/toastr.min"
     },
     shim: {
         'lodash': {
@@ -27,6 +28,10 @@ require.config({
         "jquery_plugins": {
             deps: ['jquery'],
             exports: '$'
+        },
+        'toastr': {
+            deps: [],
+            exports: 'toastr'
         }
     }
 });

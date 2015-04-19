@@ -206,7 +206,8 @@ class Rate(View):
                 }, status=200)
 
             return JsonResponse({
-                'status': 200
+                'status': 200,
+                'msg': 'Vote accepted'
             }, status=200)
 
         except ObjectDoesNotExist as e:
