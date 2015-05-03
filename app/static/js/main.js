@@ -48,7 +48,8 @@ define(['jquery', 'jquery_ui', 'jquery_sizes', 'jquery_plugins', 'toastr', 'Cont
                 console.log(player);
 
                 $window.scroll(function() {
-                    if($(window).scrollTop() == $(document).height() - $(window).height()) {
+                    if(Math.ceil($(window).scrollTop()) >= $(document).height() - $(window).height()) {
+
                         setTimeout(function() {
                             contentLoader.loadNextRecommendations();
                         }, 1000);

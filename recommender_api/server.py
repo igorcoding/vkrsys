@@ -8,9 +8,10 @@ import json
 import logging
 import multiprocessing as mp
 
+
 import tornado.web
 import tornado.gen
-import tornado.ioloop
+from tornado.ioloop import IOLoop
 from tornado.options import define, options
 from recommender import Recommender, RespError
 from response import Responses, RespError, R
@@ -21,6 +22,9 @@ logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=log
 class ProcessMixin(tornado.web.RequestHandler):
 
     def start_worker(self, *args, **kwargs):
+        # IOLoop.current().add_future(IOLoop.spawn_callback(lambda: self.worker(*args, **kwargs)),
+        #                             lambda f: self.result_cb(*f.result()))
+        # pool = ProcessPoolExecutor(max_workers=1)
         req, res = self.worker(*args, **kwargs)
         self.result_cb(req, res)
         # POOL = mp.Pool()
@@ -38,13 +42,13 @@ class ProcessMixin(tornado.web.RequestHandler):
 
     def worker(self, *args, **kwargs):
         try:
+            # tornado.ioloop.IOLoop.instance().add_callback(self._result_cb)
             return self._worker(*args, **kwargs)
         except tornado.web.HTTPError, e:
             self.set_status(e.status_code)
         except:
             logging.error("_worker problem", exc_info=True)
             self.set_status(500)
-        # tornado.ioloop.IOLoop.instance().add_callback(self._result_cb)
 
     def result_cb(self, req, result):
         tornado.ioloop.IOLoop.instance().add_callback(self._result_cb, req, result)

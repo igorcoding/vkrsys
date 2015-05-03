@@ -102,7 +102,7 @@ define(['jquery'],
                     - this.DOM.Art.totalWidth()
                     - playerMainMargin.left
                     - playerMainMargin.right
-                    - 4 - 1; // 4 is for 4 borders by 1px
+                    - 4 - 2; // 4 is for 4 borders by 1px
                 this.DOM.Main.width(mainWidth);
             },
 
