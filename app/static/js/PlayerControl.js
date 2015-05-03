@@ -13,6 +13,7 @@ define(['jquery', 'PlayerProgressbar'],
             this.SLIDER_MAX = 100000;
             this.progressBar = new PlayerProgressbar(this.DOM.ProgressBar, this.SLIDER_MAX);
             this.progressBar.addOnProgressChangedManuallyListener(this.onManualSlide.bind(this));
+            this.defaultDocumentTitle = document.title;
         }
 
         PlayerControl.prototype = {
@@ -267,6 +268,7 @@ define(['jquery', 'PlayerProgressbar'],
                 $audio.animate({volume: 1}, 500, function () {
 
                 });
+                document.title = this.playingSong.title + " - " + this.playingSong.artist;
             },
 
             actualPause: function ($audio) {
@@ -274,6 +276,7 @@ define(['jquery', 'PlayerProgressbar'],
                 $audio.animate({volume: 0}, 500, function () {
                     $audio[0].pause();
                 });
+                document.title = this.defaultDocumentTitle;
             },
 
             play: function (song_entry) {
