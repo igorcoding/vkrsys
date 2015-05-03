@@ -62,20 +62,20 @@ define(['jquery', 'toastr'],
             },
 
             onWindowResize: function (w, entryInfo) {
-                entryInfo = entryInfo || this.DOM.EntryInfo;
-                var entryArt = entryInfo ? entryInfo.find(this.C.EntryArt) : this.DOM.EntryArt;
-                var entryHeader = entryInfo ? entryInfo.find(this.C.EntryHeader) : this.DOM.EntryHeader;
-                var entryHeaderMargin = entryHeader.margin();
-                //var playPause = entryInfo.find(this.C.EntryControlsPlayPause);
-                var likeDislike = entryInfo.find(this.C.EntryControls);
-
-                entryInfo.width(entryInfo.parent().width());
-
-                var minus = entryInfo.width() - entryArt.totalWidth()
-                    - entryHeaderMargin.left
-                    - entryHeaderMargin.right
-                    - 150 - 1;
-                entryHeader.width(minus);
+                //entryInfo = entryInfo || this.DOM.EntryInfo;
+                //var entryArt = entryInfo ? entryInfo.find(this.C.EntryArt) : this.DOM.EntryArt;
+                //var entryHeader = entryInfo ? entryInfo.find(this.C.EntryHeader) : this.DOM.EntryHeader;
+                //var entryHeaderMargin = entryHeader.margin();
+                ////var playPause = entryInfo.find(this.C.EntryControlsPlayPause);
+                //var likeDislike = entryInfo.find(this.C.EntryControls);
+                //
+                //entryInfo.width(entryInfo.parent().width());
+                //
+                //var minus = entryInfo.width() - entryArt.totalWidth()
+                //    - entryHeaderMargin.left
+                //    - entryHeaderMargin.right
+                //    - 150 - 1;
+                //entryHeader.width(minus);
             },
 
             getState: function () {
@@ -129,7 +129,7 @@ define(['jquery', 'toastr'],
             },
 
             normalizeTextsLengths: function() {
-                var max = 50;
+                var max = 80;
                 var ellipsis = '<span class="ellipsis">...</span>';
                 if (this.artist.length > max) {
                     this.DOM.EntryHeaderArtist.html(this.artist.slice(0, max+1) + ellipsis);

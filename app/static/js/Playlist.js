@@ -45,8 +45,8 @@ define(['jquery', 'PlaylistEntry'],
             },
 
             registerEvents: function () {
-                window.registerOnResize(this.onWindowResize, this);
-                this.onWindowResize(window);
+                //window.registerOnResize(this.onWindowResize, this);
+                //this.onWindowResize(window);
             },
 
             onWindowResize: function (w) {

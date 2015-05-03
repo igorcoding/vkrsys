@@ -1,5 +1,5 @@
-define(['jquery'],
-    function($) {
+define(['jquery', 'PlayerProgressbar'],
+    function($, PlayerProgressbar) {
         function PlayerControl(playerId) {
             this.$obj = $(playerId);
             this.DOM = {};
@@ -10,29 +10,28 @@ define(['jquery'],
             this.state = this.States.Paused;
             this.playlist = null;
 
-            this.progressManualSliding = false;
-            this.afterManualSlide = false;
-            this.SLIDER_MAX = 10000;
-            this.prevAudioTime = -1;
+            this.SLIDER_MAX = 100000;
+            this.progressBar = new PlayerProgressbar(this.DOM.ProgressBar, this.SLIDER_MAX);
+            this.progressBar.addOnProgressChangedManuallyListener(this.onManualSlide.bind(this));
         }
 
         PlayerControl.prototype = {
 
             C: {
-                Art: '.player__art',
+                Art: '.player__main__song__art',
                 Main: '.player__main',
                 Audio: '.player__main__audio',
                 MainSong: '.player__main__song',
                 MainSongTitle: '.player__main__song__title',
-                MainSongProgressBar: '.player__main__song__progressbar',
                 MainControls: '.player__main__controls',
                 MainControlsPrev: '.player__main__controls__prev',
                 MainControlsPlayPause: '.player__main__controls__playpause',
                 MainControlsNext: '.player__main__controls__next',
-                MainControlsDislikeJs: '.js-player__main__controls__dislike',
-                MainControlsDislike: '.player__main__controls__dislike',
-                MainControlsLikeJs: '.js-player__main__controls__like',
-                MainControlsLike: '.player__main__controls__like'
+                MainControlsDislikeJs: '.js-player__main__ratecontrols__dislike',
+                MainControlsDislike: '.player__main__ratecontrols__dislike',
+                MainControlsLikeJs: '.js-player__main__ratecontrols__like',
+                MainControlsLike: '.player__main__ratecontrols__like',
+                ProgressBar: '.player__progressbar'
             },
 
             States: {
@@ -48,16 +47,6 @@ define(['jquery'],
                         }
                     }
                 }
-
-                this.DOM.MainSongProgressBar.slider({
-                    orientation: "horizontal",
-                    range: "min",
-                    max: 10000,
-                    start: this.onProgressSlideStart.bind(this),
-                    stop: this.onProgressSlideStop.bind(this),
-                    //slide: this.onProgressSlide.bind(this),
-                    change: this.onProgressSlideChange.bind(this)
-                });
             },
 
             getState: function () {
@@ -88,8 +77,8 @@ define(['jquery'],
             },
 
             registerEvents: function () {
-                window.registerOnResize(this.onWindowResize, this);
-                this.onWindowResize(window);
+                //window.registerOnResize(this.onWindowResize, this);
+                //this.onWindowResize(window);
                 this.registerOnPlayClick();
                 this.registerOnPrevNextClick();
                 this.registerOnRateClick();
@@ -150,7 +139,11 @@ define(['jquery'],
                 } else if (rating == 0) {
                     this.DOM.MainControlsLikeJs.addClass(rawC(this.C.MainControlsLike) + '_inactive');
                     this.DOM.MainControlsDislikeJs.addClass(rawC(this.C.MainControlsDislike) + '_active');
+                } else {
+                    this.DOM.MainControlsLikeJs.addClass(rawC(this.C.MainControlsLike));
+                    this.DOM.MainControlsDislikeJs.addClass(rawC(this.C.MainControlsDislike));
                 }
+                console.log("rating", rating);
             },
 
             registerOnRateClick: function () {
@@ -193,7 +186,10 @@ define(['jquery'],
 
                     //console.log(this.playingSong.listenedDuration);
                     var normedTime = audio.currentTime / audio.duration * this.SLIDER_MAX;
-                    this.DOM.MainSongProgressBar.slider('value', normedTime);
+                    if (!this.progressBar.isChangingManually()) {
+                        this.progressBar.changeProgress(normedTime);
+                    }
+                    //this.DOM.MainSongProgressBar.slider('value', normedTime);
                     if (normedTime === this.SLIDER_MAX) {
                         this.playlist.next();
                     }
@@ -211,14 +207,13 @@ define(['jquery'],
 
             },
 
-            onProgressSlideChange: function() {
-                if (this.progressManualSliding) {
+            onManualSlide: function(progress) {
+                //if (this.progressManualSliding) {
                     var audio = this.DOM.Audio[0];
-                    var normedTime = this.DOM.MainSongProgressBar.slider('value');
-                    audio.currentTime = normedTime / this.SLIDER_MAX * audio.duration;
-                    this.progressManualSliding = false;
-                    this.afterManualSlide = true;
-                }
+                    audio.currentTime = progress / this.SLIDER_MAX * audio.duration;
+                    //this.progressManualSliding = false;
+                    //this.afterManualSlide = true;
+                //}
             },
 
             initRateButtons: function() {
@@ -309,6 +304,7 @@ define(['jquery'],
                         self.visualPlay();
                         audio.src = url;
                         audio.onloadeddata = function () {
+                            self.progressBar.resetProgress();
                             self.actualPlay($audio);
                         };
                         audio.load();

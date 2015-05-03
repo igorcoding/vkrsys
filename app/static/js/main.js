@@ -43,20 +43,20 @@ define(['jquery', 'jquery_ui', 'jquery_sizes', 'jquery_plugins', 'toastr', 'Cont
 
             window.contentLoader = new ContentLoader();
             contentLoader.fetchUserpic();
-            contentLoader.loadInitialRecommendations(function(addedCount) {
+            //contentLoader.loadInitialRecommendations(function(addedCount) {
                 window.player = new Player("#main_player", "#main_playlist");
-                console.log(player);
-
-                $window.scroll(function() {
-                    if(Math.ceil($(window).scrollTop()) >= $(document).height() - $(window).height()) {
-
-                        setTimeout(function() {
-                            contentLoader.loadNextRecommendations();
-                        }, 1000);
-                    }
-                });
-
-            });
+            //    console.log(player);
+            //
+            //    $window.scroll(function() {
+            //        if(Math.ceil($(window).scrollTop()) >= $(document).height() - $(window).height()) {
+            //
+            //            setTimeout(function() {
+            //                contentLoader.loadNextRecommendations();
+            //            }, 1000);
+            //        }
+            //    });
+            //
+            //});
 
 
 
