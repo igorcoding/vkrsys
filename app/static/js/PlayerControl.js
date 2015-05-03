@@ -22,6 +22,7 @@ define(['jquery', 'PlayerProgressbar'],
                 Main: '.player__main',
                 Audio: '.player__main__audio',
                 MainSong: '.player__main__song',
+                MainSongArtist: '.player__main__song__artist',
                 MainSongTitle: '.player__main__song__title',
                 MainControls: '.player__main__controls',
                 MainControlsPrev: '.player__main__controls__prev',
@@ -236,7 +237,8 @@ define(['jquery', 'PlayerProgressbar'],
                 var playPauseClass = rawC(this.C.MainControlsPlayPause);
                 $ppButton.removeClass(playPauseClass + '_paused');
                 $ppButton.addClass(playPauseClass + '_playing');
-                this.DOM.MainSongTitle.text(this.playingSong.artist + "  -  " + this.playingSong.title);
+                this.DOM.MainSongArtist.text(this.playingSong.artist);
+                this.DOM.MainSongTitle.text(this.playingSong.title);
                 this.DOM.Art.css({
                     'background-image': 'url(' + this.playingSong.artUrl + ')'
                 });
