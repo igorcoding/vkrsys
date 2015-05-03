@@ -1,5 +1,5 @@
-define(['jquery', 'jquery_ui', 'jquery_sizes', 'jquery_plugins', 'toastr', 'ContentLoader', 'Player'],
-    function($, jquery_ui, jquery_sizes, jquery_plugins, toastr, ContentLoader, Player) {
+define(['jquery', 'jquery_ui', 'jquery_sizes', 'jquery_plugins', 'toastr', 'ContentLoader', 'PlayerControl'],
+    function($, jquery_ui, jquery_sizes, jquery_plugins, toastr, ContentLoader, PlayerControl) {
         $(document).ready(function($) {
             toastr.options = toastr.options = {
               "closeButton": false,
@@ -43,20 +43,24 @@ define(['jquery', 'jquery_ui', 'jquery_sizes', 'jquery_plugins', 'toastr', 'Cont
 
             window.contentLoader = new ContentLoader();
             contentLoader.fetchUserpic();
-            //contentLoader.loadInitialRecommendations(function(addedCount) {
-                window.player = new Player("#main_player", "#main_playlist");
-            //    console.log(player);
-            //
-            //    $window.scroll(function() {
-            //        if(Math.ceil($(window).scrollTop()) >= $(document).height() - $(window).height()) {
-            //
-            //            setTimeout(function() {
-            //                contentLoader.loadNextRecommendations();
-            //            }, 1000);
-            //        }
-            //    });
-            //
-            //});
+            contentLoader.loadInitialRecommendations(function(addedCount) {
+                window.player = new PlayerControl("#main_player");
+                console.log(player);
+
+                var loading = false;
+                player.playlist.addOnScrollListener(function($el) {
+                    if(!loading && Math.ceil($el.scrollTop()) >= $el.prop('scrollHeight') - $el.height() - 700) {
+                        console.log("loading");
+                        loading = true;
+                        setTimeout(function() {
+                            contentLoader.loadNextRecommendations(function(d) {
+                                loading = false;
+                                window.player.playlist.addContent(d);
+                            });
+                        }, 1000);
+                    }
+                }.bind(this));
+            });
 
 
 

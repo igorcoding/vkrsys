@@ -1,32 +1,41 @@
-<div id="main_player" class="player">
-    <div class="player__art" style="background-image: url('{{ recs.0.5 }}')"></div>
-
-    <div class="player__main">
-        <audio class="player__main__audio" controls preload="none">
-          <source src="" type="audio/mpeg">
-          Your browser does not support the audio element.
-        </audio>
-        <div class="player__main__song">
-            <div class="player__main__song__title" >
-                {{ recs.0.1 }} - {{ recs.0.2 }}
+<div class="player" id="main_player">
+    <div class="player__main__outer">
+        <div class="player__main">
+            <audio class="player__main__audio" controls preload="none">
+                <source src="" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <div class="player__main__controls__outer">
+                <div class="player__main__controls">
+                    <div class="player__main__controls__prev player__main__controls__control link"></div>
+                    <div class="player__main__controls__playpause player__main__controls__playpause_paused player__main__controls__control link"></div>
+                    <div class="player__main__controls__next player__main__controls__control link"></div>
+                </div>
             </div>
-            <div class="player__main__song__progressbar_outer">
-                <div class="player__main__song__progressbar"></div>
+            <div class="player__main__song">
+                <div class="player__main__song__art__outer">
+                    <div class="player__main__song__art" style="background-image: url('{{ recs.0.5 }}')"></div>
+                </div>
+                <div class="player__main__song__info">
+                    <div class="player__main__song__artist">{{ recs.0.1 }}</div>
+                    <div class="player__main__song__title">{{ recs.0.2 }}</div>
+                </div>
+            </div>
+            <div class="player__main__ratecontrols__outer">
+                <div class="player__main__ratecontrols">
+                    <div class="player__main__controls__control link player__main__ratecontrols__rate js-player__main__ratecontrols__like player__main__ratecontrols__like"></div>
+                    <div class="player__main__controls__control link player__main__ratecontrols__rate js-player__main__ratecontrols__dislike player__main__ratecontrols__dislike"></div>
+                </div>
             </div>
         </div>
-
-        <div class="player__main__controls">
-            <div class="player__main__controls__rate js-player__main__controls__dislike player__main__controls__dislike player__main__controls__control link"></div>
-
-            <div class="player__main__controls__prev player__main__controls__control link"></div>
-            <div class="player__main__controls__playpause player__main__controls__playpause_paused player__main__controls__control link"></div>
-            <div class="player__main__controls__next player__main__controls__control link"></div>
-
-            <div class="player__main__controls__rate js-player__main__controls__like player__main__controls__like player__main__controls__control link"></div>
+        <div class="player__progressbar">
+            <div class="player__progressbar__bg"></div>
+            <div class="player__progressbar__progress"></div>
         </div>
     </div>
-</div>
-
-<div id="main_playlist" class="playlist">
-    {% include 'playlist_entries.html' %}
+    <div class="player__playlist__outer">
+        <div class="player__playlist">
+            {% include 'playlist_entries.html' %}
+        </div>
+    </div>
 </div>

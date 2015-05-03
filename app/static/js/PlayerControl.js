@@ -1,5 +1,5 @@
-define(['jquery', 'PlayerProgressbar'],
-    function($, PlayerProgressbar) {
+define(['jquery', 'Playlist', 'PlayerProgressbar'],
+    function($, Playlist, PlayerProgressbar) {
         function PlayerControl(playerId) {
             this.$obj = $(playerId);
             this.DOM = {};
@@ -8,7 +8,7 @@ define(['jquery', 'PlayerProgressbar'],
 
             this.playingSong = null;
             this.state = this.States.Paused;
-            this.playlist = null;
+            this.playlist = new Playlist(this.DOM.Playlist, this);
 
             this.SLIDER_MAX = 100000;
             this.progressBar = new PlayerProgressbar(this.DOM.ProgressBar, this.SLIDER_MAX);
@@ -33,6 +33,7 @@ define(['jquery', 'PlayerProgressbar'],
                 MainControlsDislike: '.player__main__ratecontrols__dislike',
                 MainControlsLikeJs: '.js-player__main__ratecontrols__like',
                 MainControlsLike: '.player__main__ratecontrols__like',
+                Playlist: '.player__playlist',
                 ProgressBar: '.player__progressbar'
             },
 
@@ -145,7 +146,6 @@ define(['jquery', 'PlayerProgressbar'],
                     this.DOM.MainControlsLikeJs.addClass(rawC(this.C.MainControlsLike));
                     this.DOM.MainControlsDislikeJs.addClass(rawC(this.C.MainControlsDislike));
                 }
-                console.log("rating", rating);
             },
 
             registerOnRateClick: function () {
@@ -329,7 +329,7 @@ define(['jquery', 'PlayerProgressbar'],
             },
 
             fetchAudioUrl: function (song_id, cb) {
-                console.log(song_id);
+                //console.log(song_id);
                 $.ajax('/api/song_url', {
                     method: 'GET',
                     data: {

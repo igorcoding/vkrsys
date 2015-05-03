@@ -250,10 +250,10 @@ define(['jquery', 'toastr'],
                         })
                     })
                         .done(function (data) {
-                            console.log(data);
+                            console.log("/api/characterise:", data);
                         })
                         .fail(function (data) {
-                            console.warn(data);
+                            console.warn("/api/characterise:", data);
                         });
                 }
             },

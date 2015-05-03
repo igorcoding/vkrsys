@@ -9,6 +9,8 @@ define(['jquery', 'PlaylistEntry'],
             this.playingEntry = null;
             this.playingEntryId = null;
 
+            this.onScrollListeners = [];
+
             this.bindToDOM();
             this.exploreEntries();
             this.registerEvents();
@@ -27,6 +29,11 @@ define(['jquery', 'PlaylistEntry'],
                 }
             },
 
+            addContent: function(content) {
+                this.$obj.append(content.result);
+                this.exploreEntries(content.count);
+            },
+
             exploreEntries: function (count) {
                 var self = this;
                 this.$entries = this.$obj.find(PlaylistEntry.prototype.C.Entry);
@@ -34,7 +41,7 @@ define(['jquery', 'PlaylistEntry'],
                     this.$entries = this.$entries.slice(this.entries.length, this.entries.length + count);
                 }
                 //this.entries = [];
-                var id = -1;
+                var id = this.entries.length - 1;
                 this.$entries.each(function () {
                     var $this = $(this);
                     var entry = new PlaylistEntry($this, self);
@@ -45,6 +52,12 @@ define(['jquery', 'PlaylistEntry'],
             },
 
             registerEvents: function () {
+                var self = this;
+                this.$obj.scroll(function() {
+                    for (var i = 0; i < self.onScrollListeners.length; ++i) {
+                        self.onScrollListeners[i](self.$obj);
+                    }
+                });
                 //window.registerOnResize(this.onWindowResize, this);
                 //this.onWindowResize(window);
             },
@@ -109,7 +122,13 @@ define(['jquery', 'PlaylistEntry'],
                 //entry.onWindowResize(window);
             },
 
+            addOnScrollListener: function(cb) {
+                this.onScrollListeners.push(cb);
+            },
+
             playById: function (id) {
+                console.log("Entries length:", this.entries.length);
+                console.log("PlayingId:", this.playingEntryId);
                 if (id < 0) {
                     id = this.entries.length - 1;
                 }
