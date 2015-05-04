@@ -148,13 +148,22 @@ define(['jquery', 'toastr'],
             },
 
             durationToTime: function(duration) {
-                duration = Math.floor(duration);
-                var minutes = Math.floor(duration / 60);
-                var seconds = duration - minutes * 60;
+                var seconds = Math.floor(duration);
+                var minutes = Math.floor(seconds / 60);
+                seconds -= minutes * 60;
                 if (seconds < 10) {
                     seconds = "0" + String(seconds);
                 }
-                return minutes + ":" + seconds;
+                if (minutes < 60) {
+                    return minutes + ":" + seconds;
+                } else {
+                    var hours = Math.floor(minutes / 60);
+                    minutes -= hours * 60;
+                    if (minutes < 10) {
+                        minutes = "0" + minutes;
+                    }
+                    return hours + ":" + minutes + ":" + seconds;
+                }
             },
 
             onHoverEnter: function () {
