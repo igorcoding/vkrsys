@@ -226,6 +226,27 @@
     width: 100%;
 }
 
+.player__progressbar__text {
+    width: 100%;
+    height: 18px;
+    line-height: 22px;
+    font-size: 12px;
+}
+
+.player__progressbar__current {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin-left: 10px;
+}
+
+.player__progressbar__max {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin-right: 10px;
+}
+
 
 .player__progressbar__bg {
     position: absolute;
@@ -242,7 +263,7 @@
     left: 0;
     width: 100%;
     height: 18px;
-    background-color: #51a351;
+    background-color: #6ace6d;
     clip: rect(0px 0px 18px 0px);
 }
 

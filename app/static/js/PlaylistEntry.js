@@ -144,12 +144,13 @@ define(['jquery', 'toastr'],
 
             countDuration: function() {
                 this.duration = parseInt(this.DOM.EntryDuration.text());
-                this.DOM.EntryDuration.text(this.durationToTime());
+                this.DOM.EntryDuration.text(this.durationToTime(this.duration));
             },
 
-            durationToTime: function() {
-                var minutes = Math.floor(this.duration / 60);
-                var seconds = this.duration - minutes * 60;
+            durationToTime: function(duration) {
+                duration = Math.floor(duration);
+                var minutes = Math.floor(duration / 60);
+                var seconds = duration - minutes * 60;
                 if (seconds < 10) {
                     seconds = "0" + String(seconds);
                 }
@@ -250,7 +251,7 @@ define(['jquery', 'toastr'],
                         })
                     })
                         .done(function (data) {
-                            console.log("/api/characterise:", data);
+                            //console.log("/api/characterise:", data);
                         })
                         .fail(function (data) {
                             console.warn("/api/characterise:", data);

@@ -50,7 +50,7 @@ define(['jquery', 'jquery_ui', 'jquery_sizes', 'jquery_plugins', 'toastr', 'Cont
                 var loading = false;
                 player.playlist.addOnScrollListener(function($el) {
                     if(!loading && Math.ceil($el.scrollTop()) >= $el.prop('scrollHeight') - $el.height() - 700) {
-                        console.log("loading");
+                        //console.log("loading");
                         loading = true;
                         setTimeout(function() {
                             contentLoader.loadNextRecommendations(function(d) {

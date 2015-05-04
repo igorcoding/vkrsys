@@ -24,7 +24,9 @@ define(['jquery'],
         PlayerProgressbar.prototype = {
             C: {
                 Bg: '.player__progressbar__bg',
-                Progress: '.player__progressbar__progress'
+                Progress: '.player__progressbar__progress',
+                CurrentProgressText: '.player__progressbar__current',
+                MaxProgressText: '.player__progressbar__max'
             },
 
             bindToDOM: function () {
@@ -51,26 +53,30 @@ define(['jquery'],
 
                 this.$obj
                     .mousedown(function(e) {
-                        self._dragging = true;
-                        $(window).mousemove(function (e) {
-                            if (self._dragging) {
-                                onMouseCb(e);
-                            }
-                        });
-                        $(window).mouseup(function(e) {
-                            if (self._dragging) {
-                                self._dragging = false;
-                                $(window).off("mouseup");
-                            }
-                        });
+                        if (e.which == 1) {
+                            self._dragging = true;
+                            $(window).mousemove(function (e) {
+                                if (self._dragging) {
+                                    onMouseCb(e);
+                                }
+                            });
+                            $(window).mouseup(function (e) {
+                                if (self._dragging) {
+                                    self._dragging = false;
+                                    $(window).off("mouseup");
+                                }
+                            });
+                        }
                     })
                     .mouseup(function(e) {
-                        $(window).off("mousemove");
-                        self._dragging = false;
-                        var progress = onMouseCb(e);
+                        if (e.which == 1) {
+                            $(window).off("mousemove");
+                            self._dragging = false;
+                            var progress = onMouseCb(e);
 
-                        for (var i = 0; i < self.manualSlideCallbacks.length; ++i) {
-                            self.manualSlideCallbacks[i](progress);
+                            for (var i = 0; i < self.manualSlideCallbacks.length; ++i) {
+                                self.manualSlideCallbacks[i](progress);
+                            }
                         }
                     });
             },
@@ -90,6 +96,14 @@ define(['jquery'],
 
             resetProgress: function() {
                 this._changeProgress(0);
+            },
+
+            setProgressText: function(text) {
+                this.DOM.CurrentProgressText.text(text);
+            },
+
+            setMaxProgressText: function(text) {
+                this.DOM.MaxProgressText.text(text);
             },
 
             _changeProgress: function(progress) {

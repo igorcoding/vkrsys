@@ -127,8 +127,8 @@ define(['jquery', 'PlaylistEntry'],
             },
 
             playById: function (id) {
-                console.log("Entries length:", this.entries.length);
-                console.log("PlayingId:", this.playingEntryId);
+                //console.log("Entries length:", this.entries.length);
+                //console.log("PlayingId:", this.playingEntryId);
                 if (id < 0) {
                     id = this.entries.length - 1;
                 }

@@ -13,6 +13,9 @@ define(['jquery', 'Playlist', 'PlayerProgressbar'],
             this.SLIDER_MAX = 100000;
             this.progressBar = new PlayerProgressbar(this.DOM.ProgressBar, this.SLIDER_MAX);
             this.progressBar.addOnProgressChangedManuallyListener(this.onManualSlide.bind(this));
+
+            var firstEntry = this.playlist.entries[0];
+            this.progressBar.setMaxProgressText(firstEntry.durationToTime(firstEntry.duration));
             this.defaultDocumentTitle = document.title;
         }
 
@@ -120,7 +123,12 @@ define(['jquery', 'Playlist', 'PlayerProgressbar'],
                 var next = this.DOM.MainControlsNext;
 
                 prev.click(function () {
-                    self.playlist.prev();
+                    var audio = self.DOM.Audio[0];
+                    if (self.getState() == self.States.Playing && audio.currentTime > 10) {
+                        audio.currentTime = 0;
+                    } else {
+                        self.playlist.prev();
+                    }
                 });
 
                 next.click(function () {
@@ -188,6 +196,7 @@ define(['jquery', 'Playlist', 'PlayerProgressbar'],
 
                     //console.log(this.playingSong.listenedDuration);
                     var normedTime = audio.currentTime / audio.duration * this.SLIDER_MAX;
+                    this.progressBar.setProgressText(this.playingSong.durationToTime(audio.currentTime));
                     if (!this.progressBar.isChangingManually()) {
                         this.progressBar.changeProgress(normedTime);
                     }
@@ -210,12 +219,10 @@ define(['jquery', 'Playlist', 'PlayerProgressbar'],
             },
 
             onManualSlide: function(progress) {
-                //if (this.progressManualSliding) {
+                if (this.playingSong) {
                     var audio = this.DOM.Audio[0];
                     audio.currentTime = progress / this.SLIDER_MAX * audio.duration;
-                    //this.progressManualSliding = false;
-                    //this.afterManualSlide = true;
-                //}
+                }
             },
 
             initRateButtons: function() {
@@ -310,6 +317,7 @@ define(['jquery', 'Playlist', 'PlayerProgressbar'],
                         audio.src = url;
                         audio.onloadeddata = function () {
                             self.progressBar.resetProgress();
+                            self.progressBar.setMaxProgressText(self.playingSong.durationToTime(self.playingSong.duration));
                             self.actualPlay($audio);
                         };
                         audio.load();
