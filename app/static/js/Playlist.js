@@ -11,6 +11,9 @@ define(['jquery', 'PlaylistEntry'],
 
             this.onScrollListeners = [];
 
+            this.ITEMS_SCROLL_ANIMATION_SPEED = 600;
+
+
             this.bindToDOM();
             this.exploreEntries();
             this.registerEvents();
@@ -162,7 +165,16 @@ define(['jquery', 'PlaylistEntry'],
 
             prev: function () {
                 this.playById(this.playingEntryId - 1);
+            },
+
+            scrollToCurrent: function() {
+                this.$obj.animate({
+                    scrollTop: this.$obj.scrollTop()
+                                + $(this.$entries[this.playingEntryId]).offset().top
+                                - this.$obj.offset().top
+                }, this.ITEMS_SCROLL_ANIMATION_SPEED);
             }
+
         };
 
         return Playlist;

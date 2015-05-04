@@ -18,7 +18,7 @@ define(['jquery', 'Playlist', 'PlayerProgressbar'],
             this.progressBar.setMaxProgressText(firstEntry.durationToTime(firstEntry.duration));
             this.defaultDocumentTitle = document.title;
 
-            this.SCROLL_ANIMATION_SPEED = 600;
+            this.AUDIO_VOLUME_ANIMATION_SPEED = 500;
         }
 
         PlayerControl.prototype = {
@@ -272,25 +272,22 @@ define(['jquery', 'Playlist', 'PlayerProgressbar'],
             },
 
             actualPlay: function ($audio) {
+                var self = this;
                 $audio[0].volume = 0;
                 $audio[0].play();
-                $audio.animate({volume: 1}, 500, function () {
-
+                $audio.animate({volume: 1}, this.AUDIO_VOLUME_ANIMATION_SPEED, function () {
+                    self.playlist.scrollToCurrent();
+                    document.title = self.playingSong.title + " - " + self.playingSong.artist;
                 });
-                this.playlist.$obj.animate({
-                    scrollTop: this.playlist.$obj.scrollTop()
-                                + $(this.playlist.$entries[this.playlist.playingEntryId]).offset().top
-                                - this.playlist.$obj.offset().top
-                }, this.SCROLL_ANIMATION_SPEED);
-                document.title = this.playingSong.title + " - " + this.playingSong.artist;
             },
 
             actualPause: function ($audio) {
-                this.playingSong.characterise(true);
-                $audio.animate({volume: 0}, 500, function () {
+                var self = this;
+                $audio.animate({volume: 0}, this.AUDIO_VOLUME_ANIMATION_SPEED, function () {
                     $audio[0].pause();
+                    self.playingSong.characterise(true);
+                    document.title = self.defaultDocumentTitle;
                 });
-                document.title = this.defaultDocumentTitle;
             },
 
             play: function (song_entry) {
