@@ -17,6 +17,8 @@ define(['jquery', 'Playlist', 'PlayerProgressbar'],
             var firstEntry = this.playlist.entries[0];
             this.progressBar.setMaxProgressText(firstEntry.durationToTime(firstEntry.duration));
             this.defaultDocumentTitle = document.title;
+
+            this.SCROLL_ANIMATION_SPEED = 600;
         }
 
         PlayerControl.prototype = {
@@ -275,6 +277,11 @@ define(['jquery', 'Playlist', 'PlayerProgressbar'],
                 $audio.animate({volume: 1}, 500, function () {
 
                 });
+                this.playlist.$obj.animate({
+                    scrollTop: this.playlist.$obj.scrollTop()
+                                + $(this.playlist.$entries[this.playlist.playingEntryId]).offset().top
+                                - this.playlist.$obj.offset().top
+                }, this.SCROLL_ANIMATION_SPEED);
                 document.title = this.playingSong.title + " - " + this.playingSong.artist;
             },
 

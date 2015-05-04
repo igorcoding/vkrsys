@@ -15,6 +15,7 @@
 }
 
 .player__main {
+    min-width: 600px;
     height: 70px;
 }
 
@@ -300,6 +301,7 @@
     height: 100%;
     overflow-y: scroll;
     overflow-x: hidden;
+    margin-top: 10px;
 }
 
 
@@ -313,7 +315,7 @@
     background-color: #e6e6e6;
     height: 60px;
     width: 100%;
-    margin: 10px 0;
+    margin-bottom: 10px;
 }
 
 .playlist__entry_playing {

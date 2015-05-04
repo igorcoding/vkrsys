@@ -36,19 +36,23 @@ define(['jquery', 'PlaylistEntry'],
 
             exploreEntries: function (count) {
                 var self = this;
-                this.$entries = this.$obj.find(PlaylistEntry.prototype.C.Entry);
+                var $allEntries = this.$obj.find(PlaylistEntry.prototype.C.Entry);
+                var $entries;
                 if (count && this.entries.length > 0) {
-                    this.$entries = this.$entries.slice(this.entries.length, this.entries.length + count);
+                    $entries = $allEntries.slice(this.entries.length, this.entries.length + count);
+                } else {
+                    $entries = $allEntries;
                 }
                 //this.entries = [];
                 var id = this.entries.length - 1;
-                this.$entries.each(function () {
+                $entries.each(function () {
                     var $this = $(this);
                     var entry = new PlaylistEntry($this, self);
                     ++id;
                     self.entries.push(entry);
                     self.registerThings($this, entry, id);
                 });
+                this.$entries = $allEntries;
             },
 
             registerEvents: function () {

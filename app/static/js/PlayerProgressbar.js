@@ -57,19 +57,21 @@ define(['jquery'],
                             self._dragging = true;
                             $(window).mousemove(function (e) {
                                 if (self._dragging) {
+                                    e.preventDefault();
                                     onMouseCb(e);
                                 }
                             });
                             $(window).mouseup(function (e) {
                                 if (self._dragging) {
                                     self._dragging = false;
+                                    $(window).off("mousemove");
                                     $(window).off("mouseup");
                                 }
                             });
                         }
                     })
                     .mouseup(function(e) {
-                        if (e.which == 1) {
+                        if (e.which == 1 && self._dragging) {
                             $(window).off("mousemove");
                             self._dragging = false;
                             var progress = onMouseCb(e);
