@@ -11,13 +11,11 @@ define(['jquery'],
             this.bindToDOM();
             this.registerEvents();
 
-            this.progressManualSliding = false;
-            this.afterManualSlide = false;
             this.sliderMax = sliderMax;
-            this.prevAudioTime = -1;
 
             this.currentProgress = 0;
             this.manualSlideCallbacks = [];
+            this.manualSlideInProgressCallbacks = [];
             this._dragging = false;
         }
 
@@ -48,6 +46,7 @@ define(['jquery'],
                     var px = e.pageX - posX;
                     var progress = self._pxToProgress(px);
                     self._changeProgress(progress);
+
                     return progress;
                 };
 
@@ -58,7 +57,10 @@ define(['jquery'],
                             $(window).mousemove(function (e) {
                                 if (self._dragging) {
                                     e.preventDefault();
-                                    onMouseCb(e);
+                                    var progress = onMouseCb(e);
+                                    for (var i = 0; i < self.manualSlideInProgressCallbacks.length; ++i) {
+                                        self.manualSlideInProgressCallbacks[i](progress);
+                                    }
                                 }
                             });
                             $(window).mouseup(function (e) {
@@ -75,7 +77,6 @@ define(['jquery'],
                             $(window).off("mousemove");
                             self._dragging = false;
                             var progress = onMouseCb(e);
-
                             for (var i = 0; i < self.manualSlideCallbacks.length; ++i) {
                                 self.manualSlideCallbacks[i](progress);
                             }
@@ -90,6 +91,10 @@ define(['jquery'],
 
             addOnProgressChangedManuallyListener: function(cb) {
                 this.manualSlideCallbacks.push(cb);
+            },
+
+            addOnProgressChangingManuallyListener: function(cb) {
+                this.manualSlideInProgressCallbacks.push(cb);
             },
 
             changeProgress: function(progress) {
@@ -115,10 +120,20 @@ define(['jquery'],
             },
 
             _progressToPx: function(progress) {
+                if (progress > this.sliderMax) {
+                    return this.width;
+                } else if (progress < 0) {
+                    return 0;
+                }
                 return progress * this.width / this.sliderMax;
             },
 
             _pxToProgress: function(px) {
+                if (px > this.width) {
+                    return this.sliderMax;
+                } else if (px < 0) {
+                    return 0;
+                }
                 return px * this.sliderMax / this.width;
             }
         };

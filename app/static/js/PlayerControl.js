@@ -10,9 +10,11 @@ define(['jquery', 'Playlist', 'PlayerProgressbar'],
             this.state = this.States.Paused;
             this.playlist = new Playlist(this.DOM.Playlist, this);
 
+            this.afterManualSlide = false;
             this.SLIDER_MAX = 100000;
             this.progressBar = new PlayerProgressbar(this.DOM.ProgressBar, this.SLIDER_MAX);
             this.progressBar.addOnProgressChangedManuallyListener(this.onManualSlide.bind(this));
+            this.progressBar.addOnProgressChangingManuallyListener(this.onManualSlideInProgress.bind(this));
 
             var firstEntry = this.playlist.entries[0];
             this.progressBar.setMaxProgressText(firstEntry.durationToTime(firstEntry.duration));
@@ -186,44 +188,46 @@ define(['jquery', 'Playlist', 'PlayerProgressbar'],
                 };
             },
 
+            audioToProgress: function(audio) {
+                return audio.currentTime / audio.duration * this.SLIDER_MAX;
+            },
+
+            progressToAudio: function(progress) {
+                return progress / this.SLIDER_MAX * this.DOM.Audio[0].duration;
+            },
+
             onAudioTimeUpdate: function (audio) {
-                if (!this.progressManualSliding) {
-                    if (this.prevAudioTime == -1) {
-                        this.prevAudioTime = audio.currentTime;
-                    }
-                    if (!this.afterManualSlide) {
-                        this.playingSong.listenedDuration += audio.currentTime - this.playingSong.lastListenedTime;
-                        this.playingSong.characterise();
-                    }
-
-                    //console.log(this.playingSong.listenedDuration);
-                    var normedTime = audio.currentTime / audio.duration * this.SLIDER_MAX;
-                    this.progressBar.setProgressText(this.playingSong.durationToTime(audio.currentTime));
-                    if (!this.progressBar.isChangingManually()) {
-                        this.progressBar.changeProgress(normedTime);
-                    }
-                    //this.DOM.MainSongProgressBar.slider('value', normedTime);
-                    if (normedTime === this.SLIDER_MAX) {
-                        this.playlist.next();
-                    }
-
-                    this.playingSong.lastListenedTime = audio.currentTime;
-                    this.afterManualSlide = false;
+                if (!this.afterManualSlide) {
+                    this.playingSong.listenedDuration += audio.currentTime - this.playingSong.lastListenedTime;
+                    this.playingSong.characterise();
                 }
-            },
 
-            onProgressSlideStart: function(event, ui) {
-                this.progressManualSliding = true;
-            },
+                var progress = this.audioToProgress(audio);
+                this.progressBar.setProgressText(this.playingSong.durationToTime(audio.currentTime));
+                if (!this.progressBar.isChangingManually()) {
+                    this.progressBar.changeProgress(progress);
+                }
 
-            onProgressSlideStop: function(event, ui) {
+                if (progress === this.SLIDER_MAX) {
+                    this.playlist.next();
+                }
 
+                this.playingSong.lastListenedTime = audio.currentTime;
+                this.afterManualSlide = false;
             },
 
             onManualSlide: function(progress) {
                 if (this.playingSong) {
                     var audio = this.DOM.Audio[0];
-                    audio.currentTime = progress / this.SLIDER_MAX * audio.duration;
+                    audio.currentTime = this.progressToAudio(progress);
+                    this.progressBar.setProgressText(this.playingSong.durationToTime(audio.currentTime));
+                    this.afterManualSlide = true;
+                }
+            },
+
+            onManualSlideInProgress: function(progress) {
+                if (this.playingSong) {
+                    this.progressBar.setProgressText(this.playingSong.durationToTime(this.progressToAudio(progress)));
                 }
             },
 
