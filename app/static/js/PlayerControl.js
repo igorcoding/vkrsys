@@ -12,12 +12,12 @@ define(['jquery', 'Playlist', 'PlayerProgressbar'],
 
             this.afterManualSlide = false;
             this.SLIDER_MAX = 100000;
+            var firstEntry = this.playlist.entries[0];
             this.progressBar = new PlayerProgressbar(this.DOM.ProgressBar, this.SLIDER_MAX);
             this.progressBar.addOnProgressChangedManuallyListener(this.onManualSlide.bind(this));
             this.progressBar.addOnProgressChangingManuallyListener(this.onManualSlideInProgress.bind(this));
-
-            var firstEntry = this.playlist.entries[0];
             this.progressBar.setMaxProgressText(firstEntry.durationToTime(firstEntry.duration));
+            this.progressBar.reactToSlide = false;
             this.defaultDocumentTitle = document.title;
 
             this.AUDIO_VOLUME_ANIMATION_SPEED = 500;
@@ -320,6 +320,7 @@ define(['jquery', 'Playlist', 'PlayerProgressbar'],
                     console.log("[Player] new song");
                     // fetch audio url
                     this.fetchAudioUrl(song_id, function (url) {
+                        self.progressBar.reactToSlide = true;
                         self.playingSong = song_entry;
                         self.visualPlay();
                         audio.src = url;

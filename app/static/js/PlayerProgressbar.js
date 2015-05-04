@@ -17,6 +17,7 @@ define(['jquery'],
             this.manualSlideCallbacks = [];
             this.manualSlideInProgressCallbacks = [];
             this._dragging = false;
+            this.reactToSlide = true;
         }
 
         PlayerProgressbar.prototype = {
@@ -37,6 +38,10 @@ define(['jquery'],
                 }
             },
 
+            triggerReactToSlide: function() {
+                this.reactToSlide = !this.reactToSlide;
+            },
+
             registerEvents: function() {
                 var self = this;
 
@@ -52,29 +57,37 @@ define(['jquery'],
 
                 this.$obj
                     .mousedown(function(e) {
-                        if (e.which == 1) {
-                            self._dragging = true;
-                            $(window).mousemove(function (e) {
-                                if (self._dragging) {
-                                    e.preventDefault();
-                                    var progress = onMouseCb(e);
-                                    for (var i = 0; i < self.manualSlideInProgressCallbacks.length; ++i) {
-                                        self.manualSlideInProgressCallbacks[i](progress);
+                        if (self.reactToSlide) {
+                            if (e.which == 1) {
+                                self._dragging = true;
+                                $(window).mousemove(function (e) {
+                                    if (self._dragging) {
+                                        e.preventDefault();
+                                        var progress = onMouseCb(e);
+                                        for (var i = 0; i < self.manualSlideInProgressCallbacks.length; ++i) {
+                                            self.manualSlideInProgressCallbacks[i](progress);
+                                        }
                                     }
-                                }
-                            });
-                            $(window).mouseup(function (e) {
-                                if (self._dragging) {
-                                    self._dragging = false;
-                                    $(window).off("mousemove");
-                                    $(window).off("mouseup");
-                                }
-                            });
+                                });
+                                $(window).mouseup(function (e) {
+                                    if (self._dragging) {
+                                        self._dragging = false;
+                                        $(window).off("mousemove");
+                                        $(window).off("mouseup");
+
+                                        var progress = onMouseCb(e);
+                                        for (var i = 0; i < self.manualSlideCallbacks.length; ++i) {
+                                            self.manualSlideCallbacks[i](progress);
+                                        }
+                                    }
+                                });
+                            }
                         }
                     })
                     .mouseup(function(e) {
                         if (e.which == 1 && self._dragging) {
                             $(window).off("mousemove");
+                            $(window).off("mouseup");
                             self._dragging = false;
                             var progress = onMouseCb(e);
                             for (var i = 0; i < self.manualSlideCallbacks.length; ++i) {
