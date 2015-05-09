@@ -38,10 +38,6 @@ define(['jquery'],
                 }
             },
 
-            triggerReactToSlide: function() {
-                this.reactToSlide = !this.reactToSlide;
-            },
-
             registerEvents: function() {
                 var self = this;
 
@@ -57,12 +53,13 @@ define(['jquery'],
 
                 this.$obj
                     .mousedown(function(e) {
+                        e.preventDefault();
                         if (self.reactToSlide) {
                             if (e.which == 1) {
                                 self._dragging = true;
                                 $(window).mousemove(function (e) {
+                                    e.preventDefault();
                                     if (self._dragging) {
-                                        e.preventDefault();
                                         var progress = onMouseCb(e);
                                         for (var i = 0; i < self.manualSlideInProgressCallbacks.length; ++i) {
                                             self.manualSlideInProgressCallbacks[i](progress);
@@ -85,6 +82,7 @@ define(['jquery'],
                         }
                     })
                     .mouseup(function(e) {
+                        e.preventDefault();
                         if (e.which == 1 && self._dragging) {
                             $(window).off("mousemove");
                             $(window).off("mouseup");
