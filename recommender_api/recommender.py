@@ -255,4 +255,4 @@ class Recommender:
         else:
             return R(Responses.NOT_OK).d({
                 'user_id': data['user_id']
-            }).em('Already have recommendations for this user')
+            }).em("Couldn't save recommendations")

@@ -35,7 +35,7 @@ class ResponseResult:
 
 class Responses:
     OK = ResponseResult(200, 200, 'ok')
-    NOT_OK = ResponseResult(201, 200, 'not everything is ok')
+    NOT_OK = ResponseResult(500, 200, 'not everything is ok')
 
     MALFORMED_REQUEST = ResponseResult(400, 400, 'Malformed request')
     UNKNOWN_ACTION = ResponseResult(401, 400, 'Unknown action provided: ')

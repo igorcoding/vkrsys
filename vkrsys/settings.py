@@ -52,15 +52,20 @@ CELERY_ENABLE_UTC = True
 
 CELERYBEAT_SCHEDULE = {
     'rsys-learn-online': {
-        'task': 'tasks.rsys_learn_online',
+        'task': 'app.tasks.rsys_learn_online',
         'schedule': crontab(hour='*', minute=30),
         'args': []
     },
     'rsys-learn-offline': {
-        'task': 'tasks.rsys_learn_offline',
+        'task': 'app.tasks.rsys_learn_offline',
         'schedule': crontab(hour=0, minute=0),
         'args': []
     },
+    'music-downloader': {
+        'task': 'app.tasks.download_and_process_songs',
+        'schedule': crontab(hour=3, minute=0),
+        'args': [10]
+    }
 }
 
 

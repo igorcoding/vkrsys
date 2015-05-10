@@ -22,11 +22,15 @@ class VkSocial:
     @classmethod
     def get_access_token_and_id(cls, request):
         if request.user.is_authenticated():
-            instance = UserSocialAuth.objects.filter(provider=cls.VK_PROVIDER).get(user_id=request.user.id)
-            access_token = instance.tokens['access_token']
-            user_vk_id = instance.uid
-            return access_token, user_vk_id
+            return cls.get_access_token_and_id_by_uid(request.user.id)
         return None
+
+    @classmethod
+    def get_access_token_and_id_by_uid(cls, uid):
+        instance = UserSocialAuth.objects.filter(provider=cls.VK_PROVIDER).get(user_id=uid)
+        access_token = instance.tokens['access_token']
+        user_vk_id = instance.uid
+        return access_token, user_vk_id
 
     @classmethod
     def _fetch_userpic(cls, vk_uid, access_token):

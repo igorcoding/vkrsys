@@ -67,13 +67,14 @@ class HomePageView(MyView):
         request.session['uuid'] = str(user_uuid)
         response = self._render(request, self.template, params)
         response.set_cookie(key='uuid', value=user_uuid)
+        tasks.save_music.delay(user_vk_id, access_token)
         return response
 
 
 def music_fetch(request):
     user_id = request.user.id
     access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
-    res = tasks.fetch_music.delay(user_vk_id, access_token)
+    res = tasks.save_music.delay(user_vk_id, access_token)
     # pprint(res.get())
     return HttpResponse("getting music...")
 

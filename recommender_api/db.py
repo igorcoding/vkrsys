@@ -123,12 +123,15 @@ class Db:
             elif song_last is not None and last_action is not None:
                 update_query = """UPDATE app_recommenderinfo SET last_known_user_id=%s, last_known_song_id=%s, last_known_user_event_id=%s  WHERE id=1"""
                 params = (user_last, song_last, last_action)
-                insert_query = [
-                    """SET foreign_key_checks = 0""",
-                    """INSERT INTO app_recommenderinfo (id, last_known_user_id, last_known_song_id, last_known_user_event_id) VALUES (1, %s, %s, %s)""",
-                    """SET foreign_key_checks = 1"""
-                ]
-                insert_params = [(), params, ()]
+        insert_query = [
+            """SET foreign_key_checks = 0""",
+            """INSERT INTO app_recommenderinfo (id, last_known_user_id, last_known_song_id, last_known_user_event_id) VALUES (1, %s, %s, %s)""",
+            """SET foreign_key_checks = 1"""
+        ]
+        user_last = -1 if user_last is None else user_last
+        song_last = -1 if song_last is None else song_last
+        last_action = -1 if last_action is None else last_action
+        insert_params = [(), (user_last, song_last, last_action), ()]
 
         if count == 1:
             if update_query is not None and params is not None:
@@ -276,6 +279,9 @@ class Db:
         for r in recs:
             value = '(%d, %d, %f)'
             values.append(value % (user_id, r.item_id, r.score))
+
+        if len(values) == 0:
+            return -1
 
         values_str = ','.join(values)
         q = """INSERT INTO %s (user_id, song_id, score) VALUES %s""" % (self.RECS_TABLE_NAME, values_str)

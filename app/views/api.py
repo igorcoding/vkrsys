@@ -112,11 +112,16 @@ class Recommend(View):
         templ = self.INITIAL_TEMPLATE_NAME if initial else self.PLAYLIST_ENTRIES_TEMPLATE_NAME
         recs = Db.get_recommendations(user_id, limit=limit, offset=offset, initial=initial)
 
-        return JsonResponse({
-            'status': 200,
-            'count': len(recs),
-            'result': render_to_string(templ, dict(recs=recs))
-        })
+        if recs is not None:
+            return JsonResponse({
+                'status': 200,
+                'count': len(recs),
+                'result': render_to_string(templ, dict(recs=recs))
+            })
+        else:
+            return JsonResponse({
+                'status': 500
+            }, status=500)
 
 
 class ListenCharacterise(View):

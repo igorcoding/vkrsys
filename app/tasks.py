@@ -15,6 +15,7 @@ import vk
 from vk.api import VkAPIMethodError
 import requests
 from django.conf import settings
+from django.core.cache import cache
 
 from app.models import Song
 from mutagen import File
@@ -58,7 +59,7 @@ def fetch_friends_music(user_id, vk_uid, access_token):
 
 
 @shared_task
-def fetch_music(vk_uid, access_token):
+def save_music(vk_uid, access_token):
     vkapi = vk.API(access_token=access_token)
     try:
         songs = vkapi.audio.get(owner_id=vk_uid, need_user=0)
@@ -94,11 +95,20 @@ def fetch_music(vk_uid, access_token):
     if len(bulk) != 0:
         Song.objects.bulk_create_new(bulk)
 
-    new_songs = Song.objects.filter(id__gt=p_last_id)
-    download_and_process_songs(vk_uid, access_token, new_songs, 100)
+    key = "p_last_song_id"
+    if cache.get(key) is None:
+        cache.set(key, p_last_id)
 
 
-def download_and_process_songs(vk_uid, access_token, songs, limit):
+@shared_task
+def download_and_process_songs(limit):
+    p_last_id = cache.get("p_last_song_id")
+    if p_last_id is None:
+        print 'no songs to process'
+        return  # no need in downloading - everything is already processed
+    else:
+        cache.delete("p_last_song_id")
+    songs = Song.objects.filter(id__gt=p_last_id)
     print 'Started download_and_process_songs'
     for s in songs[:limit]:
         download_and_process_song.delay(dict(id=s.id, url=s.url))

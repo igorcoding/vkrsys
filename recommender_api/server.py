@@ -69,8 +69,13 @@ class ApiHandler(ProcessMixin):
             return req, self.RSYS.on_message(*req)
         except RespError as e:
             return req, e.resp
+        except:
+            return req, None
 
     def _result_cb(self, req, result):
+        if result is None:
+            self.set_status(500)
+            return self.finish("Something went wrong")
         self.res = result.to_res()
         if hasattr(self, 'res') and self.res is not None:
             self.set_status(self.res[0])
