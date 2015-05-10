@@ -106,8 +106,12 @@ class Recommender:
         items = self.db.get_items_ids()
         last_action = self.db.get_last_action()
 
-        self.db.save_lasts(users[-1], items[-1], last_action)
+        if len(users) > 0 and len(items) > 0:
+            self.db.save_lasts(users[-1], items[-1], last_action)
+        else:
+            self.db.delete_lasts()
         self.config = rsys.SVDConfig(len(users), len(items), -1, 4, 0.005)
+        self.config.set_predictor('sigmoid')
         self.config.set_print_result(False)
 
         self.config.set_users_ids(users)
@@ -121,7 +125,6 @@ class Recommender:
         self.mysql_conf.items_table = "app_song"
 
         self.config.set_mysql_exporter(self.mysql_conf)
-        self.config.set_predictor('sigmoid')
 
         self.svd = rsys.SVD(self.config)
 
@@ -129,8 +132,6 @@ class Recommender:
         self.items = dict(zip(items, generate(1, len(items))))
 
         self.initialized = True
-
-        # print last_u, " ", last_s
 
     def stop(self):
         self.db.disconnect()

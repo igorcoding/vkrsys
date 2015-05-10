@@ -157,6 +157,12 @@ class Db:
             last_u, last_i, last_event = c.fetchone()
         return last_u, last_i, last_event
 
+    def delete_lasts(self):
+        db = self.connect()
+
+        with closing(db.cursor()) as c:
+            c.execute("""DELETE FROM app_recommenderinfo""")
+
     def get_users_ids(self, since_id=-1):
         if since_id is None:
             since_id = -1

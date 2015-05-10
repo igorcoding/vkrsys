@@ -9,6 +9,11 @@ define(['jquery', 'PlaylistEntry'],
             this.playingEntry = null;
             this.playingEntryId = null;
 
+            this.onScrollListeners = [];
+
+            this.ITEMS_SCROLL_ANIMATION_SPEED = 600;
+
+
             this.bindToDOM();
             this.exploreEntries();
             this.registerEvents();
@@ -27,26 +32,41 @@ define(['jquery', 'PlaylistEntry'],
                 }
             },
 
+            addContent: function(content) {
+                this.$obj.append(content.result);
+                this.exploreEntries(content.count);
+            },
+
             exploreEntries: function (count) {
                 var self = this;
-                this.$entries = this.$obj.find(PlaylistEntry.prototype.C.Entry);
+                var $allEntries = this.$obj.find(PlaylistEntry.prototype.C.Entry);
+                var $entries;
                 if (count && this.entries.length > 0) {
-                    this.$entries = this.$entries.slice(this.entries.length, this.entries.length + count);
+                    $entries = $allEntries.slice(this.entries.length, this.entries.length + count);
+                } else {
+                    $entries = $allEntries;
                 }
                 //this.entries = [];
-                var id = -1;
-                this.$entries.each(function () {
+                var id = this.entries.length - 1;
+                $entries.each(function () {
                     var $this = $(this);
                     var entry = new PlaylistEntry($this, self);
                     ++id;
                     self.entries.push(entry);
                     self.registerThings($this, entry, id);
                 });
+                this.$entries = $allEntries;
             },
 
             registerEvents: function () {
-                window.registerOnResize(this.onWindowResize, this);
-                this.onWindowResize(window);
+                var self = this;
+                this.$obj.scroll(function() {
+                    for (var i = 0; i < self.onScrollListeners.length; ++i) {
+                        self.onScrollListeners[i](self.$obj);
+                    }
+                });
+                //window.registerOnResize(this.onWindowResize, this);
+                //this.onWindowResize(window);
             },
 
             onWindowResize: function (w) {
@@ -109,7 +129,13 @@ define(['jquery', 'PlaylistEntry'],
                 //entry.onWindowResize(window);
             },
 
+            addOnScrollListener: function(cb) {
+                this.onScrollListeners.push(cb);
+            },
+
             playById: function (id) {
+                //console.log("Entries length:", this.entries.length);
+                //console.log("PlayingId:", this.playingEntryId);
                 if (id < 0) {
                     id = this.entries.length - 1;
                 }
@@ -139,7 +165,17 @@ define(['jquery', 'PlaylistEntry'],
 
             prev: function () {
                 this.playById(this.playingEntryId - 1);
+            },
+
+            scrollToCurrent: function() {
+                var scrollTo = this.playingEntryId;
+                this.$obj.animate({
+                    scrollTop: this.$obj.scrollTop()
+                                + $(this.$entries[scrollTo]).offset().top
+                                - this.$obj.offset().top
+                }, this.ITEMS_SCROLL_ANIMATION_SPEED);
             }
+
         };
 
         return Playlist;

@@ -1,5 +1,5 @@
-define(['jquery'],
-    function($) {
+define(['jquery', 'Playlist', 'PlayerProgressbar'],
+    function($, Playlist, PlayerProgressbar) {
         function PlayerControl(playerId) {
             this.$obj = $(playerId);
             this.DOM = {};
@@ -8,31 +8,40 @@ define(['jquery'],
 
             this.playingSong = null;
             this.state = this.States.Paused;
-            this.playlist = null;
+            this.playlist = new Playlist(this.DOM.Playlist, this);
 
-            this.progressManualSliding = false;
             this.afterManualSlide = false;
-            this.SLIDER_MAX = 10000;
-            this.prevAudioTime = -1;
+            this.SLIDER_MAX = 100000;
+            var firstEntry = this.playlist.entries[0];
+            this.progressBar = new PlayerProgressbar(this.DOM.ProgressBar, this.SLIDER_MAX);
+            this.progressBar.addOnProgressChangedManuallyListener(this.onManualSlide.bind(this));
+            this.progressBar.addOnProgressChangingManuallyListener(this.onManualSlideInProgress.bind(this));
+            this.progressBar.setMaxProgressText(firstEntry.durationToTime(firstEntry.duration));
+            this.progressBar.reactToSlide = false;
+            this.defaultDocumentTitle = document.title;
+
+            this.AUDIO_VOLUME_ANIMATION_SPEED = 500;
         }
 
         PlayerControl.prototype = {
 
             C: {
-                Art: '.player__art',
+                Art: '.player__main__song__art',
                 Main: '.player__main',
                 Audio: '.player__main__audio',
                 MainSong: '.player__main__song',
+                MainSongArtist: '.player__main__song__artist',
                 MainSongTitle: '.player__main__song__title',
-                MainSongProgressBar: '.player__main__song__progressbar',
                 MainControls: '.player__main__controls',
                 MainControlsPrev: '.player__main__controls__prev',
                 MainControlsPlayPause: '.player__main__controls__playpause',
                 MainControlsNext: '.player__main__controls__next',
-                MainControlsDislikeJs: '.js-player__main__controls__dislike',
-                MainControlsDislike: '.player__main__controls__dislike',
-                MainControlsLikeJs: '.js-player__main__controls__like',
-                MainControlsLike: '.player__main__controls__like'
+                MainControlsDislikeJs: '.js-player__main__ratecontrols__dislike',
+                MainControlsDislike: '.player__main__ratecontrols__dislike',
+                MainControlsLikeJs: '.js-player__main__ratecontrols__like',
+                MainControlsLike: '.player__main__ratecontrols__like',
+                Playlist: '.player__playlist',
+                ProgressBar: '.player__progressbar'
             },
 
             States: {
@@ -48,16 +57,6 @@ define(['jquery'],
                         }
                     }
                 }
-
-                this.DOM.MainSongProgressBar.slider({
-                    orientation: "horizontal",
-                    range: "min",
-                    max: 10000,
-                    start: this.onProgressSlideStart.bind(this),
-                    stop: this.onProgressSlideStop.bind(this),
-                    //slide: this.onProgressSlide.bind(this),
-                    change: this.onProgressSlideChange.bind(this)
-                });
             },
 
             getState: function () {
@@ -88,8 +87,8 @@ define(['jquery'],
             },
 
             registerEvents: function () {
-                window.registerOnResize(this.onWindowResize, this);
-                this.onWindowResize(window);
+                //window.registerOnResize(this.onWindowResize, this);
+                //this.onWindowResize(window);
                 this.registerOnPlayClick();
                 this.registerOnPrevNextClick();
                 this.registerOnRateClick();
@@ -128,7 +127,12 @@ define(['jquery'],
                 var next = this.DOM.MainControlsNext;
 
                 prev.click(function () {
-                    self.playlist.prev();
+                    var audio = self.DOM.Audio[0];
+                    if (self.getState() == self.States.Playing && audio.currentTime > 10) {
+                        audio.currentTime = 0;
+                    } else {
+                        self.playlist.prev();
+                    }
                 });
 
                 next.click(function () {
@@ -150,6 +154,9 @@ define(['jquery'],
                 } else if (rating == 0) {
                     this.DOM.MainControlsLikeJs.addClass(rawC(this.C.MainControlsLike) + '_inactive');
                     this.DOM.MainControlsDislikeJs.addClass(rawC(this.C.MainControlsDislike) + '_active');
+                } else {
+                    this.DOM.MainControlsLikeJs.addClass(rawC(this.C.MainControlsLike));
+                    this.DOM.MainControlsDislikeJs.addClass(rawC(this.C.MainControlsDislike));
                 }
             },
 
@@ -181,43 +188,51 @@ define(['jquery'],
                 };
             },
 
+            audioToProgress: function(audio) {
+                return audio.currentTime / audio.duration * this.SLIDER_MAX;
+            },
+
+            progressToAudio: function(progress) {
+                return progress / this.SLIDER_MAX * this.DOM.Audio[0].duration;
+            },
+
             onAudioTimeUpdate: function (audio) {
-                if (!this.progressManualSliding) {
-                    if (this.prevAudioTime == -1) {
-                        this.prevAudioTime = audio.currentTime;
+                if (!this.afterManualSlide) {
+                    var cur = audio.currentTime,
+                        prev = this.playingSong.lastListenedTime;
+                    if (cur < prev) {
+                        prev = this.playingSong.lastListenedTime = 0;
                     }
-                    if (!this.afterManualSlide) {
-                        this.playingSong.listenedDuration += audio.currentTime - this.playingSong.lastListenedTime;
-                        this.playingSong.characterise();
-                    }
+                    this.playingSong.listenedDuration += cur - prev;
+                    this.playingSong.characterise();
+                }
 
-                    //console.log(this.playingSong.listenedDuration);
-                    var normedTime = audio.currentTime / audio.duration * this.SLIDER_MAX;
-                    this.DOM.MainSongProgressBar.slider('value', normedTime);
-                    if (normedTime === this.SLIDER_MAX) {
-                        this.playlist.next();
-                    }
+                var progress = this.audioToProgress(audio);
+                this.progressBar.setProgressText(this.playingSong.durationToTime(audio.currentTime));
+                if (!this.progressBar.isChangingManually()) {
+                    this.progressBar.changeProgress(progress);
+                }
 
-                    this.playingSong.lastListenedTime = audio.currentTime;
-                    this.afterManualSlide = false;
+                if (progress === this.SLIDER_MAX) {
+                    this.playlist.next();
+                }
+
+                this.playingSong.lastListenedTime = audio.currentTime;
+                this.afterManualSlide = false;
+            },
+
+            onManualSlide: function(progress) {
+                if (this.playingSong) {
+                    var audio = this.DOM.Audio[0];
+                    audio.currentTime = this.progressToAudio(progress);
+                    this.progressBar.setProgressText(this.playingSong.durationToTime(audio.currentTime));
+                    this.afterManualSlide = true;
                 }
             },
 
-            onProgressSlideStart: function(event, ui) {
-                this.progressManualSliding = true;
-            },
-
-            onProgressSlideStop: function(event, ui) {
-
-            },
-
-            onProgressSlideChange: function() {
-                if (this.progressManualSliding) {
-                    var audio = this.DOM.Audio[0];
-                    var normedTime = this.DOM.MainSongProgressBar.slider('value');
-                    audio.currentTime = normedTime / this.SLIDER_MAX * audio.duration;
-                    this.progressManualSliding = false;
-                    this.afterManualSlide = true;
+            onManualSlideInProgress: function(progress) {
+                if (this.playingSong) {
+                    this.progressBar.setProgressText(this.playingSong.durationToTime(this.progressToAudio(progress)));
                 }
             },
 
@@ -241,7 +256,8 @@ define(['jquery'],
                 var playPauseClass = rawC(this.C.MainControlsPlayPause);
                 $ppButton.removeClass(playPauseClass + '_paused');
                 $ppButton.addClass(playPauseClass + '_playing');
-                this.DOM.MainSongTitle.text(this.playingSong.artist + "  -  " + this.playingSong.title);
+                this.DOM.MainSongArtist.text(this.playingSong.artist);
+                this.DOM.MainSongTitle.text(this.playingSong.title);
                 this.DOM.Art.css({
                     'background-image': 'url(' + this.playingSong.artUrl + ')'
                 });
@@ -265,17 +281,21 @@ define(['jquery'],
             },
 
             actualPlay: function ($audio) {
+                var self = this;
                 $audio[0].volume = 0;
                 $audio[0].play();
-                $audio.animate({volume: 1}, 500, function () {
-
+                $audio.animate({volume: 1}, this.AUDIO_VOLUME_ANIMATION_SPEED, function () {
+                    self.playlist.scrollToCurrent();
+                    document.title = self.playingSong.title + " - " + self.playingSong.artist;
                 });
             },
 
             actualPause: function ($audio) {
-                this.playingSong.characterise(true);
-                $audio.animate({volume: 0}, 500, function () {
+                var self = this;
+                $audio.animate({volume: 0}, this.AUDIO_VOLUME_ANIMATION_SPEED, function () {
                     $audio[0].pause();
+                    self.playingSong.characterise(true);
+                    document.title = self.defaultDocumentTitle;
                 });
             },
 
@@ -305,10 +325,13 @@ define(['jquery'],
                     console.log("[Player] new song");
                     // fetch audio url
                     this.fetchAudioUrl(song_id, function (url) {
+                        self.progressBar.reactToSlide = true;
                         self.playingSong = song_entry;
                         self.visualPlay();
                         audio.src = url;
                         audio.onloadeddata = function () {
+                            self.progressBar.resetProgress();
+                            self.progressBar.setMaxProgressText(self.playingSong.durationToTime(self.playingSong.duration));
                             self.actualPlay($audio);
                         };
                         audio.load();
@@ -328,7 +351,7 @@ define(['jquery'],
             },
 
             fetchAudioUrl: function (song_id, cb) {
-                console.log(song_id);
+                //console.log(song_id);
                 $.ajax('/api/song_url', {
                     method: 'GET',
                     data: {
@@ -336,8 +359,8 @@ define(['jquery'],
                     }
                 })
                     .done(function (d) {
-                        if (d.redirect) {
-                            window.location.href = d.redirect;
+                        if (d.status == 401) {
+                            window.location.href = d.redirect_url;
                             return;
                         }
                         cb(d['url']);

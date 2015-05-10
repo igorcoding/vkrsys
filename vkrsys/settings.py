@@ -171,6 +171,9 @@ SONGS_ARTS_PATH = os.path.join(STATIC_ROOT, 'arts')
 SONGS_ARTS_URL = urlparse.urljoin(STATIC_URL, 'arts/')
 SONGS_DEFAULT_ART_URL = urlparse.urljoin(SONGS_ARTS_URL, 'default.png')
 
+USERPIC_CACHE_DURATION = 60 * 60 * 24
+SONG_URL_CACHE = 60 * 30
+
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static"),
 )

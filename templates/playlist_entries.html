@@ -11,14 +11,14 @@
     <div class="playlist__entry__duration">{{ r.3 }}</div>
     <div class="playlist__entry__controls">
         {% if r.6 == 0 %}
-            <div class="js-playlist__entry__controls__dislike playlist__entry__controls__dislike_active playlist__entry__controls__control link"></div>
             <div class="js-playlist__entry__controls__like playlist__entry__controls__like_inactive playlist__entry__controls__control link"></div>
+            <div class="js-playlist__entry__controls__dislike playlist__entry__controls__dislike_active playlist__entry__controls__control link"></div>
         {% elif r.6 == 1 %}
-            <div class="js-playlist__entry__controls__dislike  playlist__entry__controls__dislike_inactive playlist__entry__controls__control link"></div>
             <div class="js-playlist__entry__controls__like playlist__entry__controls__like_active playlist__entry__controls__control link"></div>
+            <div class="js-playlist__entry__controls__dislike  playlist__entry__controls__dislike_inactive playlist__entry__controls__control link"></div>
         {% else %}
-            <div class="js-playlist__entry__controls__dislike playlist__entry__controls__dislike playlist__entry__controls__control link"></div>
             <div class="js-playlist__entry__controls__like playlist__entry__controls__like playlist__entry__controls__control link"></div>
+            <div class="js-playlist__entry__controls__dislike playlist__entry__controls__dislike playlist__entry__controls__control link"></div>
         {% endif %}
     </div>
 

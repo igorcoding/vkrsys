@@ -16,6 +16,7 @@ from requests.exceptions import ReadTimeout
 
 from app import tasks
 from app.views.basicscripts import Db, VkSocial
+from app.views.status import STATUS, MSG, REDIRECT_RESPONSE
 
 
 def ensure_present(required, attr_name='GET'):
@@ -32,10 +33,10 @@ def ensure_present(required, attr_name='GET'):
 
             if len(absent) > 0:
                 return JsonResponse({
-                    'status': 400,
-                    'reason': 'required params are not present',
+                    'status': STATUS['absent'],
+                    'reason': MSG['absent'],
                     'absent': absent
-                }, status=400)
+                }, status=STATUS['absent'])
             else:
                 return f(*args, **kwargs)
         return wrapper
@@ -43,41 +44,20 @@ def ensure_present(required, attr_name='GET'):
 
 
 class GetUserpic(View):
-    STATUS = {
-        'ok': 200,
-        'token_expired': 501,
-        'unknown': 500
-    }
-
-    MSG = dict(zip(STATUS.values(), STATUS.keys()))
-
-    def _get_userpic(self, request, user_id, user_vk_id, access_token):
-        cache_key = 'userpic_%s' % user_vk_id
-        userpic = cache.get(cache_key)
-        status = 200
-        if userpic is None:
-            try:
-                userpic = tasks.fetch_userpic(user_id, user_vk_id, access_token)
-                cache.set(cache_key, userpic, 60 * 30)
-                if userpic is None:
-                    return None
-            except:
-                status = self.STATUS['unknown']
-        return status, userpic
 
     @method_decorator(login_required)
     def get(self, request):
-        user_id = request.user.id
         access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
-        status, userpic = self._get_userpic(request, user_id, user_vk_id, access_token)
-        if status is None:
-            return redirect(settings.VK_LOGIN_URL)
+        status, userpic = VkSocial.get_userpic(user_vk_id, access_token)
+        if status == STATUS['unauthorized']:
+            return JsonResponse(REDIRECT_RESPONSE)
 
-        return JsonResponse({
-            'status': status,
-            'msg': self.MSG[status],
-            'url': userpic
-        })
+        if status == STATUS['ok']:
+            return JsonResponse({
+                'status': status,
+                'msg': MSG['ok'],
+                'url': userpic
+            })
 
 
 class GetSongUrl(View):
@@ -86,16 +66,17 @@ class GetSongUrl(View):
     @method_decorator(login_required)
     @method_decorator(ensure_present(PARAMS))
     def get(self, request):
-        access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
+        access_token, vk_uid = VkSocial.get_access_token_and_id(request)
         try:
             song_id = request.GET['song_id']
-            url = tasks.fetch_song_url(song_id, user_vk_id, access_token)
-            if url is not None:
+            status, url = VkSocial.get_song_url(vk_uid, song_id, access_token)
+            if status == STATUS['ok']:
                 return JsonResponse({
-                    'status': 200,
+                    'status': status,
                     'url': url
-                }, status=200)
-            return redirect(settings.VK_LOGIN_URL)
+                }, status=status)
+            if status == STATUS['unauthorized']:
+                return JsonResponse(REDIRECT_RESPONSE)
         except (ConnectionError, ReadTimeout):
             return JsonResponse({
                 'status': 500,
@@ -128,10 +109,8 @@ class Recommend(View):
                 'status': 400,
                 'reason': 'Malformed request'
             }, status=400)
-
-        recs = Db.get_recommendations(user_id, limit=limit, offset=offset, initial=initial)
-
         templ = self.INITIAL_TEMPLATE_NAME if initial else self.PLAYLIST_ENTRIES_TEMPLATE_NAME
+        recs = Db.get_recommendations(user_id, limit=limit, offset=offset, initial=initial)
 
         return JsonResponse({
             'status': 200,

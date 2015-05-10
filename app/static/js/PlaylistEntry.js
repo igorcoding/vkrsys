@@ -62,20 +62,20 @@ define(['jquery', 'toastr'],
             },
 
             onWindowResize: function (w, entryInfo) {
-                entryInfo = entryInfo || this.DOM.EntryInfo;
-                var entryArt = entryInfo ? entryInfo.find(this.C.EntryArt) : this.DOM.EntryArt;
-                var entryHeader = entryInfo ? entryInfo.find(this.C.EntryHeader) : this.DOM.EntryHeader;
-                var entryHeaderMargin = entryHeader.margin();
-                //var playPause = entryInfo.find(this.C.EntryControlsPlayPause);
-                var likeDislike = entryInfo.find(this.C.EntryControls);
-
-                entryInfo.width(entryInfo.parent().width());
-
-                var minus = entryInfo.width() - entryArt.totalWidth()
-                    - entryHeaderMargin.left
-                    - entryHeaderMargin.right
-                    - 150 - 1;
-                entryHeader.width(minus);
+                //entryInfo = entryInfo || this.DOM.EntryInfo;
+                //var entryArt = entryInfo ? entryInfo.find(this.C.EntryArt) : this.DOM.EntryArt;
+                //var entryHeader = entryInfo ? entryInfo.find(this.C.EntryHeader) : this.DOM.EntryHeader;
+                //var entryHeaderMargin = entryHeader.margin();
+                ////var playPause = entryInfo.find(this.C.EntryControlsPlayPause);
+                //var likeDislike = entryInfo.find(this.C.EntryControls);
+                //
+                //entryInfo.width(entryInfo.parent().width());
+                //
+                //var minus = entryInfo.width() - entryArt.totalWidth()
+                //    - entryHeaderMargin.left
+                //    - entryHeaderMargin.right
+                //    - 150 - 1;
+                //entryHeader.width(minus);
             },
 
             getState: function () {
@@ -129,7 +129,7 @@ define(['jquery', 'toastr'],
             },
 
             normalizeTextsLengths: function() {
-                var max = 50;
+                var max = 80;
                 var ellipsis = '<span class="ellipsis">...</span>';
                 if (this.artist.length > max) {
                     this.DOM.EntryHeaderArtist.html(this.artist.slice(0, max+1) + ellipsis);
@@ -144,16 +144,26 @@ define(['jquery', 'toastr'],
 
             countDuration: function() {
                 this.duration = parseInt(this.DOM.EntryDuration.text());
-                this.DOM.EntryDuration.text(this.durationToTime());
+                this.DOM.EntryDuration.text(this.durationToTime(this.duration));
             },
 
-            durationToTime: function() {
-                var minutes = Math.floor(this.duration / 60);
-                var seconds = this.duration - minutes * 60;
+            durationToTime: function(duration) {
+                var seconds = Math.floor(duration);
+                var minutes = Math.floor(seconds / 60);
+                seconds -= minutes * 60;
                 if (seconds < 10) {
                     seconds = "0" + String(seconds);
                 }
-                return minutes + ":" + seconds;
+                if (minutes < 60) {
+                    return minutes + ":" + seconds;
+                } else {
+                    var hours = Math.floor(minutes / 60);
+                    minutes -= hours * 60;
+                    if (minutes < 10) {
+                        minutes = "0" + minutes;
+                    }
+                    return hours + ":" + minutes + ":" + seconds;
+                }
             },
 
             onHoverEnter: function () {
@@ -250,10 +260,10 @@ define(['jquery', 'toastr'],
                         })
                     })
                         .done(function (data) {
-                            console.log(data);
+                            //console.log("/api/characterise:", data);
                         })
                         .fail(function (data) {
-                            console.warn(data);
+                            console.warn("/api/characterise:", data);
                         });
                 }
             },

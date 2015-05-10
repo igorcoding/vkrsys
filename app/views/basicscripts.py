@@ -1,11 +1,15 @@
 import json
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.db import IntegrityError, connection
 from social_auth.db.django_models import UserSocialAuth
+import vk
+from vk.api import VkAPIMethodError
 from app import tasks
 from app.models import Rating, Song, UserAction, ListenCharacteristic
 from django.core.exceptions import ObjectDoesNotExist
+from app.views.status import STATUS
 from recommender_api.rsys_actions import RsysActions
 
 
@@ -15,16 +19,65 @@ class VkSocial:
     def __init__(self):
         raise Exception("Abstract class")
 
-    @staticmethod
-    def get_access_token_and_id(request):
+    @classmethod
+    def get_access_token_and_id(cls, request):
         if request.user.is_authenticated():
-            instance = UserSocialAuth.objects.filter(provider=VkSocial.VK_PROVIDER).get(user_id=request.user.id)
+            instance = UserSocialAuth.objects.filter(provider=cls.VK_PROVIDER).get(user_id=request.user.id)
             access_token = instance.tokens['access_token']
             user_vk_id = instance.uid
             return access_token, user_vk_id
         return None
 
+    @classmethod
+    def _fetch_userpic(cls, vk_uid, access_token):
+        try:
+            vkapi = vk.API(access_token=access_token)
+            user_info = vkapi.users.get(user_ids=vk_uid, fields=['photo_50'])[0]
+            return STATUS['ok'], user_info['photo_50']
+        except VkAPIMethodError:
+            return STATUS['unauthorized'], None
 
+    @classmethod
+    def get_userpic(cls, vk_uid, access_token):
+        status = STATUS['ok']
+        cache_key = 'userpic__%s' % vk_uid
+        userpic = cache.get(cache_key)
+        if userpic is None:
+            try:
+                status, userpic = cls._fetch_userpic(vk_uid, access_token)
+                if userpic is not None:
+                    cache.set(cache_key, userpic, settings.USERPIC_CACHE_DURATION)
+            except:
+                status = STATUS['unknown']
+        return status, userpic
+
+    @classmethod
+    def _fetch_song_url(cls, song_id, access_token):
+        s = Song.objects.get(pk=song_id)
+        vk_song_id = '%d_%d' % (s.owner_id, s.song_id)
+
+        vkapi = vk.API(access_token=access_token)
+        try:
+            audio_info = vkapi.audio.getById(audios=vk_song_id)
+            s.url = audio_info[0]['url']
+            s.save()
+            return STATUS['ok'], s.url
+        except VkAPIMethodError as e:
+            return STATUS['unauthorized'], None
+
+    @classmethod
+    def get_song_url(cls, vk_uid, song_id, access_token):
+        status = STATUS['ok']
+        cache_key = 'songurl__%s__%s' % (vk_uid, song_id)
+        song_url = cache.get(cache_key)
+        if song_url is None:
+            try:
+                status, song_url = cls._fetch_song_url(song_id, access_token)
+                if song_url is not None:
+                    cache.set(cache_key, song_url, settings.SONG_URL_CACHE)
+            except:
+                status = STATUS['unknown']
+        return status, song_url
 
 
 class Db:
@@ -90,13 +143,17 @@ class Db:
         hops_count = payload['hops_count']
         duration = payload['duration']
 
+        if duration < 0:
+            print 'Duration < 0'
+            return
+
         user = User.objects.get(pk=user_id)
         song = Song.objects.get(pk=song_id)
 
         try:
-            o = ListenCharacteristic.objects.get(uuid=uuid)
+            o = ListenCharacteristic.objects.get(uuid=uuid, user=user, song=song)
         except ObjectDoesNotExist:
-            o = ListenCharacteristic(uuid=uuid)
+            o = ListenCharacteristic(uuid=uuid, user=user, song=song)
 
         o.user = user
         o.song = song
@@ -121,7 +178,7 @@ class Db:
             rate_o = Rating(user=user, song=song)
             is_new = True
 
-        if is_new:
+        if is_new or rate_o.is_implicit:
             rate_o.is_implicit = True
             rate_o.rating = avg_duration / float(song.duration)
 
@@ -153,13 +210,13 @@ class Db:
 
     @staticmethod
     def get_recommendations(user_id, limit=30, offset=0, refresh=True, initial=False):
-        if not initial:
+        if initial:
             api_resp = tasks.api_request('recommend', {
                 'user_id': user_id,
                 'refresh': refresh
             })
 
-            if not api_resp or api_resp['code'] != 200 and api_resp['code'] != 201:
+            if not api_resp or (api_resp['code'] != 200 and api_resp['code'] != 201):
                 return None
 
         q = """select app_song.id, app_song.artist, app_song.title, app_song.duration, app_song.genre, app_song.art_url, app_rating.rating
