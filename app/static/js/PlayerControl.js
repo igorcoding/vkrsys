@@ -198,7 +198,12 @@ define(['jquery', 'Playlist', 'PlayerProgressbar'],
 
             onAudioTimeUpdate: function (audio) {
                 if (!this.afterManualSlide) {
-                    this.playingSong.listenedDuration += audio.currentTime - this.playingSong.lastListenedTime;
+                    var cur = audio.currentTime,
+                        prev = this.playingSong.lastListenedTime;
+                    if (cur < prev) {
+                        prev = this.playingSong.lastListenedTime = 0;
+                    }
+                    this.playingSong.listenedDuration += cur - prev;
                     this.playingSong.characterise();
                 }
 
@@ -354,8 +359,8 @@ define(['jquery', 'Playlist', 'PlayerProgressbar'],
                     }
                 })
                     .done(function (d) {
-                        if (d.redirect) {
-                            window.location.href = d.redirect;
+                        if (d.status == 401) {
+                            window.location.href = d.redirect_url;
                             return;
                         }
                         cb(d['url']);

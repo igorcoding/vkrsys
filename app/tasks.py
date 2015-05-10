@@ -43,29 +43,11 @@ djv = Dejavu(config)
 
 
 @shared_task
-def fetch_song_url(song_id, vk_uid, access_token):
-    s = Song.objects.get(pk=song_id)
-    vk_song_id = '%d_%d' % (s.owner_id, s.song_id)
-
-    vkapi = vk.API(access_token=access_token)
-    try:
-        audio_info = vkapi.audio.getById(audios=vk_song_id)
-        s.url = audio_info[0]['url']
-        s.save()
-        return s.url
-    except VkAPIMethodError as e:
-        return None
-
-
-
-@shared_task
-def fetch_userpic(user_id, vk_uid, access_token):
-    try:
-        vkapi = vk.API(access_token=access_token)
-        user_info = vkapi.users.get(user_ids=vk_uid, fields=['photo_50'])[0]
-        return user_info['photo_50']
-    except VkAPIMethodError:
-        return None
+def api_request(action, data):
+    url = settings.API_URL + action
+    resp = requests.post(url, json=data)
+    jresp = json.loads(resp.text, encoding='utf-8')
+    return jresp
 
 
 @shared_task
@@ -74,8 +56,8 @@ def fetch_friends_music(user_id, vk_uid, access_token):
 
     pass
 
+
 @shared_task
-# @catcher
 def fetch_music(vk_uid, access_token):
     vkapi = vk.API(access_token=access_token)
     try:
@@ -87,7 +69,7 @@ def fetch_music(vk_uid, access_token):
 
     last_song = Song.objects.order_by('id').last()
     if last_song is None:
-        p_last_id = 1
+        p_last_id = 0
     else:
         p_last_id = last_song.id
 
@@ -104,9 +86,7 @@ def fetch_music(vk_uid, access_token):
         if 'genre_id' in s:
             song.genre = s['genre_id']
 
-        # if download_and_process_song(song):
         bulk.append(song)
-        # p_last_id += 1
         if len(bulk) >= batch_limit:
             Song.objects.bulk_create_new(bulk)
             bulk = []
@@ -114,18 +94,14 @@ def fetch_music(vk_uid, access_token):
     if len(bulk) != 0:
         Song.objects.bulk_create_new(bulk)
 
-    # new_songs = Song.objects.filter(id__gt=p_last_id)
-    new_songs = Song.objects.filter(id__gt=1)
-    # download_and_process_songs(vk_uid, access_token, map(lambda s1: (s1.id, s1.url), new_songs))
-    # download_and_process_songs(vk_uid, access_token, new_songs)
+    new_songs = Song.objects.filter(id__gt=p_last_id)
+    download_and_process_songs(vk_uid, access_token, new_songs, 100)
 
 
-@shared_task
-def api_request(action, data):
-    url = settings.API_URL + action
-    resp = requests.post(url, json=data)
-    jresp = json.loads(resp.text, encoding='utf-8')
-    return jresp
+def download_and_process_songs(vk_uid, access_token, songs, limit):
+    print 'Started download_and_process_songs'
+    for s in songs[:limit]:
+        download_and_process_song.delay(dict(id=s.id, url=s.url))
 
 
 @shared_task
@@ -154,19 +130,8 @@ def download_and_process_song(s):
                     song.art_url = urlparse.urljoin(settings.SONGS_ARTS_URL, '%d.png' % s_id)
                     song.save()
             fingerprint_song.delay(song_path)
-            return True
-    return False
-
-
-def download_and_process_songs(vk_uid, access_token, songs):
-    print 'Started download_and_process_songs'
-    for s in songs[:200]:
-        download_and_process_song.delay(dict(id=s.id, url=s.url))
-
-
-@shared_task
-def fingerprint_song(filename):
-    djv.fingerprint_file(filename, id_in_filename=True)
+            return '+ %s' % str(s_id)
+    return '- %s' % str(s_id)
 
 
 def _process_song(filename, song):
@@ -180,6 +145,11 @@ def _process_song(filename, song):
         song.delete()
 
     return filename
+
+
+@shared_task
+def fingerprint_song(filename):
+    djv.fingerprint_file(filename, id_in_filename=True)
 
 
 @shared_task

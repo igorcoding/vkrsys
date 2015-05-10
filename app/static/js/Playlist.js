@@ -168,9 +168,10 @@ define(['jquery', 'PlaylistEntry'],
             },
 
             scrollToCurrent: function() {
+                var scrollTo = this.playingEntryId;
                 this.$obj.animate({
                     scrollTop: this.$obj.scrollTop()
-                                + $(this.$entries[this.playingEntryId]).offset().top
+                                + $(this.$entries[scrollTo]).offset().top
                                 - this.$obj.offset().top
                 }, this.ITEMS_SCROLL_ANIMATION_SPEED);
             }

@@ -31,8 +31,8 @@ define(['jquery'],
                     method: 'GET'
                 })
                     .done(function (d) {
-                        if (d.redirect) {
-                            window.location.href = d.redirect;
+                        if (d.status == 401) {
+                            window.location.href = d.redirect_url;
                             return;
                         }
                         if (d.status === 200) {
@@ -99,6 +99,10 @@ define(['jquery'],
                     }
                 })
                     .done(function (d) {
+                        if (d.status == 401) {
+                            window.location.href = d.redirect_url;
+                            return;
+                        }
                         if (d.status == 200) {
                             self.offset += self.limit;
                             cb(d);

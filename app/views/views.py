@@ -58,11 +58,9 @@ class HomePageView(MyView):
         user_id = request.user.id
         access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
 
-        recs = Db.get_recommendations(user_id, 30)
         params = {
             'username': "%s %s" % (request.user.first_name, request.user.last_name),
             'user_vk_url': 'https://vk.com/id' + user_vk_id,
-            'recs': recs
         }
 
         user_uuid = uuid.uuid4()
@@ -75,10 +73,9 @@ class HomePageView(MyView):
 def music_fetch(request):
     user_id = request.user.id
     access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
-
     res = tasks.fetch_music.delay(user_vk_id, access_token)
     # pprint(res.get())
-    return HttpResponse("hey")
+    return HttpResponse("getting music...")
 
 
 class LogoutView(MyView):
