@@ -110,7 +110,8 @@ def download_and_process_songs(limit):
         cache.delete("p_last_song_id")
     songs = Song.objects.filter(id__gt=p_last_id)
     print 'Started download_and_process_songs'
-    for s in songs[:limit]:
+    exec_songs = songs if limit is None else songs[:limit]
+    for s in exec_songs:
         download_and_process_song.delay(dict(id=s.id, url=s.url))
 
 
@@ -157,7 +158,7 @@ def _process_song(filename, song):
     return filename
 
 
-@shared_task
+@shared_task(ignore_result=True)
 def fingerprint_song(filename):
     return
     djv.fingerprint_file(filename, id_in_filename=True)

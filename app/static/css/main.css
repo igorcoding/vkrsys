@@ -21,6 +21,7 @@
 
 .main-header__title {
     display: inline-block;
+    position: relative;
     height: 40px;
     line-height: 40px;
     margin-left: 10px;

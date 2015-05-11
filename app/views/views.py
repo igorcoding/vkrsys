@@ -51,7 +51,7 @@ class LoginView(MyView):
 
 
 class HomePageView(MyView):
-    template = 'index.html'
+    template = 'main.html'
 
     @method_decorator(login_required)
     def get(self, request):

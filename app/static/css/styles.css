@@ -43,3 +43,8 @@ html, body {
 .toast-top-right {
     top: 60px !important;
 }
+
+.tilted {
+    position: relative;
+    top: 1px;
+}

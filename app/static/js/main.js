@@ -62,8 +62,12 @@ define(['jquery', 'jquery_ui', 'jquery_sizes', 'jquery_plugins', 'toastr', 'Cont
                 }.bind(this));
             });
 
+            $('#main_header_title').tilted();
+            $('#user_profile_button').tilted();
+            $('#share_button').tilted(function(e) {
+                e.preventDefault();
 
-
+            });
         });
     }
 );
