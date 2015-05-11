@@ -69,7 +69,7 @@ class ApiHandler(ProcessMixin):
             return req, self.RSYS.on_message(*req)
         except RespError as e:
             return req, e.resp
-        except:
+        except Exception as e:
             return req, None
 
     def _result_cb(self, req, result):

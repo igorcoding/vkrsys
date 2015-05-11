@@ -68,6 +68,15 @@ CELERYBEAT_SCHEDULE = {
     }
 }
 
+CELERY_ROUTES = {
+    'app.tasks.save_music': {'queue': 'q__save_music'},
+    'app.tasks.download_and_process_songs': {'queue': 'q__download_and_process_songs'},
+    'app.tasks.download_and_process_song': {'queue': 'q__download_and_process_song'},
+    'app.tasks.fingerprint_song': {'queue': 'q__fingerprint_song'},
+    'app.tasks.rsys_learn_online': {'queue': 'q__rsys_learn_online'},
+    'app.tasks.rsys_learn_offline': {'queue': 'q__rsys_learn_offline'},
+}
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -135,8 +144,6 @@ WSGI_APPLICATION = 'vkrsys.wsgi.application'
 
 DATABASES = {
     'default': {
-        # 'ENGINE': 'django.db.backends.sqlite3',
-        # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         'ENGINE': config.get('db', 'ENGINE'),
         'NAME': config.get('db', 'NAME'),
         'USER': config.get('db', 'USER'),
@@ -149,7 +156,7 @@ DATABASES = {
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': '127.0.0.1:11211',
+        'LOCATION': '%s:%s' % (config.get('memcached', 'HOST'), config.get('memcached', 'PORT')),
     }
 }
 
@@ -176,8 +183,8 @@ SONGS_ARTS_PATH = os.path.join(STATIC_ROOT, 'arts')
 SONGS_ARTS_URL = urlparse.urljoin(STATIC_URL, 'arts/')
 SONGS_DEFAULT_ART_URL = urlparse.urljoin(SONGS_ARTS_URL, 'default.png')
 
-USERPIC_CACHE_DURATION = 60 * 60 * 24
-SONG_URL_CACHE = 60 * 30
+USERPIC_CACHE_DURATION = eval(config.get('memcached', 'USERPIC_CACHE_DURATION'))
+SONG_URL_CACHE = eval(config.get('memcached', 'SONG_URL_CACHE'))
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static"),

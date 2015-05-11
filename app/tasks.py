@@ -97,7 +97,7 @@ def save_music(vk_uid, access_token):
 
     key = "p_last_song_id"
     if cache.get(key) is None:
-        cache.set(key, p_last_id)
+        cache.set(key, p_last_id, None)
 
 
 @shared_task
@@ -159,6 +159,7 @@ def _process_song(filename, song):
 
 @shared_task
 def fingerprint_song(filename):
+    return
     djv.fingerprint_file(filename, id_in_filename=True)
 
 
