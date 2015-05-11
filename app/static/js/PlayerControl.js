@@ -1,9 +1,13 @@
-define(['jquery', 'Playlist', 'PlayerProgressbar'],
-    function($, Playlist, PlayerProgressbar) {
-        function PlayerControl(playerId) {
+define(['jquery', 'Playlist', 'PlayerProgressbar', 'Keyboard', 'Util'],
+    function($, Playlist, PlayerProgressbar, Keyboard, Util) {
+        function PlayerControl(playerId, keyboardBindings) {
             this.$obj = $(playerId);
+            this.keyboardBindingsActionToCh = keyboardBindings;
+            this.keyboardBindingsChToAction = Util.inverseObject(keyboardBindings);
+            this.keyboardEnabled = true;
             this.DOM = {};
             this.bindToDOM();
+            this.initTooltips();
             this.registerEvents();
 
             this.playingSong = null;
@@ -59,6 +63,23 @@ define(['jquery', 'Playlist', 'PlayerProgressbar'],
                 }
             },
 
+            initTooltips: function() {
+                var self = this;
+                var makeTitle = function(control, action, initialText) {
+                    var text = initialText;
+                    var kb = self.keyboardBindingsActionToCh[action];
+                    if (kb) {
+                        text += " [" + kb.toUpperCase() + "]"
+                    }
+                    control.attr('title', text);
+                };
+                makeTitle(this.DOM.MainControlsPlayPause, 'playpause', 'Play/Pause');
+                makeTitle(this.DOM.MainControlsPrev, 'prev', 'Previous');
+                makeTitle(this.DOM.MainControlsNext, 'next', 'Next');
+                makeTitle(this.DOM.MainControlsLike, 'like', 'Like');
+                makeTitle(this.DOM.MainControlsDislike, 'dislike', 'Dislike');
+            },
+
             getState: function () {
                 return this.state;
             },
@@ -89,9 +110,8 @@ define(['jquery', 'Playlist', 'PlayerProgressbar'],
             registerEvents: function () {
                 //window.registerOnResize(this.onWindowResize, this);
                 //this.onWindowResize(window);
-                this.registerOnPlayClick();
-                this.registerOnPrevNextClick();
-                this.registerOnRateClick();
+                this.registerClickEvents();
+                this.registerKeyboardEvents();
                 this.registerAudioEvents();
             },
 
@@ -105,39 +125,93 @@ define(['jquery', 'Playlist', 'PlayerProgressbar'],
                 this.DOM.Main.width(mainWidth);
             },
 
-            registerOnPlayClick: function () {
-                var self = this;
-                var playPause = this.DOM.MainControlsPlayPause;
+            playPauseButtonEvent: function() {
+                if (this.getState() === this.States.Playing) {
+                    this.visualPause();
+                    this.pause(true);
+                } else {
+                    this.play();
+                }
+            },
 
-                playPause.click(function () {
-                    var $this = $(this);
-                    if (self.getState() === self.States.Playing) {
-                        self.visualPause($this);
-                        self.pause(true);
-                    } else {
-                        //self.visualPlay($this);
-                        self.play();
+            prevButtonEvent: function() {
+                var audio = this.DOM.Audio[0];
+                if (this.getState() == this.States.Playing && audio.currentTime > 10) {
+                    audio.currentTime = 0;
+                } else {
+                    this.playlist.prev();
+                }
+            },
+
+            nextButtonEvent: function() {
+                this.playlist.next();
+            },
+
+            likeButtonEvent: function() {
+                if (this.playingSong) {
+                    this.playingSong.like();
+                }
+            },
+
+            dislikeButtonEvent: function() {
+                if (this.playingSong) {
+                    this.playingSong.dislike();
+                }
+            },
+
+            registerClickEvents: function () {
+                var playPause = this.DOM.MainControlsPlayPause;
+                var prev = this.DOM.MainControlsPrev;
+                var next = this.DOM.MainControlsNext;
+                var like = this.DOM.MainControlsLikeJs;
+                var dislike = this.DOM.MainControlsDislikeJs;
+
+                playPause.click(this.playPauseButtonEvent.bind(this));
+                prev.click(this.prevButtonEvent.bind(this));
+                next.click(this.nextButtonEvent.bind(this));
+                like.click(this.likeButtonEvent.bind(this));
+                dislike.click(this.dislikeButtonEvent.bind(this));
+            },
+
+            registerKeyboardEvents: function() {
+                var self = this;
+                $(window).keypress(function(e) {
+                    if (self.keyboardEnabled) {
+                        var ch = Keyboard.getChar(e).toLowerCase();
+                        if (ch != null && self.keyboardBindingsChToAction && self.keyboardBindingsChToAction.hasOwnProperty(ch)) {
+                            var b = self.keyboardBindingsChToAction[ch];
+                            var f = null;
+                            switch (b) {
+                                case "playpause":
+                                    f = self.playPauseButtonEvent.bind(self);
+                                    break;
+                                case "next":
+                                    f = self.nextButtonEvent.bind(self);
+                                    break;
+                                case "prev":
+                                    f = self.prevButtonEvent.bind(self);
+                                    break;
+                                case "like":
+                                    f = self.likeButtonEvent.bind(self);
+                                    break;
+                                case "dislike":
+                                    f = self.dislikeButtonEvent.bind(self);
+                                    break;
+                            }
+                            if (f) {
+                                f();
+                            }
+                        }
                     }
                 });
             },
 
-            registerOnPrevNextClick: function () {
-                var self = this;
-                var prev = this.DOM.MainControlsPrev;
-                var next = this.DOM.MainControlsNext;
+            enableKeyboardEvents: function() {
+                this.keyboardEnabled = true;
+            },
 
-                prev.click(function () {
-                    var audio = self.DOM.Audio[0];
-                    if (self.getState() == self.States.Playing && audio.currentTime > 10) {
-                        audio.currentTime = 0;
-                    } else {
-                        self.playlist.prev();
-                    }
-                });
-
-                next.click(function () {
-                    self.playlist.next();
-                });
+            disableKeyboardEvents: function() {
+                this.keyboardEnabled = false;
             },
 
             applyRate: function(rating) {
@@ -159,25 +233,6 @@ define(['jquery', 'Playlist', 'PlayerProgressbar'],
                     this.DOM.MainControlsDislikeJs.addClass(rawC(this.C.MainControlsDislike));
                 }
             },
-
-            registerOnRateClick: function () {
-                var self = this;
-                var like = this.DOM.MainControlsLikeJs;
-                var dislike = this.DOM.MainControlsDislikeJs;
-
-                like.click(function () {
-                    if (self.playingSong) {
-                        self.playingSong.like();
-                    }
-                });
-
-                dislike.click(function () {
-                    if (self.playingSong) {
-                        self.playingSong.dislike();
-                    }
-                });
-            },
-
 
             registerAudioEvents: function () {
                 var self = this;
@@ -258,9 +313,10 @@ define(['jquery', 'Playlist', 'PlayerProgressbar'],
                 $ppButton.addClass(playPauseClass + '_playing');
                 this.DOM.MainSongArtist.text(this.playingSong.artist);
                 this.DOM.MainSongTitle.text(this.playingSong.title);
-                this.DOM.Art.css({
-                    'background-image': 'url(' + this.playingSong.artUrl + ')'
-                });
+                //this.DOM.Art.css({
+                //    'background-image': 'url(' + this.playingSong.artUrl + ')'
+                //});
+                this.DOM.Art.attr("src", this.playingSong.artUrl);
                 this.initRateButtons();
             },
 
@@ -284,7 +340,7 @@ define(['jquery', 'Playlist', 'PlayerProgressbar'],
                 var self = this;
                 $audio[0].volume = 0;
                 $audio[0].play();
-                $audio.animate({volume: 1}, this.AUDIO_VOLUME_ANIMATION_SPEED, function () {
+                $audio.stop().animate({volume: 1}, this.AUDIO_VOLUME_ANIMATION_SPEED, function () {
                     self.playlist.scrollToCurrent();
                     document.title = self.playingSong.title + " - " + self.playingSong.artist;
                 });
@@ -292,7 +348,7 @@ define(['jquery', 'Playlist', 'PlayerProgressbar'],
 
             actualPause: function ($audio) {
                 var self = this;
-                $audio.animate({volume: 0}, this.AUDIO_VOLUME_ANIMATION_SPEED, function () {
+                $audio.stop().animate({volume: 0}, this.AUDIO_VOLUME_ANIMATION_SPEED, function () {
                     $audio[0].pause();
                     self.playingSong.characterise(true);
                     document.title = self.defaultDocumentTitle;
@@ -328,13 +384,16 @@ define(['jquery', 'Playlist', 'PlayerProgressbar'],
                         self.progressBar.reactToSlide = true;
                         self.playingSong = song_entry;
                         self.visualPlay();
+                        console.log(audio);
                         audio.src = url;
                         audio.onloadeddata = function () {
+                            console.log('LOADED');
                             self.progressBar.resetProgress();
                             self.progressBar.setMaxProgressText(self.playingSong.durationToTime(self.playingSong.duration));
                             self.actualPlay($audio);
                         };
                         audio.load();
+                        audio.play();
                     });
                 }
             },

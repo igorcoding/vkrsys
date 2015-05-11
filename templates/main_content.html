@@ -2,7 +2,7 @@
     <div class="player__main__outer">
         <div class="player__main">
             <audio class="player__main__audio" controls preload="none">
-                <source src="" type="audio/mpeg">
+{#                <source src="" type="audio/ogg">#}
                 Your browser does not support the audio element.
             </audio>
             <div class="player__main__controls__outer">
@@ -14,7 +14,8 @@
             </div>
             <div class="player__main__song">
                 <div class="player__main__song__art__outer">
-                    <div class="player__main__song__art" style="background-image: url('{{ recs.0.5 }}')"></div>
+{#                    <div class="player__main__song__art" style="background-image: url('{{ recs.0.5 }}')"></div>#}
+                    <img class="player__main__song__art" src="{{ recs.0.5 }}"/>
                 </div>
                 <div class="player__main__song__info">
                     <div class="player__main__song__artist">{{ recs.0.1 }}</div>

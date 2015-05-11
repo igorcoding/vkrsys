@@ -298,10 +298,10 @@
 }
 
 .player__playlist {
-    height: 100%;
     overflow-y: scroll;
     overflow-x: hidden;
     margin-top: 10px;
+    height: 100%;
 }
 
 

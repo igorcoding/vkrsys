@@ -44,7 +44,13 @@ define(['jquery', 'jquery_ui', 'jquery_sizes', 'jquery_plugins', 'toastr', 'Cont
             window.contentLoader = new ContentLoader();
             contentLoader.fetchUserpic();
             contentLoader.loadInitialRecommendations(function(addedCount) {
-                window.player = new PlayerControl("#main_player");
+                window.player = new PlayerControl("#main_player", {
+                    playpause: 'p',
+                    prev: 'b',
+                    next: 'n',
+                    like: 'l',
+                    dislike: 'd'
+                });
                 console.log(player);
 
                 var loading = false;
@@ -66,8 +72,8 @@ define(['jquery', 'jquery_ui', 'jquery_sizes', 'jquery_plugins', 'toastr', 'Cont
             $('#user_profile_button').tilted();
             $('#share_button').tilted(function(e) {
                 e.preventDefault();
-
             });
+            $('#logout_button').tilted();
         });
     }
 );
