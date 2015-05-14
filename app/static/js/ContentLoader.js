@@ -50,38 +50,36 @@ define(['jquery'],
                     });
             },
 
-            loadInitialRecommendations: function (cb) {
+            loadInitialRecommendations: function (withContent, cb) {
                 var self = this;
-                cb = cb || function () {
-                };
+                cb = cb || function () {};
 
                 this.offset = 0;
-                this.loadRecommendations(this.limit, this.offset, true, function (d) {
-                    self.DOM.Loader.remove();
-                    //self.DOM.Loader.removeClass(rawC(self.C.Loader) + '_big');
-                    //self.DOM.Loader.addClass(rawC(self.C.Loader) + '_nomargin');
-                    self.DOM.MainContentInner.prepend(d.result);
-                    self.bindToDOM();
-                    cb(d.count);
-                }, self.loadInitialRecommendations.bind(self));
+                this.loadRecommendations(this.limit, this.offset, true, withContent, function (d) {
+                    if (withContent) {
+                        self.DOM.Loader.remove();
+                        self.bindToDOM();
+                        self.DOM.MainContentInner.prepend(d.result);
+                    }
+                    cb(d);
+                }, self.loadInitialRecommendations.bind(self, withContent, cb));
             },
 
             loadNextRecommendations: function (cb) {
                 var self = this;
                 cb = cb || function () {};
 
-                this.loadRecommendations(this.limit, this.offset, false, function (d) {
+                this.loadRecommendations(this.limit, this.offset, false, false, function (d) {
                     //if (d.count == 0) {
                     //    self.DOM.Loader.hide();
                     //}
                     cb(d);
-                }, self.loadNextRecommendations.bind(self));
+                }, self.loadNextRecommendations.bind(self, cb));
             },
 
-            loadRecommendations: function (limit, offset, initial, cb, funcToRetry) {
+            loadRecommendations: function (limit, offset, initial, withContent, cb, funcToRetry) {
                 var self = this;
-                cb = cb || function () {
-                };
+                cb = cb || function () {};
 
                 var retrial = function (timeout) {
                     setTimeout(function () {
@@ -95,7 +93,8 @@ define(['jquery'],
                     data: {
                         limit: limit,
                         offset: offset,
-                        initial: initial ? 1 : 0
+                        initial: initial ? 1 : 0,
+                        with_content: withContent ? 1 : 0
                     }
                 })
                     .done(function (d) {
@@ -104,7 +103,7 @@ define(['jquery'],
                             return;
                         }
                         if (d.status == 200) {
-                            self.offset += self.limit;
+                            self.offset += d.count;
                             cb(d);
                         } else {
                             retrial(500);

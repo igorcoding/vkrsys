@@ -37,6 +37,13 @@ define(['jquery', 'PlaylistEntry'],
                 this.exploreEntries(content.count);
             },
 
+            replaceContent: function(content) {
+                this.$obj.empty();
+                this.entries = [];
+                this.$obj.append(content.result);
+                this.exploreEntries(content.count);
+            },
+
             exploreEntries: function (count) {
                 var self = this;
                 var $allEntries = this.$obj.find(PlaylistEntry.prototype.C.Entry);

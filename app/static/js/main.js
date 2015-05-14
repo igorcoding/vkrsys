@@ -43,13 +43,14 @@ define(['jquery', 'jquery_ui', 'jquery_sizes', 'jquery_plugins', 'toastr', 'Cont
 
             window.contentLoader = new ContentLoader();
             contentLoader.fetchUserpic();
-            contentLoader.loadInitialRecommendations(function(addedCount) {
-                window.player = new PlayerControl("#main_player", {
+            contentLoader.loadInitialRecommendations(true, function(d) {
+                window.player = new PlayerControl("#main_player", contentLoader, {
                     playpause: 'p',
                     prev: 'b',
                     next: 'n',
                     like: 'l',
-                    dislike: 'd'
+                    dislike: 'd',
+                    refresh: 'r'
                 });
                 console.log(player);
 

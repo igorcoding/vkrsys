@@ -1,7 +1,8 @@
 define(['jquery', 'Playlist', 'PlayerProgressbar', 'Keyboard', 'Util'],
     function($, Playlist, PlayerProgressbar, Keyboard, Util) {
-        function PlayerControl(playerId, keyboardBindings) {
+        function PlayerControl(playerId, contentLoader, keyboardBindings) {
             this.$obj = $(playerId);
+            this.contentLoader = contentLoader;
             this.keyboardBindingsActionToCh = keyboardBindings;
             this.keyboardBindingsChToAction = Util.inverseObject(keyboardBindings);
             this.keyboardEnabled = true;
@@ -44,6 +45,7 @@ define(['jquery', 'Playlist', 'PlayerProgressbar', 'Keyboard', 'Util'],
                 MainControlsDislike: '.player__main__ratecontrols__dislike',
                 MainControlsLikeJs: '.js-player__main__ratecontrols__like',
                 MainControlsLike: '.player__main__ratecontrols__like',
+                MainControlsRefresh: '.player__main__refresh-button',
                 Playlist: '.player__playlist',
                 ProgressBar: '.player__progressbar'
             },
@@ -159,18 +161,27 @@ define(['jquery', 'Playlist', 'PlayerProgressbar', 'Keyboard', 'Util'],
                 }
             },
 
+            refreshEvent: function() {
+                var self = this;
+                contentLoader.loadInitialRecommendations(false, function(d) {
+                    self.playlist.replaceContent(d);
+                });
+            },
+
             registerClickEvents: function () {
                 var playPause = this.DOM.MainControlsPlayPause;
                 var prev = this.DOM.MainControlsPrev;
                 var next = this.DOM.MainControlsNext;
                 var like = this.DOM.MainControlsLikeJs;
                 var dislike = this.DOM.MainControlsDislikeJs;
+                var refresh = this.DOM.MainControlsRefresh;
 
                 playPause.click(this.playPauseButtonEvent.bind(this));
                 prev.click(this.prevButtonEvent.bind(this));
                 next.click(this.nextButtonEvent.bind(this));
                 like.click(this.likeButtonEvent.bind(this));
                 dislike.click(this.dislikeButtonEvent.bind(this));
+                refresh.click(this.refreshEvent.bind(this));
             },
 
             registerKeyboardEvents: function() {
@@ -196,6 +207,9 @@ define(['jquery', 'Playlist', 'PlayerProgressbar', 'Keyboard', 'Util'],
                                     break;
                                 case "dislike":
                                     f = self.dislikeButtonEvent.bind(self);
+                                    break;
+                                case "refresh":
+                                    f = self.refreshEvent.bind(self);
                                     break;
                             }
                             if (f) {

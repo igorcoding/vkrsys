@@ -104,12 +104,13 @@ class Recommend(View):
             limit = int(d['limit'])
             offset = int(d['offset'])
             initial = bool(int(d['initial'])) if 'initial' in d else False
+            with_content = bool(int(d['with_content'])) if 'with_content' in d else initial
         except ValueError:
             return JsonResponse({
                 'status': 400,
                 'reason': 'Malformed request'
             }, status=400)
-        templ = self.INITIAL_TEMPLATE_NAME if initial else self.PLAYLIST_ENTRIES_TEMPLATE_NAME
+        templ = self.INITIAL_TEMPLATE_NAME if initial and with_content else self.PLAYLIST_ENTRIES_TEMPLATE_NAME
         recs = Db.get_recommendations(user_id, limit=limit, offset=offset, initial=initial)
 
         if recs is not None:

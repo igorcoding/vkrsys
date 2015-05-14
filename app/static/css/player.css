@@ -221,6 +221,75 @@
 }
 
 
+.player__main__refresh-button__outer {
+    display: block;
+    /*background-color: gold;*/
+
+    width: 36px;
+    height: 70px;
+    float: right;
+    margin-right: 10px;
+
+    top: 0;
+}
+
+.player__main__refresh-button {
+    position: relative;
+    top: 17px;
+    /*-webkit-transform: translateY(-50%);*/
+    /*transform: translateY(-50%);*/
+    display: block;
+    cursor: pointer;
+
+    background-image: url("/static/img/icons/refresh.png");
+    background-repeat: no-repeat;
+    -moz-background-size: 100%;
+    -webkit-background-size: 100%;
+    background-size: 100%;
+    background-position: center;
+    width: 36px;
+    height: 36px;
+
+    -webkit-transition-property: -webkit-transform;
+    -webkit-transition-duration: 1s;
+    -moz-transition-property: -moz-transform;
+    -moz-transition-duration: 1s;
+    transition-property: transform;
+    transition-duration: 1s;
+}
+
+@-webkit-keyframes rotate {
+    from {-webkit-transform: rotate(0deg);}
+    to {-webkit-transform: rotate(360deg);}
+}
+
+@-moz-keyframes rotate {
+    from {-moz-transform: rotate(0deg);}
+    to {-moz-transform: rotate(360deg);}
+}
+
+@keyframes rotate {
+    from {transform: rotate(0deg);}
+    to {transform: rotate(360deg);}
+}
+
+.player__main__refresh-button:hover {
+    -webkit-animation-name: rotate;
+    -webkit-animation-duration: 0.3s;
+    -webkit-animation-iteration-count: 1;
+    -webkit-animation-timing-function: ease-out;
+    -moz-animation-name: rotate;
+    -moz-animation-duration: 0.3s;
+    -moz-animation-iteration-count: 1;
+    -moz-animation-timing-function: ease-out;
+    animation-name: rotate;
+    animation-duration: 0.3s;
+    animation-iteration-count: 1;
+    animation-timing-function: ease-out;
+}
+
+
+
 .player__progressbar {
     height: 18px;
     position: relative;
