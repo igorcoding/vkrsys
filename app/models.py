@@ -11,14 +11,13 @@ class UserProfile(models.Model):
 
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-
         UserProfile.objects.create(user=instance)
+
 
 post_save.connect(create_user_profile, sender=User)
 
 
 class SongManager(models.Manager):
-
     def bulk_create_new(self, recs):
         """
         bulk create recs, skipping key conflicts that would raise an IntegrityError
@@ -71,6 +70,16 @@ class SongBase(models.Model):
     art_url = models.CharField(max_length=255, null=False, default=settings.SONGS_DEFAULT_ART_URL)
     fingerprinted = models.BooleanField(default=False)
 
+    def __unicode__(self):
+        thr = 80
+        artist = self.artist
+        title = self.title
+        if len(artist) > thr:
+            artist = u'{0}...'.format(artist[:thr])
+        if len(title) > thr:
+            title = u'{0}...'.format(title[:thr])
+        return "[%d] %s - %s" % (self.id, artist, title)
+
     class Meta:
         unique_together = ('owner_id', 'song_id')
         index_together = ('owner_id', 'song_id')
@@ -91,6 +100,9 @@ class UserAction(models.Model):
     date = models.DateTimeField(auto_now=True)
     action_type = models.CharField(max_length=25)
     action_json = models.CharField(max_length=255)
+
+    def __unicode__(self):
+        return u'[%d] %s' % (self.id, self.action_json)
 
 
 class Rating(models.Model):
@@ -114,9 +126,135 @@ class ListenCharacteristic(models.Model):
         unique_together = ('uuid', 'user', 'song')
 
 
-
-
 class RecommenderInfo(models.Model):
     last_known_user = models.ForeignKey(User)
     last_known_song = models.ForeignKey(Song)
     last_known_user_event = models.ForeignKey(UserAction)
+
+
+#############################################################
+
+
+class Fingerprints(models.Model):
+    hash = models.CharField(max_length=10, primary_key=True)
+    song = models.ForeignKey(Song)
+    offset = models.IntegerField()
+
+    class Meta:
+        managed = False
+        db_table = 'fingerprints'
+        verbose_name = 'Fingerprints'
+        verbose_name_plural = 'Fingerprints'
+
+
+class Recs(models.Model):
+    id = models.IntegerField(primary_key=True)  # AutoField?
+    user = models.ForeignKey(User)
+    song = models.ForeignKey(Song)
+    score = models.FloatField()
+
+    class Meta:
+        managed = False
+        db_table = 'recs'
+        verbose_name = 'Recs'
+        verbose_name_plural = 'Recs'
+
+
+class SvdBi(models.Model):
+    id = models.IntegerField(primary_key=True)  # AutoField?
+    item = models.ForeignKey(Song)
+    value = models.FloatField()
+
+    class Meta:
+        managed = False
+        db_table = 'svd_bI'
+        verbose_name = 'SvdBi'
+        verbose_name_plural = 'SvdBi'
+
+
+class SvdBu(models.Model):
+    id = models.IntegerField(primary_key=True)  # AutoField?
+    user = models.ForeignKey(User)
+    value = models.FloatField()
+
+    class Meta:
+        managed = False
+        db_table = 'svd_bU'
+        verbose_name = 'SvdBu'
+        verbose_name_plural = 'SvdBu'
+
+
+class SvdFeatures(models.Model):
+    id = models.IntegerField(primary_key=True)  # AutoField?
+    feature = models.IntegerField()
+
+    def __unicode__(self):
+        return u'%d' % self.feature
+
+    class Meta:
+        managed = False
+        db_table = 'svd_features'
+        verbose_name = 'SvdFeatures'
+        verbose_name_plural = 'SvdFeatures'
+
+
+class SvdMu(models.Model):
+    id = models.IntegerField(primary_key=True)  # AutoField?
+    value = models.FloatField()
+
+    def __unicode__(self):
+        return u'%d' % self.value
+
+    class Meta:
+        managed = False
+        db_table = 'svd_mu'
+        verbose_name = 'SvdMu'
+        verbose_name_plural = 'SvdMu'
+
+
+class SvdPi(models.Model):
+    id = models.IntegerField(primary_key=True)  # AutoField?
+    item = models.ForeignKey(Song)
+    feature = models.ForeignKey(SvdFeatures)
+    value = models.FloatField()
+
+    class Meta:
+        managed = False
+        db_table = 'svd_pI'
+        verbose_name = 'SvdPi'
+        verbose_name_plural = 'SvdPi'
+
+
+class SvdPu(models.Model):
+    id = models.IntegerField(primary_key=True)  # AutoField?
+    user = models.ForeignKey(User)
+    feature = models.ForeignKey(SvdFeatures)
+    value = models.FloatField()
+
+    class Meta:
+        managed = False
+        db_table = 'svd_pU'
+        verbose_name = 'SvdPu'
+        verbose_name_plural = 'SvdPu'
+
+
+class UsersFeatures(models.Model):
+    user_id = models.IntegerField(primary_key=True)
+    user = models.CharField(max_length=44)
+    features = models.TextField(blank=True)
+    baseline = models.FloatField()
+
+    class Meta:
+        managed = False
+        db_table = 'users_features'
+
+
+class ItemsFeatures(models.Model):
+    song_id = models.IntegerField(primary_key=True)
+    song = models.CharField(max_length=77)
+    features = models.TextField(blank=True)
+    baseline = models.FloatField()
+
+    class Meta:
+        managed = False
+        db_table = 'items_features'
