@@ -1,4 +1,4 @@
-define(['jquery', 'PlaylistEntry'],
+define(['jquery', 'PlayerApp/PlaylistEntry'],
     function($, PlaylistEntry) {
         function Playlist(playlistId, playerControl) {
             this.$obj = $(playlistId);

@@ -6,13 +6,16 @@
 
     {% load staticfiles %}
     <link href='http://fonts.googleapis.com/css?family=Comfortaa&subset=cyrillic,latin' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="{% static "css/lib/toastr.min.css" %}"/>
     <link rel="stylesheet" href="{% static "css/styles.css" %}" />
+    <link rel="stylesheet" href="{% static "css/index.css" %}" />
     {% block extra_styles %}
     {% endblock %}
 
     <script type="text/javascript" src="{% static "js/lib/jquery.min.js" %}"></script>
     <script type="text/javascript" src="{% static "js/lib/jquery.sizes.min.js" %}"></script>
-    <script type="text/javascript" src="{% static "js/lib/lodash.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/lib/require.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/config.js" %}"></script>
     {% block extra_scripts %}
     {% endblock %}
 </head>

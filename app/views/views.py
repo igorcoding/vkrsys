@@ -51,7 +51,7 @@ class LoginView(MyView):
 
 
 class HomePageView(MyView):
-    template = 'main.html'
+    template = 'home.html'
 
     @method_decorator(login_required)
     def get(self, request):
@@ -69,6 +69,21 @@ class HomePageView(MyView):
         response.set_cookie(key='uuid', value=user_uuid)
         tasks.save_music.delay(user_vk_id, access_token)
         return response
+
+
+class AboutView(MyView):
+    template = 'about.html'
+
+    @method_decorator(login_required)
+    def get(self, request):
+        user_id = request.user.id
+        access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
+
+        params = {
+            'username': "%s %s" % (request.user.first_name, request.user.last_name),
+            'user_vk_url': 'https://vk.com/id' + user_vk_id,
+        }
+        return self._render(request, self.template, params)
 
 
 def music_fetch(request):

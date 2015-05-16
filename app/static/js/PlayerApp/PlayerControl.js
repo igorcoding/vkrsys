@@ -1,4 +1,4 @@
-define(['jquery', 'Playlist', 'PlayerProgressbar', 'Keyboard', 'Util'],
+define(['jquery', 'PlayerApp/Playlist', 'PlayerApp/PlayerProgressbar', 'PlayerApp/Keyboard', 'Util'],
     function($, Playlist, PlayerProgressbar, Keyboard, Util) {
         function PlayerControl(playerId, contentLoader, keyboardBindings) {
             this.$obj = $(playerId);

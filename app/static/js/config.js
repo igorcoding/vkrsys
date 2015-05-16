@@ -36,4 +36,4 @@ require.config({
     }
 });
 
-requirejs(['main']);
+//requirejs(['common']);

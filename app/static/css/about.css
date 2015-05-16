@@ -1,0 +1,38 @@
+.about-title {
+    height: 25%;
+    /*background-color: #51a351;*/
+    text-align: center;
+    position: relative;
+}
+
+.about-title__text {
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    font-size: 40px;
+    letter-spacing: 5px;
+}
+
+.about-padding {
+    height: 8%;
+}
+
+.about-desc {
+    font-size: 22px;
+    letter-spacing: 2px;
+    text-align: center;
+}
+
+.about-desc__text {
+    width: 80%;
+    margin: 0 auto;
+}
+
+.about-desc__text__line {
+    margin-bottom: 10px;
+}
+
+.about-desc__text__extra-pad {
+    margin-top: 65px;
+}

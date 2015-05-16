@@ -90,7 +90,7 @@ class GetSongUrl(View):
 
 class Recommend(View):
     PARAMS = ['limit', 'offset']
-    INITIAL_TEMPLATE_NAME = 'main_content.html'
+    INITIAL_TEMPLATE_NAME = 'player.html'
     PLAYLIST_ENTRIES_TEMPLATE_NAME = 'playlist_entries.html'
 
     @method_decorator(login_required)

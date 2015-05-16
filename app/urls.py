@@ -5,6 +5,7 @@ from app.views import api
 
 urlpatterns = patterns('',
     url(r'^$', views.HomePageView.as_view(), name='index'),
+    url(r'^about/', views.AboutView.as_view(), name='about'),
     url(r'^login/', views.LoginView.as_view(), name='login'),
     url(r'^logout/', views.LogoutView.as_view(), name='logout'),
     url(r'^social/', include('social_auth.urls')),
