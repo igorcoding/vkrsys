@@ -14,7 +14,6 @@ from django.views.generic import View
 from requests import ConnectionError
 from requests.exceptions import ReadTimeout
 
-from app import tasks
 from app.views.basicscripts import Db, VkSocial
 from app.views.status import STATUS, MSG, REDIRECT_RESPONSE
 

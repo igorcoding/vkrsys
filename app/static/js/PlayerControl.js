@@ -11,9 +11,12 @@ define(['jquery', 'Playlist', 'PlayerProgressbar', 'Keyboard', 'Util'],
             this.initTooltips();
             this.registerEvents();
 
-            this.playingSong = null;
-            this.state = this.States.Paused;
             this.playlist = new Playlist(this.DOM.Playlist, this);
+            this.playingSong = this.playlist.setPlaying(0);
+            this.initRateButtons();
+
+            this.prevState = null;
+            this.state = this.States.Stopped;
 
             this.afterManualSlide = false;
             this.SLIDER_MAX = 100000;
@@ -52,7 +55,8 @@ define(['jquery', 'Playlist', 'PlayerProgressbar', 'Keyboard', 'Util'],
 
             States: {
                 Paused: 'paused',
-                Playing: 'playing'
+                Playing: 'playing',
+                Stopped: 'stopped'
             },
 
             bindToDOM: function () {
@@ -80,14 +84,24 @@ define(['jquery', 'Playlist', 'PlayerProgressbar', 'Keyboard', 'Util'],
                 makeTitle(this.DOM.MainControlsNext, 'next', 'Next');
                 makeTitle(this.DOM.MainControlsLike, 'like', 'Like');
                 makeTitle(this.DOM.MainControlsDislike, 'dislike', 'Dislike');
+                makeTitle(this.DOM.MainControlsRefresh, 'refresh', 'Refresh');
             },
 
             getState: function () {
                 return this.state;
             },
 
+            getPrevState: function () {
+                return this.prevState;
+            },
+
             _setState: function (state) {
+                this._setPrevState(this.state);
                 this.state = state;
+            },
+
+            _setPrevState: function (prevState) {
+                this.prevState = prevState;
             },
 
             setStatePaused: function () {
@@ -96,6 +110,10 @@ define(['jquery', 'Playlist', 'PlayerProgressbar', 'Keyboard', 'Util'],
 
             setStatePlaying: function () {
                 this._setState(this.States.Playing);
+            },
+
+            setStateStopped: function () {
+                this._setState(this.States.Stopped);
             },
 
             getPlaylist: function () {
@@ -129,7 +147,6 @@ define(['jquery', 'Playlist', 'PlayerProgressbar', 'Keyboard', 'Util'],
 
             playPauseButtonEvent: function() {
                 if (this.getState() === this.States.Playing) {
-                    this.visualPause();
                     this.pause(true);
                 } else {
                     this.play();
@@ -165,6 +182,7 @@ define(['jquery', 'Playlist', 'PlayerProgressbar', 'Keyboard', 'Util'],
                 var self = this;
                 contentLoader.loadInitialRecommendations(false, function(d) {
                     self.playlist.replaceContent(d);
+                    self.playlist.scrollTo(0);
                 });
             },
 
@@ -320,25 +338,16 @@ define(['jquery', 'Playlist', 'PlayerProgressbar', 'Keyboard', 'Util'],
                 }
             },
 
-            initPlay: function() {
+            visualPlay: function () {
                 var $ppButton = this.DOM.MainControlsPlayPause;
                 var playPauseClass = rawC(this.C.MainControlsPlayPause);
                 $ppButton.removeClass(playPauseClass + '_paused');
                 $ppButton.addClass(playPauseClass + '_playing');
                 this.DOM.MainSongArtist.text(this.playingSong.artist);
                 this.DOM.MainSongTitle.text(this.playingSong.title);
-                //this.DOM.Art.css({
-                //    'background-image': 'url(' + this.playingSong.artUrl + ')'
-                //});
                 this.DOM.Art.attr("src", this.playingSong.artUrl);
                 this.initRateButtons();
             },
-
-            visualPlay: function () {
-                this.initPlay();
-                this.setStatePlaying();
-            },
-
 
             visualPause: function ($ppButton) {
                 if (!$ppButton) {
@@ -347,13 +356,14 @@ define(['jquery', 'Playlist', 'PlayerProgressbar', 'Keyboard', 'Util'],
                 var playPauseClass = rawC(this.C.MainControlsPlayPause);
                 $ppButton.removeClass(playPauseClass + '_playing');
                 $ppButton.addClass(playPauseClass + '_paused');
-                this.setStatePaused();
             },
 
             actualPlay: function ($audio) {
                 var self = this;
                 $audio[0].volume = 0;
                 $audio[0].play();
+                this.setStatePlaying();
+                self.playlist.playingEntry.play();
                 $audio.stop().animate({volume: 1}, this.AUDIO_VOLUME_ANIMATION_SPEED, function () {
                     self.playlist.scrollToCurrent();
                     document.title = self.playingSong.title + " - " + self.playingSong.artist;
@@ -362,6 +372,7 @@ define(['jquery', 'Playlist', 'PlayerProgressbar', 'Keyboard', 'Util'],
 
             actualPause: function ($audio) {
                 var self = this;
+                this.setStatePaused();
                 $audio.stop().animate({volume: 0}, this.AUDIO_VOLUME_ANIMATION_SPEED, function () {
                     $audio[0].pause();
                     self.playingSong.characterise(true);
@@ -374,34 +385,17 @@ define(['jquery', 'Playlist', 'PlayerProgressbar', 'Keyboard', 'Util'],
                 var $audio = this.DOM.Audio;
                 var audio = $audio[0];
 
-                var song_id = song_entry ? song_entry.getSongId() : undefined;
-                if (!song_id && !this.playingSong) {
-                    this.playlist.playFirst();
-                    return;
-                } else if (!song_id) {
-                    this.visualPlay();
-                    this.playlist.playingEntry.play();
-                }
-                if (!song_id || this.playingSong && song_id === this.playingSong.getSongId()) {  // continue playing
-                    console.log("[Player] continuing");
-                    this.visualPlay();
-                    this.actualPlay($audio);
-                    //audio.onloadeddata = function() {
-                    //    audio.play();
-                    //};
-                    //audio.load();
+                song_entry = song_entry || this.playingSong;
+                var song_id = song_entry ? song_entry.getSongId() : this.playingSong.getSongId();
 
-                } else {  // new song
+                if (this.getState() == this.States.Stopped || song_id != this.playingSong.getSongId()) {
                     console.log("[Player] new song");
-                    // fetch audio url
+                    this.playingSong = song_entry;
                     this.fetchAudioUrl(song_id, function (url) {
                         self.progressBar.reactToSlide = true;
-                        self.playingSong = song_entry;
                         self.visualPlay();
-                        console.log(audio);
                         audio.src = url;
                         audio.onloadeddata = function () {
-                            console.log('LOADED');
                             self.progressBar.resetProgress();
                             self.progressBar.setMaxProgressText(self.playingSong.durationToTime(self.playingSong.duration));
                             self.actualPlay($audio);
@@ -409,6 +403,10 @@ define(['jquery', 'Playlist', 'PlayerProgressbar', 'Keyboard', 'Util'],
                         audio.load();
                         audio.play();
                     });
+                } else if (song_id == this.playingSong.getSongId()) {
+                    console.log("[Player] continuing");
+                    this.visualPlay();
+                    this.actualPlay($audio);
                 }
             },
 

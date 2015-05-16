@@ -140,9 +140,7 @@ define(['jquery', 'PlaylistEntry'],
                 this.onScrollListeners.push(cb);
             },
 
-            playById: function (id) {
-                //console.log("Entries length:", this.entries.length);
-                //console.log("PlayingId:", this.playingEntryId);
+            setPlaying: function(id) {
                 if (id < 0) {
                     id = this.entries.length - 1;
                 }
@@ -154,6 +152,13 @@ define(['jquery', 'PlaylistEntry'],
                 }
                 this.playingEntryId = id;
                 this.playingEntry = this.entries[id];
+                return this.playingEntry;
+            },
+
+            playById: function (id) {
+                //console.log("Entries length:", this.entries.length);
+                //console.log("PlayingId:", this.playingEntryId);
+                this.setPlaying(id);
                 this.playingEntry.play();
                 this.playerControl.play(this.playingEntry);
             },
@@ -176,11 +181,18 @@ define(['jquery', 'PlaylistEntry'],
 
             scrollToCurrent: function() {
                 var scrollTo = this.playingEntryId;
-                this.$obj.animate({
-                    scrollTop: this.$obj.scrollTop()
-                                + $(this.$entries[scrollTo]).offset().top
-                                - this.$obj.offset().top
-                }, this.ITEMS_SCROLL_ANIMATION_SPEED);
+                this.scrollTo(scrollTo);
+            },
+
+            scrollTo: function(id) {
+                console.log(id);
+                if (id != null && typeof id != 'undefined' && id < this.$entries.length) {
+                    this.$obj.animate({
+                        scrollTop: this.$obj.scrollTop()
+                        + $(this.$entries[id]).offset().top
+                        - this.$obj.offset().top
+                    }, this.ITEMS_SCROLL_ANIMATION_SPEED);
+                }
             }
 
         };

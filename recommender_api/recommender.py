@@ -102,14 +102,15 @@ class Recommender:
             raise RespError(Responses.MALFORMED_REQUEST)
 
     def initialize(self):
+        print 'INIT'
         users = self.db.get_users_ids()
         items = self.db.get_items_ids()
-        last_action = self.db.get_last_action()
+        # last_action = self.db.get_last_action()
 
-        if len(users) > 0 and len(items) > 0:
-            self.db.save_lasts(users[-1], items[-1], last_action)
-        else:
-            self.db.delete_lasts()
+        # if len(users) > 0 and len(items) > 0:
+        #     self.db.save_lasts(users[-1], items[-1], last_action)
+        # else:
+        #     self.db.delete_lasts()
         self.config = rsys.SVDConfig(len(users), len(items), -1, 4, 0.005)
         self.config.set_predictor('sigmoid')
         self.config.set_print_result(False)
