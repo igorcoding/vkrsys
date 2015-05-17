@@ -1,0 +1,61 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-05-17 20:01+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: app/views/views.py:42
+msgid "Login"
+msgstr ""
+
+#: app/views/views.py:44
+msgid "Sign in with VK"
+msgstr ""
+
+#: app/views/views.py:87
+msgid "Proceed"
+msgstr ""
+
+#: templates/_about_content.html:8
+msgid ""
+"VK Recommender is an innovative way to get the best of your favorite music!"
+msgstr ""
+
+#: templates/_about_content.html:9
+msgid ""
+"Best of modern science and programming technologies united together to "
+"supply you with the recommendations that computed exactly for you."
+msgstr ""
+
+#: templates/_about_content.html:10
+msgid "The only thing you need - is just listen to music, like you always do."
+msgstr ""
+
+#: templates/_about_content.html:11
+msgid "Yeah, it's just that simple :)"
+msgstr ""
+
+#: templates/_footer.html:3
+msgid "About"
+msgstr ""
+
+#: vkrsys/settings.py:170
+msgid "English"
+msgstr ""
+
+#: vkrsys/settings.py:171
+msgid "Russian"
+msgstr ""
