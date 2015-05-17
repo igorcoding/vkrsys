@@ -1,8 +1,11 @@
 import json
 from django.conf import settings
+from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from django.core.cache import cache
+from django.core.urlresolvers import reverse
 from django.db import IntegrityError, connection
+from django.shortcuts import redirect
 from social_auth.db.django_models import UserSocialAuth
 import vk
 from vk.api import VkAPIMethodError
@@ -11,6 +14,21 @@ from app.models import Rating, Song, UserAction, ListenCharacteristic
 from django.core.exceptions import ObjectDoesNotExist
 from app.views.status import STATUS
 from recommender_api.rsys_actions import RsysActions
+
+
+class ForceLogout(Exception):
+    def __init__(self, *args, **kwargs):
+        super(ForceLogout, self).__init__(*args, **kwargs)
+
+
+def force_logout_wrapper(f):
+    def wrapper(request, *args, **kwargs):
+        try:
+            return f(request, *args, **kwargs)
+        except ForceLogout:
+            logout(request)
+            return redirect(reverse('app:login'))
+    return wrapper
 
 
 class VkSocial:
@@ -22,8 +40,12 @@ class VkSocial:
     @classmethod
     def get_access_token_and_id(cls, request):
         if request.user.is_authenticated():
-            return cls.get_access_token_and_id_by_uid(request.user.id)
-        return None
+            try:
+                return cls.get_access_token_and_id_by_uid(request.user.id)
+            except ObjectDoesNotExist:
+                print 'Attempt to login without social auth'
+                raise ForceLogout()
+        return None, None
 
     @classmethod
     def get_access_token_and_id_by_uid(cls, uid):

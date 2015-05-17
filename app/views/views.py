@@ -11,7 +11,7 @@ from django.contrib.auth import logout
 from django.utils.translation import ugettext as _
 
 from app import tasks
-from app.views.basicscripts import VkSocial, Db
+from app.views.basicscripts import VkSocial, Db, force_logout_wrapper
 
 
 class MyView(View):
@@ -56,6 +56,7 @@ class HomePageView(MyView):
     template = 'home.html'
 
     @method_decorator(login_required)
+    @method_decorator(force_logout_wrapper)
     def get(self, request):
         user_id = request.user.id
         access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
@@ -77,6 +78,7 @@ class AboutView(MyView):
     template = 'about.html'
 
     @method_decorator(login_required)
+    @method_decorator(force_logout_wrapper)
     def get(self, request):
         user_id = request.user.id
         access_token, user_vk_id = VkSocial.get_access_token_and_id(request)

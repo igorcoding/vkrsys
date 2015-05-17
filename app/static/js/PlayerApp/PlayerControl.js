@@ -12,6 +12,7 @@ define(['jquery', 'PlayerApp/Playlist', 'PlayerApp/PlayerProgressbar', 'PlayerAp
             this.registerEvents();
 
             this.playlist = new Playlist(this.DOM.Playlist, this);
+            this.playlistVisible = this.DOM.Playlist.is(":visible");
             this.playingSong = this.playlist.setPlaying(0);
             this.initRateButtons();
 
@@ -48,6 +49,7 @@ define(['jquery', 'PlayerApp/Playlist', 'PlayerApp/PlayerProgressbar', 'PlayerAp
                 MainControlsDislike: '.player__main__ratecontrols__dislike',
                 MainControlsLikeJs: '.js-player__main__ratecontrols__like',
                 MainControlsLike: '.player__main__ratecontrols__like',
+                MainControlsTogglePlaylist: '.player__main__toggle-playlist',
                 MainControlsRefresh: '.player__main__refresh-button',
                 Playlist: '.player__playlist',
                 ProgressBar: '.player__progressbar'
@@ -186,6 +188,20 @@ define(['jquery', 'PlayerApp/Playlist', 'PlayerApp/PlayerProgressbar', 'PlayerAp
                 });
             },
 
+            togglePlaylistEvent: function() {
+                var self = this;
+                if (this.playlistVisible) {
+                    this.$obj.css({height: 0});
+                    this.DOM.Playlist.closest().hide();
+                    this.DOM.Playlist.hide();
+                } else {
+                    this.$obj.css({height: '100%'});
+                    this.DOM.Playlist.closest().show();
+                    this.DOM.Playlist.show();
+                }
+                this.playlistVisible = !this.playlistVisible;
+            },
+
             registerClickEvents: function () {
                 var playPause = this.DOM.MainControlsPlayPause;
                 var prev = this.DOM.MainControlsPrev;
@@ -193,6 +209,7 @@ define(['jquery', 'PlayerApp/Playlist', 'PlayerApp/PlayerProgressbar', 'PlayerAp
                 var like = this.DOM.MainControlsLikeJs;
                 var dislike = this.DOM.MainControlsDislikeJs;
                 var refresh = this.DOM.MainControlsRefresh;
+                var togglePlaylist = this.DOM.MainControlsTogglePlaylist;
 
                 playPause.click(this.playPauseButtonEvent.bind(this));
                 prev.click(this.prevButtonEvent.bind(this));
@@ -200,6 +217,7 @@ define(['jquery', 'PlayerApp/Playlist', 'PlayerApp/PlayerProgressbar', 'PlayerAp
                 like.click(this.likeButtonEvent.bind(this));
                 dislike.click(this.dislikeButtonEvent.bind(this));
                 refresh.click(this.refreshEvent.bind(this));
+                togglePlaylist.click(this.togglePlaylistEvent.bind(this));
             },
 
             registerKeyboardEvents: function() {

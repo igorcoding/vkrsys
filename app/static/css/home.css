@@ -1,0 +1,14 @@
+.main-container {
+    position: relative;
+    height: 100%;
+}
+
+.player-container {
+    height: 100%;
+    /*background-color: #51a351;*/
+}
+
+.other-content {
+    /*position: absolute;*/
+    /*top: 100px;*/
+}
