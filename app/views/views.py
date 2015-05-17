@@ -1,4 +1,5 @@
 import uuid
+from django.conf import settings
 
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
@@ -40,7 +41,9 @@ class LoginView(MyView):
             return redirect('/')
 
         params = self.build_params({
-            'text': request.user.is_authenticated()
+            'text': request.user.is_authenticated(),
+            'login_btn_text': 'Sign in with VK',
+            'login_btn_url': settings.VK_LOGIN_URL
         })
 
         return self._render(request, self.template, params)
@@ -82,6 +85,8 @@ class AboutView(MyView):
         params = {
             'username': "%s %s" % (request.user.first_name, request.user.last_name),
             'user_vk_url': 'https://vk.com/id' + user_vk_id,
+            'login_btn_text': 'Proceed',
+            'login_btn_url': reverse('home')
         }
         return self._render(request, self.template, params)
 

@@ -19,7 +19,7 @@
 }
 
 .about-desc {
-    font-size: 22px;
+    font-size: 1.2em;
     letter-spacing: 2px;
     text-align: center;
 }
@@ -35,4 +35,39 @@
 
 .about-desc__text__extra-pad {
     margin-top: 65px;
+}
+
+.about-login {
+    margin-top: 4em;
+    text-align: center;
+}
+
+.about-login__btn {
+    display: block;
+    width: 250px;
+    height: 50px;
+    line-height: 50px;
+    margin: 0 auto;
+    text-align: left;
+    color: #ffffff;
+    cursor: pointer;
+    background-color: #4C75A3;
+}
+
+.about-login__btn:hover {
+    background-color: #45668e;
+}
+
+.about-login__btn__text {
+    display: inline-block;
+    float: left;
+    margin-left: 20px;
+    font-size: 1.4em;
+}
+
+.about-login__btn__arrow {
+    display: inline-block;
+    float: right;
+    margin-right: 20px;
+    font-size: 1.7em;
 }

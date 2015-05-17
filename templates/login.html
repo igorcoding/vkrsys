@@ -1,18 +1,14 @@
 {% extends 'default.html' %}
+{% load staticfiles %}
 
 {% block extra_styles %}
-    {% load staticfiles %}
     <link rel="stylesheet" href="{% static "css/login.css" %}" />
+    <link rel="stylesheet" href="{% static "css/about.css" %}" />
 {% endblock %}
 
 
 {% block content %}
-<div class="login-form">
-    <div class="login-form__title">
-        VK Recommender
-    </div>
-    <div class="login-form__link">
-        <a href="{% url 'socialauth_begin' 'vk-oauth' %}" class="login-form__link__a">Enter VK</a>
-    </div>
-</div>
+    {% include '_login_header.html' %}
+    {% include '_login_body.html' %}
+    {% include '_login_footer.html' %}
 {% endblock %}

@@ -1,0 +1,16 @@
+<header class="main-header__outer">
+    <div class="main-header">
+        <a id="main_header_title" class="main-header__title link" href="/">VK RECOMMENDER</a>
+        <div class="main-header__toolbar">
+            <a href="{{ user_vk_url }}" target="_blank" id="user_profile_button" class="main-header__toolbar__user link">
+                <div class="main-header__toolbar__user__name">
+                    {{ username|upper }}
+                </div>
+                <div class="main-header__toolbar__user__avatar"></div>
+            </a>
+            <a href="/share" id="share_button" class="main-header__toolbar__share link"></a>
+            <a href="/logout" id="logout_button" class="main-header__toolbar__logout link" ></a>
+
+        </div>
+    </div>
+</header>
