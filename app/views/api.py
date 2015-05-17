@@ -10,6 +10,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
+from django.utils.translation import ugettext as _
 from django.views.generic import View
 from requests import ConnectionError
 from requests.exceptions import ReadTimeout
@@ -186,12 +187,12 @@ class Rate(View):
             if rating_obj is None:
                 return JsonResponse({
                     'status': 201,
-                    'msg': 'You have already rated this song'
+                    'msg': _('You have already rated this song')
                 }, status=200)
 
             return JsonResponse({
                 'status': 200,
-                'msg': 'Vote accepted'
+                'msg': _('Vote accepted')
             }, status=200)
 
         except ObjectDoesNotExist as e:

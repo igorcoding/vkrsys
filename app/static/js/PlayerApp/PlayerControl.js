@@ -79,12 +79,12 @@ define(['jquery', 'PlayerApp/Playlist', 'PlayerApp/PlayerProgressbar', 'PlayerAp
                     }
                     control.attr('title', text);
                 };
-                makeTitle(this.DOM.MainControlsPlayPause, 'playpause', 'Play/Pause');
-                makeTitle(this.DOM.MainControlsPrev, 'prev', 'Previous');
-                makeTitle(this.DOM.MainControlsNext, 'next', 'Next');
-                makeTitle(this.DOM.MainControlsLike, 'like', 'Like');
-                makeTitle(this.DOM.MainControlsDislike, 'dislike', 'Dislike');
-                makeTitle(this.DOM.MainControlsRefresh, 'refresh', 'Refresh');
+                makeTitle(this.DOM.MainControlsPlayPause, 'playpause', gettext('Play/Pause'));
+                makeTitle(this.DOM.MainControlsPrev, 'prev', gettext('Previous'));
+                makeTitle(this.DOM.MainControlsNext, 'next', gettext('Next'));
+                makeTitle(this.DOM.MainControlsLike, 'like', gettext('Like'));
+                makeTitle(this.DOM.MainControlsDislike, 'dislike', gettext('Dislike'));
+                makeTitle(this.DOM.MainControlsRefresh, 'refresh', gettext('Refresh'));
             },
 
             getState: function () {

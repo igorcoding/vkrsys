@@ -1,4 +1,5 @@
+{% load i18n %}
 <footer class="main-footer">
-    <a href="/about">About</a>
+    <a href="{% url 'app:about' %}">{% trans "About" %}</a>
 {#            <a href="#">Help</a>#}
 </footer>
