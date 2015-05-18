@@ -16,6 +16,7 @@ define(['jquery', 'toastr'],
             var self = this;
             this.loadUserpic(function(url) {
                 console.log(url);
+                self.DOM.Userpic.empty();
                 self.DOM.Userpic.css(
                     'background-image', 'url(' + url + ')'
                 )

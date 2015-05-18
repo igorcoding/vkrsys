@@ -1,6 +1,9 @@
+{% load staticfiles %}
 <div class="user-card">
     <div class="user-card__userpic-cont">
-        <div class="user-card__userpic"></div>
+        <div class="user-card__userpic">
+            <img src="{% static 'img/loader.gif' %}" alt="" class="loader loader_big" width="50" height="50" />
+        </div>
         <div class="user-card__userpic__play"></div>
     </div>
     <div class="user-card__username">{{ user.username }}</div>

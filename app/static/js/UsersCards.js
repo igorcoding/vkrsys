@@ -12,8 +12,11 @@ define(['jquery', 'toastr', 'UserCard'],
             this.limit = 30;
             this.offset = 0;
             this.initial = true;
+            this.loading = true;
 
             this.currentPlayingCard = null;
+            this.stopLoading = false;
+            this.registerEvents();
         }
 
         UsersCards.prototype = {
@@ -98,11 +101,25 @@ define(['jquery', 'toastr', 'UserCard'],
                 this.currentPlayingCard.stopPlaying();
             },
 
+            registerEvents: function() {
+                var self = this;
+                this.$obj.scroll(function() {
+                    if(!self.loading && !self.stopLoading && Math.ceil(self.$obj.scrollTop()) >= self.$obj.prop('scrollHeight') - self.$obj.height() - 100) {
+                        self.loadCards();
+                        console.log("loading more users");
+                    }
+                });
+            },
+
             loadCards: function() {
                 var self = this;
                 this.load(function(d) {
+                    if (d.count == 0) {
+                        self.stopLoading = true;
+                    }
                     if (self.initial) {
                         self.replaceContent(d);
+                        self.initial = false;
                     } else {
                         self.addContent(d);
                     }
@@ -110,6 +127,8 @@ define(['jquery', 'toastr', 'UserCard'],
             },
 
             load: function(cb) {
+                var self = this;
+                this.loading = true;
                 $.ajax('/api/users', {
                     method: 'GET',
                     data: {
@@ -118,19 +137,21 @@ define(['jquery', 'toastr', 'UserCard'],
                     }
                 })
                     .done(function (d) {
+                        self.loading = false;
                         if (d.status == 401) {
                             window.location.href = d.redirect_url;
                             return;
                         }
                         if (d.status == 200) {
                             self.offset += d.count;
-                            self.initial = false;
+
                             cb(d);
                         } else {
                             //retrial(500);
                         }
                     })
                     .fail(function (d) {
+                        self.loading = false;
                         console.warn('[users cards] disaster: ', d);
                         //retrial(2000);
                     });
