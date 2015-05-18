@@ -3,6 +3,7 @@ from django.conf import settings
 from django.contrib.auth import logout
 
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
@@ -14,6 +15,7 @@ from django.utils.translation import ugettext as _
 from django.views.generic import View
 from requests import ConnectionError
 from requests.exceptions import ReadTimeout
+import time
 
 from app.views.basicscripts import Db, VkSocial
 from app.views.status import STATUS, MSG, REDIRECT_RESPONSE
@@ -44,11 +46,27 @@ def ensure_present(required, attr_name='GET'):
 
 
 class GetUserpic(View):
+    PARAMS = ['username']
 
     @method_decorator(login_required)
+    @method_decorator(ensure_present(PARAMS))
     def get(self, request):
         access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
-        status, userpic = VkSocial.get_userpic(user_vk_id, access_token)
+        d = request.GET
+        try:
+             username = str(d['username'])
+        except ValueError:
+            return JsonResponse({
+                'status': 400,
+                'reason': 'Malformed request'
+            }, status=400)
+        try:
+            status, userpic = VkSocial.get_userpic(username, access_token)
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                'status': 404,
+                'reason': 'user not found'
+            }, status=404)
         if status == STATUS['unauthorized']:
             return JsonResponse(REDIRECT_RESPONSE)
 
@@ -58,6 +76,32 @@ class GetUserpic(View):
                 'msg': MSG['ok'],
                 'url': userpic
             })
+
+
+class GetUsers(View):
+    PARAMS = ['limit', 'offset']
+    TEMPLATE_NAME = 'user_cards.html'
+
+    @method_decorator(login_required)
+    @method_decorator(ensure_present(PARAMS))
+    def get(self, request):
+        d = request.GET
+        try:
+            limit = int(d['limit'])
+            offset = int(d['offset'])
+        except ValueError:
+            return JsonResponse({
+                'status': 400,
+                'reason': 'Malformed request'
+            }, status=400)
+
+        users = User.objects.filter(is_staff=False).all()[offset:offset + limit]
+
+        return JsonResponse({
+            'status': 200,
+            'count': len(users),
+            'result': render_to_string(self.TEMPLATE_NAME, dict(users=users, arr=range(0, 5)))
+        })
 
 
 class GetSongUrl(View):
@@ -90,7 +134,7 @@ class GetSongUrl(View):
 
 
 class Recommend(View):
-    PARAMS = ['limit', 'offset']
+    PARAMS = ['limit', 'offset', 'target_username']
     INITIAL_TEMPLATE_NAME = 'player.html'
     PLAYLIST_ENTRIES_TEMPLATE_NAME = 'playlist_entries.html'
 
@@ -105,13 +149,22 @@ class Recommend(View):
             offset = int(d['offset'])
             initial = bool(int(d['initial'])) if 'initial' in d else False
             with_content = bool(int(d['with_content'])) if 'with_content' in d else initial
+            target_username = str(d['target_username'])
         except ValueError:
             return JsonResponse({
                 'status': 400,
                 'reason': 'Malformed request'
             }, status=400)
+
+        try:
+            target_user = User.objects.get(username=target_username)
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                'status': 404,
+                'reason': 'Unknown user'
+            }, status=404)
         templ = self.INITIAL_TEMPLATE_NAME if initial and with_content else self.PLAYLIST_ENTRIES_TEMPLATE_NAME
-        recs = Db.get_recommendations(user_id, limit=limit, offset=offset, initial=initial)
+        recs = Db.get_recommendations(target_user.id, limit=limit, offset=offset, initial=initial)
 
         if recs is not None:
             return JsonResponse({

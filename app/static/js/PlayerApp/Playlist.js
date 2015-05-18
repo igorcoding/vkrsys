@@ -1,8 +1,9 @@
 define(['jquery', 'PlayerApp/PlaylistEntry'],
     function($, PlaylistEntry) {
-        function Playlist(playlistId, playerControl) {
+        function Playlist(playlistId) {
             this.$obj = $(playlistId);
-            this.playerControl = playerControl;
+            this.$objp = this.$obj.parent();
+            this.playerControl = null;
             this.DOM = {};
             this.entries = [];
             this.$entries = null;
@@ -30,6 +31,23 @@ define(['jquery', 'PlayerApp/PlaylistEntry'],
                         }
                     }
                 }
+            },
+
+            show: function() {
+                this.$objp.show();
+                //this.scrollToCurrent();
+            },
+
+            hide: function() {
+                this.$objp.hide();
+            },
+
+            isVisible: function() {
+                return this.$obj.is(':visible');
+            },
+
+            setPlayerControl: function (playerControl) {
+                this.playerControl = playerControl;
             },
 
             addContent: function(content) {
@@ -67,9 +85,9 @@ define(['jquery', 'PlayerApp/PlaylistEntry'],
 
             registerEvents: function () {
                 var self = this;
-                this.$obj.scroll(function() {
+                this.$objp.scroll(function() {
                     for (var i = 0; i < self.onScrollListeners.length; ++i) {
-                        self.onScrollListeners[i](self.$obj);
+                        self.onScrollListeners[i](self.$objp);
                     }
                 });
                 //window.registerOnResize(this.onWindowResize, this);
@@ -155,16 +173,16 @@ define(['jquery', 'PlayerApp/PlaylistEntry'],
                 return this.playingEntry;
             },
 
-            playById: function (id) {
+            playById: function (id, forcePlay) {
                 //console.log("Entries length:", this.entries.length);
                 //console.log("PlayingId:", this.playingEntryId);
                 this.setPlaying(id);
                 this.playingEntry.play();
-                this.playerControl.play(this.playingEntry);
+                this.playerControl.play(this.playingEntry, forcePlay);
             },
 
             playFirst: function () {
-                this.playById(0);
+                this.playById(0, true);
             },
 
             pauseCurrent: function () {
@@ -186,11 +204,12 @@ define(['jquery', 'PlayerApp/PlaylistEntry'],
 
             scrollTo: function(id) {
                 console.log(id);
+                var extraPadding = 10;
                 if (id != null && typeof id != 'undefined' && id < this.$entries.length) {
-                    this.$obj.animate({
-                        scrollTop: this.$obj.scrollTop()
+                    this.$objp.animate({
+                        scrollTop: this.$objp.scrollTop()
                         + $(this.$entries[id]).offset().top
-                        - this.$obj.offset().top
+                        - this.$objp.offset().top - extraPadding
                     }, this.ITEMS_SCROLL_ANIMATION_SPEED);
                 }
             }

@@ -2,10 +2,13 @@ import uuid
 from django.conf import settings
 
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.http.response import HttpResponse
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
+from django.views.defaults import page_not_found
 from django.views.generic import View
 from django.contrib.auth import logout
 from django.utils.translation import ugettext as _
@@ -31,7 +34,6 @@ class MyView(View):
 
 
 class LoginView(MyView):
-
     template = 'login.html'
 
     def get(self, request):
@@ -57,13 +59,24 @@ class HomePageView(MyView):
 
     @method_decorator(login_required)
     @method_decorator(force_logout_wrapper)
-    def get(self, request):
+    def get(self, request, username):
+        target_username = username
+        if target_username is None:
+            target_username = request.user.username
+
+        try:
+            User.objects.get(username=target_username)
+        except ObjectDoesNotExist:
+            return page_not_found(request)
+
         user_id = request.user.id
         access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
 
         params = {
-            'username': "%s %s" % (request.user.first_name, request.user.last_name),
+            'username': request.user.username,
+            'name': "%s %s" % (request.user.first_name, request.user.last_name),
             'user_vk_url': 'https://vk.com/id' + user_vk_id,
+            'target_username': target_username
         }
 
         user_uuid = uuid.uuid4()
@@ -101,7 +114,6 @@ def music_fetch(request):
 
 
 class LogoutView(MyView):
-
     def get(self, request):
         if request.user.is_authenticated():
             logout(request)

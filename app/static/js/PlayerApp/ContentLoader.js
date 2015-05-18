@@ -11,7 +11,7 @@ define(['jquery'],
         ContentLoader.prototype = {
             C: {
                 UserAvatar: '.main-header__toolbar__user__avatar',
-                MainContentInner: '.player-container',
+                MainContentInner: '.main-container',
                 Loader: '.loader'
             },
 
@@ -25,10 +25,20 @@ define(['jquery'],
                 }
             },
 
-            fetchUserpic: function () {
+            fetchMainUserpic: function() {
+                var self = this;
+                this.fetchUserpic($('#user_profile_button').data('username'), function(url) {
+                    self.DOM.UserAvatar.css('background-image', 'url(' + url + ')');
+                })
+            },
+
+            fetchUserpic: function (username, cb) {
                 var self = this;
                 $.ajax('/api/userpic', {
-                    method: 'GET'
+                    method: 'GET',
+                    data: {
+                        username: username
+                    }
                 })
                     .done(function (d) {
                         if (d.status == 401) {
@@ -37,7 +47,9 @@ define(['jquery'],
                         }
                         if (d.status === 200) {
                             console.log('[userpic] loaded');
-                            self.DOM.UserAvatar.css('background-image', 'url(' + d.url + ')')
+                            if (cb) {
+                                cb(d.url);
+                            }
                         } else if (d.status !== 501) {
                             setTimeout(function () {
                                 console.log('[userpic] Retrying to fetch userpic');
@@ -50,34 +62,34 @@ define(['jquery'],
                     });
             },
 
-            loadInitialRecommendations: function (withContent, cb) {
+            loadInitialRecommendations: function (username, withContent, cb) {
                 var self = this;
                 cb = cb || function () {};
 
                 this.offset = 0;
-                this.loadRecommendations(this.limit, this.offset, true, withContent, function (d) {
+                this.loadRecommendations(username, this.limit, this.offset, true, withContent, function (d) {
                     if (withContent) {
                         self.DOM.Loader.remove();
                         self.bindToDOM();
                         self.DOM.MainContentInner.prepend(d.result);
                     }
                     cb(d);
-                }, self.loadInitialRecommendations.bind(self, withContent, cb));
+                }, self.loadInitialRecommendations.bind(self, username, withContent, cb));
             },
 
-            loadNextRecommendations: function (cb) {
+            loadNextRecommendations: function (username, cb) {
                 var self = this;
                 cb = cb || function () {};
 
-                this.loadRecommendations(this.limit, this.offset, false, false, function (d) {
+                this.loadRecommendations(username, this.limit, this.offset, false, false, function (d) {
                     //if (d.count == 0) {
                     //    self.DOM.Loader.hide();
                     //}
                     cb(d);
-                }, self.loadNextRecommendations.bind(self, cb));
+                }, self.loadNextRecommendations.bind(self, username, cb));
             },
 
-            loadRecommendations: function (limit, offset, initial, withContent, cb, funcToRetry) {
+            loadRecommendations: function (username, limit, offset, initial, withContent, cb, funcToRetry) {
                 var self = this;
                 cb = cb || function () {};
 
@@ -94,7 +106,8 @@ define(['jquery'],
                         limit: limit,
                         offset: offset,
                         initial: initial ? 1 : 0,
-                        with_content: withContent ? 1 : 0
+                        with_content: withContent ? 1 : 0,
+                        target_username: username
                     }
                 })
                     .done(function (d) {

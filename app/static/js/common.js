@@ -41,15 +41,16 @@ define(['jquery', 'jquery_sizes', 'jquery_plugins', 'toastr', 'PlayerApp/Content
                 return duration;
             };
 
+            var $userProfileButtton = $('#user_profile_button');
             $('#main_header_title').tilted();
-            $('#user_profile_button').tilted();
+            $userProfileButtton.tilted();
             $('#share_button').tilted(function (e) {
                 e.preventDefault();
             });
             $('#logout_button').tilted();
 
             window.contentLoader = new ContentLoader();
-            contentLoader.fetchUserpic();
+            contentLoader.fetchMainUserpic();
         });
     }
 );

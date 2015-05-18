@@ -1,6 +1,6 @@
 define(['jquery', 'PlayerApp/Playlist', 'PlayerApp/PlayerProgressbar', 'PlayerApp/Keyboard', 'Util'],
     function($, Playlist, PlayerProgressbar, Keyboard, Util) {
-        function PlayerControl(playerId, contentLoader, keyboardBindings) {
+        function PlayerControl(playerId, playlist, usersCards, contentLoader, keyboardBindings) {
             this.$obj = $(playerId);
             this.contentLoader = contentLoader;
             this.keyboardBindingsActionToCh = keyboardBindings;
@@ -11,10 +11,13 @@ define(['jquery', 'PlayerApp/Playlist', 'PlayerApp/PlayerProgressbar', 'PlayerAp
             this.initTooltips();
             this.registerEvents();
 
-            this.playlist = new Playlist(this.DOM.Playlist, this);
-            this.playlistVisible = this.DOM.Playlist.is(":visible");
+            this.playlist = playlist;
+            this.playlistVisible = this.playlist.isVisible();
             this.playingSong = this.playlist.setPlaying(0);
             this.initRateButtons();
+
+            this.usersCards = usersCards;
+            this.usersCardsVisible = this.usersCards.isVisible();
 
             this.prevState = null;
             this.state = this.States.Stopped;
@@ -51,7 +54,6 @@ define(['jquery', 'PlayerApp/Playlist', 'PlayerApp/PlayerProgressbar', 'PlayerAp
                 MainControlsLike: '.player__main__ratecontrols__like',
                 MainControlsTogglePlaylist: '.player__main__toggle-playlist',
                 MainControlsRefresh: '.player__main__refresh-button',
-                Playlist: '.player__playlist',
                 ProgressBar: '.player__progressbar'
             },
 
@@ -125,10 +127,6 @@ define(['jquery', 'PlayerApp/Playlist', 'PlayerApp/PlayerProgressbar', 'PlayerAp
                 throw "Playlist is null";
             },
 
-            setPlaylist: function (playlist) {
-                this.playlist = playlist;
-            },
-
             registerEvents: function () {
                 //window.registerOnResize(this.onWindowResize, this);
                 //this.onWindowResize(window);
@@ -147,7 +145,7 @@ define(['jquery', 'PlayerApp/Playlist', 'PlayerApp/PlayerProgressbar', 'PlayerAp
                 this.DOM.Main.width(mainWidth);
             },
 
-            playPauseButtonEvent: function() {
+            playPauseButtonEvent: function(forcePlay) {
                 if (this.getState() === this.States.Playing) {
                     this.pause(true);
                 } else {
@@ -180,29 +178,39 @@ define(['jquery', 'PlayerApp/Playlist', 'PlayerApp/PlayerProgressbar', 'PlayerAp
                 }
             },
 
-            refreshEvent: function() {
+            refreshEvent: function(cb) {
                 var self = this;
-                contentLoader.loadInitialRecommendations(false, function(d) {
+                contentLoader.loadInitialRecommendations(window.TARGET_USERNAME, false, function(d) {
                     self.playlist.replaceContent(d);
                     self.playlist.scrollTo(0);
+                    if (cb) {
+                        cb();
+                    } else {
+                        self.usersCards.stopPlaying();
+                    }
+
                 });
             },
 
             togglePlaylistEvent: function() {
                 var self = this;
                 if (this.playlistVisible) {
-                    this.$obj.css({height: 0});
-                    this.DOM.Playlist.closest().hide();
-                    this.DOM.Playlist.hide();
+                    //this.$obj.css({height: 0});
+                    this.playlist.hide();
+                    this.usersCards.show();
                 } else {
-                    this.$obj.css({height: '100%'});
-                    this.DOM.Playlist.closest().show();
-                    this.DOM.Playlist.show();
+                    //this.$obj.css({height: '100%'});
+                    //this.DOM.Playlist.closest().show();
+                    this.playlist.show();
+                    this.usersCards.hide();
                 }
                 this.playlistVisible = !this.playlistVisible;
+                this.usersCardsVisible = !this.usersCardsVisible;
             },
 
             registerClickEvents: function () {
+                var self = this;
+
                 var playPause = this.DOM.MainControlsPlayPause;
                 var prev = this.DOM.MainControlsPrev;
                 var next = this.DOM.MainControlsNext;
@@ -216,7 +224,9 @@ define(['jquery', 'PlayerApp/Playlist', 'PlayerApp/PlayerProgressbar', 'PlayerAp
                 next.click(this.nextButtonEvent.bind(this));
                 like.click(this.likeButtonEvent.bind(this));
                 dislike.click(this.dislikeButtonEvent.bind(this));
-                refresh.click(this.refreshEvent.bind(this));
+                refresh.click(function() {
+                    self.refreshEvent();
+                });
                 togglePlaylist.click(this.togglePlaylistEvent.bind(this));
             },
 
@@ -398,7 +408,7 @@ define(['jquery', 'PlayerApp/Playlist', 'PlayerApp/PlayerProgressbar', 'PlayerAp
                 });
             },
 
-            play: function (song_entry) {
+            play: function (song_entry, forcePlay) {
                 var self = this;
                 var $audio = this.DOM.Audio;
                 var audio = $audio[0];
@@ -406,7 +416,7 @@ define(['jquery', 'PlayerApp/Playlist', 'PlayerApp/PlayerProgressbar', 'PlayerAp
                 song_entry = song_entry || this.playingSong;
                 var song_id = song_entry ? song_entry.getSongId() : this.playingSong.getSongId();
 
-                if (this.getState() == this.States.Stopped || song_id != this.playingSong.getSongId()) {
+                if (this.getState() == this.States.Stopped || forcePlay || song_id != this.playingSong.getSongId()) {
                     console.log("[Player] new song");
                     this.playingSong = song_entry;
                     this.fetchAudioUrl(song_id, function (url) {

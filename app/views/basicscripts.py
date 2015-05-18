@@ -55,18 +55,27 @@ class VkSocial:
         return access_token, user_vk_id
 
     @classmethod
+    def get_vk_uid_by_username(cls, username):
+        uid = User.objects.get(username=username).id
+        instance = UserSocialAuth.objects.filter(provider=cls.VK_PROVIDER).get(user_id=uid)
+        user_vk_id = instance.uid
+        return user_vk_id
+
+    @classmethod
     def _fetch_userpic(cls, vk_uid, access_token):
         try:
             vkapi = vk.API(access_token=access_token)
-            user_info = vkapi.users.get(user_ids=vk_uid, fields=['photo_50'])[0]
-            return STATUS['ok'], user_info['photo_50']
+            user_info = vkapi.users.get(user_ids=vk_uid, fields=['photo_max'])[0]
+            return STATUS['ok'], user_info['photo_max']
         except VkAPIMethodError:
             return STATUS['unauthorized'], None
 
     @classmethod
-    def get_userpic(cls, vk_uid, access_token):
+    def get_userpic(cls, username, access_token):
         status = STATUS['ok']
+        vk_uid = cls.get_vk_uid_by_username(username)
         cache_key = 'userpic__%s' % vk_uid
+        cache.delete(cache_key)
         userpic = cache.get(cache_key)
         if userpic is None:
             try:

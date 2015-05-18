@@ -1,18 +1,11 @@
 require(['common'], function() {
-    require(['jquery', 'PlayerApp/PlayerControl'],
-        function($, PlayerControl) {
+    require(['jquery', 'PlayerApp/Player', 'UserCard'],
+        function($, Player, UserCard) {
             $(document).ready(function($) {
 
                 var loadContent = function() {
-                    contentLoader.loadInitialRecommendations(true, function(d) {
-                        window.player = new PlayerControl("#main_player", contentLoader, {
-                            playpause: 'p',
-                            prev: 'b',
-                            next: 'n',
-                            like: 'l',
-                            dislike: 'd',
-                            refresh: 'r'
-                        });
+                    contentLoader.loadInitialRecommendations(window.TARGET_USERNAME, true, function(d) {
+                        window.player = new Player("#main_player", "#main_playlist", ".user-cards", contentLoader);
                         console.log(player);
 
                         var loading = false;
@@ -21,7 +14,7 @@ require(['common'], function() {
                                 //console.log("loading");
                                 loading = true;
                                 setTimeout(function() {
-                                    contentLoader.loadNextRecommendations(function(d) {
+                                    contentLoader.loadNextRecommendations(window.TARGET_USERNAME, function(d) {
                                         loading = false;
                                         window.player.playlist.addContent(d);
                                     });
