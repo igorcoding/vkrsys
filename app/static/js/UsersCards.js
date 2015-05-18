@@ -103,6 +103,7 @@ define(['jquery', 'toastr', 'UserCard'],
             stopPlaying: function() {
                 if (this.currentPlayingCard) {
                     this.currentPlayingCard.stopPlaying();
+                    this.currentPlayingCard = null;
                 }
             },
 
