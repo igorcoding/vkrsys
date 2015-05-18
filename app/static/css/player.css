@@ -374,7 +374,7 @@
 
 
 
-.player__playlist__outer {
+.player__playlist {
     /*display: table-row;*/
     /*width: 100%;*/
     display: none;
@@ -384,11 +384,6 @@
     background-color: #f1f1f1;
     overflow-y: scroll;
     overflow-x: hidden;
-}
-
-.player__playlist {
-    /*margin-top: 10px;*/
-    height: 100%;
 }
 
 

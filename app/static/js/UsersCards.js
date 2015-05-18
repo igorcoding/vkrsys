@@ -2,6 +2,7 @@ define(['jquery', 'toastr', 'UserCard'],
     function($, toastr, UserCard) {
         function UsersCards(usersCardsId) {
             this.$obj = $(usersCardsId);
+            this.$objp = this.$obj.parent();
             this.DOM = {};
             this.bindToDOM();
             this.$cards = null;
@@ -86,10 +87,12 @@ define(['jquery', 'toastr', 'UserCard'],
 
             show: function() {
                 this.$obj.show();
+                this.$objp.show();
             },
 
             hide: function() {
                 this.$obj.hide();
+                this.$objp.hide();
             },
 
 

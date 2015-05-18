@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-17 20:51+0300\n"
+"POT-Creation-Date: 2015-05-18 16:06+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,23 +19,23 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: app/views/api.py:190
+#: app/views/api.py:243
 msgid "You have already rated this song"
 msgstr "Вы уже голосовали за этот трек"
 
-#: app/views/api.py:195
+#: app/views/api.py:248
 msgid "Vote accepted"
 msgstr "Голос принят"
 
-#: app/views/views.py:42
+#: app/views/views.py:44
 msgid "Login"
 msgstr "Логин"
 
-#: app/views/views.py:44
+#: app/views/views.py:46
 msgid "Sign in with VK"
 msgstr "Зайти через ВК"
 
-#: app/views/views.py:87
+#: app/views/views.py:102
 msgid "Proceed"
 msgstr "Вернуться"
 
@@ -64,6 +64,10 @@ msgstr ""
 msgid "About"
 msgstr "О продукте"
 
+#: templates/player.html:58
+msgid "Listen to other users' recommendation lists:"
+msgstr "Прослушать списки других пользователей:"
+
 #: vkrsys/settings.py:170
 msgid "English"
 msgstr "Английский"
@@ -71,4 +75,3 @@ msgstr "Английский"
 #: vkrsys/settings.py:171
 msgid "Russian"
 msgstr "Русский"
-

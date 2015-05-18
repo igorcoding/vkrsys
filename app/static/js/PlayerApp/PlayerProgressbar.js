@@ -131,21 +131,23 @@ define(['jquery'],
             },
 
             _progressToPx: function(progress) {
+                var width = this.$obj.width();
                 if (progress > this.sliderMax) {
-                    return this.width;
+                    return width;
                 } else if (progress < 0) {
                     return 0;
                 }
-                return progress * this.width / this.sliderMax;
+                return progress * width / this.sliderMax;
             },
 
             _pxToProgress: function(px) {
-                if (px > this.width) {
+                var width = this.$obj.width();
+                if (px > width) {
                     return this.sliderMax;
                 } else if (px < 0) {
                     return 0;
                 }
-                return px * this.sliderMax / this.width;
+                return px * this.sliderMax / width;
             }
         };
 

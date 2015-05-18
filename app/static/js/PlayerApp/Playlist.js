@@ -2,7 +2,6 @@ define(['jquery', 'PlayerApp/PlaylistEntry'],
     function($, PlaylistEntry) {
         function Playlist(playlistId) {
             this.$obj = $(playlistId);
-            this.$objp = this.$obj.parent();
             this.playerControl = null;
             this.DOM = {};
             this.entries = [];
@@ -10,14 +9,15 @@ define(['jquery', 'PlayerApp/PlaylistEntry'],
             this.playingEntry = null;
             this.playingEntryId = null;
 
-            this.onScrollListeners = [];
-
             this.ITEMS_SCROLL_ANIMATION_SPEED = 600;
 
 
             this.bindToDOM();
             this.exploreEntries();
             this.registerEvents();
+
+            this.loading = false;
+            this.stopLoading = false;
         }
 
         Playlist.prototype = {
@@ -34,12 +34,12 @@ define(['jquery', 'PlayerApp/PlaylistEntry'],
             },
 
             show: function() {
-                this.$objp.show();
+                this.$obj.show();
                 //this.scrollToCurrent();
             },
 
             hide: function() {
-                this.$objp.hide();
+                this.$obj.hide();
             },
 
             isVisible: function() {
@@ -85,13 +85,19 @@ define(['jquery', 'PlayerApp/PlaylistEntry'],
 
             registerEvents: function () {
                 var self = this;
-                this.$objp.scroll(function() {
-                    for (var i = 0; i < self.onScrollListeners.length; ++i) {
-                        self.onScrollListeners[i](self.$objp);
+                this.$obj.scroll(function() {
+                    if(!self.loading && !self.stopLoading && Math.ceil(self.$obj.scrollTop()) >= self.$obj.prop('scrollHeight') - self.$obj.height() - 700) {
+                        self.loading = true;
+                        contentLoader.loadNextRecommendations(window.TARGET_USERNAME, function(d) {
+                            self.loading = false;
+                            if (d.count != 0) {
+                                self.addContent(d);
+                            } else {
+                                self.stopLoading = true;
+                            }
+                        });
                     }
                 });
-                //window.registerOnResize(this.onWindowResize, this);
-                //this.onWindowResize(window);
             },
 
             onWindowResize: function (w) {
@@ -154,10 +160,6 @@ define(['jquery', 'PlayerApp/PlaylistEntry'],
                 //entry.onWindowResize(window);
             },
 
-            addOnScrollListener: function(cb) {
-                this.onScrollListeners.push(cb);
-            },
-
             setPlaying: function(id) {
                 if (id < 0) {
                     id = this.entries.length - 1;
@@ -206,10 +208,10 @@ define(['jquery', 'PlayerApp/PlaylistEntry'],
                 console.log(id);
                 var extraPadding = 10;
                 if (id != null && typeof id != 'undefined' && id < this.$entries.length) {
-                    this.$objp.animate({
-                        scrollTop: this.$objp.scrollTop()
+                    this.$obj.animate({
+                        scrollTop: this.$obj.scrollTop()
                         + $(this.$entries[id]).offset().top
-                        - this.$objp.offset().top - extraPadding
+                        - this.$obj.offset().top - extraPadding
                     }, this.ITEMS_SCROLL_ANIMATION_SPEED);
                 }
             }
