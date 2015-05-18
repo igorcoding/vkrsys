@@ -9,7 +9,8 @@ define(['PlayerApp/PlayerControl', 'PlayerApp/Playlist', 'UsersCards'],
                 next: 'n',
                 like: 'l',
                 dislike: 'd',
-                refresh: 'r'
+                refresh: 'r',
+                toggle: 't'
             });
             this.usersCards.setPlayerControl(this.playerControl);
             this.playlist.setPlayerControl(this.playerControl);

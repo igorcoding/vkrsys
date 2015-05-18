@@ -51,6 +51,16 @@ define(['jquery', 'jquery_sizes', 'jquery_plugins', 'toastr', 'PlayerApp/Content
 
             window.contentLoader = new ContentLoader();
             contentLoader.fetchMainUserpic();
+
+
+            $('.main-footer__langs__lang').click(function() {
+                var $this = $(this);
+                var code = $this.data('code');
+                var form = $this.closest('form');
+                form.find('input[name=language]').attr('value', code);
+                form.submit();
+                //alert();
+            })
         });
     }
 );

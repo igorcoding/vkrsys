@@ -73,7 +73,6 @@ class HomePageView(MyView):
         access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
 
         params = {
-            'username': request.user.username,
             'name': "%s %s" % (request.user.first_name, request.user.last_name),
             'user_vk_url': 'https://vk.com/id' + user_vk_id,
             'target_username': target_username
@@ -97,7 +96,7 @@ class AboutView(MyView):
         access_token, user_vk_id = VkSocial.get_access_token_and_id(request)
 
         params = {
-            'username': "%s %s" % (request.user.first_name, request.user.last_name),
+            'name': "%s %s" % (request.user.first_name, request.user.last_name),
             'user_vk_url': 'https://vk.com/id' + user_vk_id,
             'login_btn_text': _('Proceed'),
             'login_btn_url': reverse('app:home')

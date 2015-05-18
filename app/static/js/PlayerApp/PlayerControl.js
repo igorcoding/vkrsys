@@ -89,6 +89,7 @@ define(['jquery', 'PlayerApp/Playlist', 'PlayerApp/PlayerProgressbar', 'PlayerAp
                 makeTitle(this.DOM.MainControlsLike, 'like', gettext('Like'));
                 makeTitle(this.DOM.MainControlsDislike, 'dislike', gettext('Dislike'));
                 makeTitle(this.DOM.MainControlsRefresh, 'refresh', gettext('Refresh'));
+                makeTitle(this.DOM.MainControlsTogglePlaylist, 'toggle', gettext('Toggle'));
             },
 
             getState: function () {
@@ -256,6 +257,9 @@ define(['jquery', 'PlayerApp/Playlist', 'PlayerApp/PlayerProgressbar', 'PlayerAp
                                     break;
                                 case "refresh":
                                     f = self.refreshEvent.bind(self);
+                                    break;
+                                case "toggle":
+                                    f = self.togglePlaylistEvent.bind(self);
                                     break;
                             }
                             if (f) {

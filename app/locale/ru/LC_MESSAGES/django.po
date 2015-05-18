@@ -51,14 +51,16 @@ msgid ""
 "Best of modern science and programming technologies united together to "
 "supply you with the recommendations that computed exactly for you."
 msgstr ""
+"Мы объединили последние достижения современной науки и программирования"
+"чтобы дать рекомендации, подходящие именно Вам."
 
 #: templates/_about_content.html:10
 msgid "The only thing you need - is just listen to music, like you always do."
-msgstr ""
+msgstr "Все, что для этого нужно - это просто слушать музыку"
 
 #: templates/_about_content.html:11
 msgid "Yeah, it's just that simple :)"
-msgstr ""
+msgstr "И да, это действительно так просто :)"
 
 #: templates/_footer.html:3
 msgid "About"

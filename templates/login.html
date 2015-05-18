@@ -6,6 +6,12 @@
     <link rel="stylesheet" href="{% static "css/about.css" %}" />
 {% endblock %}
 
+{% block extra_scripts %}
+    <script type="application/javascript">
+        require(['common']);
+    </script>
+{% endblock %}
+
 
 {% block content %}
     {% include '_login_header.html' %}

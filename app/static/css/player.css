@@ -377,7 +377,7 @@
 .player__playlist {
     /*display: table-row;*/
     /*width: 100%;*/
-    display: none;
+    display: block;
     height: 100%;
     padding-top: 10px;
     /*margin: 15px 0;*/

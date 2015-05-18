@@ -10,6 +10,7 @@ require(['common'], function() {
                     });
                 };
                 loadContent();
+
             });
         }
     );

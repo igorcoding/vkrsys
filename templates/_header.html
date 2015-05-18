@@ -1,15 +1,15 @@
 <header class="main-header__outer">
     <div class="main-header">
-        <a id="main_header_title" class="main-header__title link" href="{% url 'app:home' %}">VK RECOMMENDER</a>
+        <a id="main_header_title" class="main-header__title link" href="{% url 'app:home' username=user.username %}">VK RECOMMENDER</a>
         <div class="main-header__toolbar">
-            <a href="{{ user_vk_url }}" target="_blank" id="user_profile_button" class="main-header__toolbar__user link" data-username="{{ username|safe }}">
+            <a href="{{ user_vk_url }}" target="_blank" id="user_profile_button" class="main-header__toolbar__user link" data-username="{{ user.username|safe }}">
                 <div class="main-header__toolbar__user__name">
                     {{ name|upper }}
                 </div>
                 <div class="main-header__toolbar__user__avatar"></div>
             </a>
             <a href="/share" id="share_button" class="main-header__toolbar__share link"></a>
-            <a href="/logout" id="logout_button" class="main-header__toolbar__logout link" ></a>
+            <a href="{% url 'app:logout' %}" id="logout_button" class="main-header__toolbar__logout link" ></a>
 
         </div>
     </div>
