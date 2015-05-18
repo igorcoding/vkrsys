@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-17 20:27+0300\n"
+"POT-Creation-Date: 2015-05-18 19:12+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,26 +19,31 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: PlayerApp/PlayerControl.js:82
+#: PlayerApp/PlayerControl.js:86
 msgid "Play/Pause"
 msgstr "Играть/Пауза"
 
-#: PlayerApp/PlayerControl.js:83
+#: PlayerApp/PlayerControl.js:87
 msgid "Previous"
 msgstr "Предыдущий трек"
 
-#: PlayerApp/PlayerControl.js:84
+#: PlayerApp/PlayerControl.js:88
 msgid "Next"
 msgstr "Следующий трек"
 
-#: PlayerApp/PlayerControl.js:85
+#: PlayerApp/PlayerControl.js:89
 msgid "Like"
 msgstr "Лайк"
 
-#: PlayerApp/PlayerControl.js:86
+#: PlayerApp/PlayerControl.js:90
 msgid "Dislike"
-msgstr "Дизлайе"
+msgstr "Дизлайк"
 
-#: PlayerApp/PlayerControl.js:87
+#: PlayerApp/PlayerControl.js:91
 msgid "Refresh"
-msgstr "Обоновить список"
+msgstr "Обновить список"
+
+#: PlayerApp/PlayerControl.js:92
+msgid "Toggle playlist"
+msgstr "Переключить плейлист"
+

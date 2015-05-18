@@ -58,7 +58,7 @@
     -webkit-transform: translate(-50%, -50%);
     -moz-transform: translate(-50%, -50%);
     transform: translate(-50%, -50%);
-    background-image: url("/static/img/icons/play.png");
+    background-image: url("/static/img/icons/playpause-paused-hover.png");
     width: 100px;
     height: 100px;
 
