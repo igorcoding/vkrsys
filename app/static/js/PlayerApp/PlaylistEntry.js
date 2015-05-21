@@ -106,12 +106,12 @@ define(['jquery', 'toastr'],
                 if (rate === 'up') {
                     this.DOM.EntryControlsLikeJs.addClass(rawC(this.C.EntryControlsLike) + '_active');
                     this.DOM.EntryControlsDislikeJs.addClass(rawC(this.C.EntryControlsDislike) + '_inactive');
-                    this.playlist.playerControl.applyRate(1);
+                    this.playlist.playerControl.applyRate(this, 1);
                     this.setRating(1);
                 } else if (rate === 'down') {
                     this.DOM.EntryControlsLikeJs.addClass(rawC(this.C.EntryControlsLike) + '_inactive');
                     this.DOM.EntryControlsDislikeJs.addClass(rawC(this.C.EntryControlsDislike) + '_active');
-                    this.playlist.playerControl.applyRate(0);
+                    this.playlist.playerControl.applyRate(this, 0);
                     this.setRating(0);
                 }
             },
@@ -133,12 +133,12 @@ define(['jquery', 'toastr'],
                 var ellipsis = '<span class="ellipsis">...</span>';
                 if (this.artist.length > max) {
                     this.DOM.EntryHeaderArtist.html(this.artist.slice(0, max+1) + ellipsis);
-                    this.DOM.EntryHeaderArtist.attr("alt", this.artist);
+                    this.DOM.EntryHeaderArtist.attr("title", this.artist);
                 }
 
                 if (this.title.length > max) {
                     this.DOM.EntryHeaderTitle.html(this.title.slice(0, max+1) + ellipsis);
-                    this.DOM.EntryHeaderTitle.attr("alt", this.title);
+                    this.DOM.EntryHeaderTitle.attr("title", this.title);
                 }
             },
 

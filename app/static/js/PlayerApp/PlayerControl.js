@@ -278,23 +278,39 @@ define(['jquery', 'PlayerApp/Playlist', 'PlayerApp/PlayerProgressbar', 'PlayerAp
                 this.keyboardEnabled = false;
             },
 
-            applyRate: function(rating) {
-                this.DOM.MainControlsLikeJs.removeClass(rawC(this.C.MainControlsLike));
-                this.DOM.MainControlsDislikeJs.removeClass(rawC(this.C.MainControlsDislike));
-                this.DOM.MainControlsLikeJs.removeClass(rawC(this.C.MainControlsLike) + '_inactive');
-                this.DOM.MainControlsLikeJs.removeClass(rawC(this.C.MainControlsLike) + '_active');
-                this.DOM.MainControlsDislikeJs.removeClass(rawC(this.C.MainControlsDislike) + '_inactive');
-                this.DOM.MainControlsDislikeJs.removeClass(rawC(this.C.MainControlsDislike) + '_active');
+            applyRate: function(entry, rating) {
+                if (this.playingSong && this.playingSong.getSongId() == entry.getSongId()) {
+                    this.DOM.MainControlsLikeJs.removeClass(rawC(this.C.MainControlsLike));
+                    this.DOM.MainControlsDislikeJs.removeClass(rawC(this.C.MainControlsDislike));
+                    this.DOM.MainControlsLikeJs.removeClass(rawC(this.C.MainControlsLike) + '_inactive');
+                    this.DOM.MainControlsLikeJs.removeClass(rawC(this.C.MainControlsLike) + '_active');
+                    this.DOM.MainControlsDislikeJs.removeClass(rawC(this.C.MainControlsDislike) + '_inactive');
+                    this.DOM.MainControlsDislikeJs.removeClass(rawC(this.C.MainControlsDislike) + '_active');
 
-                if (rating == 1) {
-                    this.DOM.MainControlsLikeJs.addClass(rawC(this.C.MainControlsLike) + '_active');
-                    this.DOM.MainControlsDislikeJs.addClass(rawC(this.C.MainControlsDislike) + '_inactive');
-                } else if (rating == 0) {
-                    this.DOM.MainControlsLikeJs.addClass(rawC(this.C.MainControlsLike) + '_inactive');
-                    this.DOM.MainControlsDislikeJs.addClass(rawC(this.C.MainControlsDislike) + '_active');
-                } else {
-                    this.DOM.MainControlsLikeJs.addClass(rawC(this.C.MainControlsLike));
-                    this.DOM.MainControlsDislikeJs.addClass(rawC(this.C.MainControlsDislike));
+                    if (rating == 1) {
+                        this.DOM.MainControlsLikeJs.addClass(rawC(this.C.MainControlsLike) + '_active');
+                        this.DOM.MainControlsDislikeJs.addClass(rawC(this.C.MainControlsDislike) + '_inactive');
+                    } else if (rating == 0) {
+                        this.DOM.MainControlsLikeJs.addClass(rawC(this.C.MainControlsLike) + '_inactive');
+                        this.DOM.MainControlsDislikeJs.addClass(rawC(this.C.MainControlsDislike) + '_active');
+                    } else {
+                        this.DOM.MainControlsLikeJs.addClass(rawC(this.C.MainControlsLike));
+                        this.DOM.MainControlsDislikeJs.addClass(rawC(this.C.MainControlsDislike));
+                    }
+                }
+            },
+
+            normalizeTextsLengths: function() {
+                var max = 80;
+                var ellipsis = '<span class="ellipsis">...</span>';
+                if (this.playingSong.artist.length > max) {
+                    this.DOM.MainSongArtist.html(this.playingSong.artist.slice(0, max+1) + ellipsis);
+                    this.DOM.MainSongArtist.attr("title", this.playingSong.artist);
+                }
+
+                if (this.playingSong.title.length > max) {
+                    this.DOM.MainSongTitle.html(this.playingSong.title.slice(0, max+1) + ellipsis);
+                    this.DOM.MainSongTitle.attr("title", this.playingSong.title);
                 }
             },
 
@@ -358,7 +374,7 @@ define(['jquery', 'PlayerApp/Playlist', 'PlayerApp/PlayerProgressbar', 'PlayerAp
             initRateButtons: function() {
                 if (this.playingSong.isRated()) {
                     var rating = this.playingSong.getRating();
-                    this.applyRate(rating);
+                    this.applyRate(this.playingSong, rating);
                 } else {
                     this.DOM.MainControlsLikeJs.removeClass(rawC(this.C.MainControlsLike) + '_inactive');
                     this.DOM.MainControlsLikeJs.removeClass(rawC(this.C.MainControlsLike) + '_active');
@@ -379,6 +395,7 @@ define(['jquery', 'PlayerApp/Playlist', 'PlayerApp/PlayerProgressbar', 'PlayerAp
                 this.DOM.MainSongTitle.text(this.playingSong.title);
                 this.DOM.Art.attr("src", this.playingSong.artUrl);
                 this.initRateButtons();
+                this.normalizeTextsLengths();
             },
 
             visualPause: function ($ppButton) {

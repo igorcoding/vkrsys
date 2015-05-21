@@ -95,7 +95,7 @@ class GetUsers(View):
                 'reason': 'Malformed request'
             }, status=400)
 
-        users = User.objects.filter(is_staff=False).all()[offset:offset + limit]
+        users = User.objects.filter(is_staff=False, social_auth__user__id__isnull=False)[offset:offset + limit]
 
         return JsonResponse({
             'status': 200,

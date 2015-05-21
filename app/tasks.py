@@ -12,7 +12,7 @@ from dejavu.recognize import FileRecognizer
 from celery import shared_task
 from requests.exceptions import ReadTimeout
 import vk
-from vk.api import VkAPIMethodError
+from vk.api import VkAPIMethodError, VkError
 import requests
 from django.conf import settings
 from django.core.cache import cache
@@ -63,6 +63,8 @@ def save_music(vk_uid, access_token):
     vkapi = vk.API(access_token=access_token)
     try:
         songs = vkapi.audio.get(owner_id=vk_uid, need_user=0)
+    except VkError as e:
+        return "vk error: %s" % e.message
     except ReadTimeout:
         songs = {
             'items': []
