@@ -11,8 +11,10 @@ cd vkrsys
 git submodule update --init
 sudo apt-get install -y python2.7-dev python-pip python-virtualenv
 virtualenv env
-source env/bin/activate
-pip install -r requirements.txt
+# source env/bin/activate
+
+PYTHONBIN=/www/vkrsys/env/bin
+$PYTHONBIN/pip install -r requirements.txt
 cd -
 
 
@@ -29,15 +31,15 @@ cd -
 
 cd libs/dejavu/
 sudo apt-get install -y libblas-dev liblapack-dev portaudio19-dev
-pip install numpy
-pip install scipy
-pip install --allow-external PyAudio --allow-unverified PyAudio -r requirements.txt
+$PYTHONBIN/pip install numpy
+$PYTHONBIN/pip install scipy
+$PYTHONBIN/pip install --allow-external PyAudio --allow-unverified PyAudio -r requirements.txt
 cd -
 
 
 cd libs/rsys/rsys-python
 rm -rf build/
-python setup.py install
+$PYTHONBIN/python setup.py install
 cd -
 
 
@@ -48,6 +50,7 @@ sudo cp -a vkrsys /www/
 
 cd /www/vkrsys
 cd production
+mkdir -p logs
 sudo ln -s /www/vkrsys/production/supervisor_conf.d/vkrsys.conf /etc/supervisor/conf.d/
 
 sudo supervisorctl reread
