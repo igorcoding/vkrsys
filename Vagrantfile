@@ -16,7 +16,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     path: "production/deploy.sh"
 
   config.vm.provider "virtualbox" do |v|
-    v.memory = 1600
+    v.memory = 3500
     v.cpus = 4
     v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
     v.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
