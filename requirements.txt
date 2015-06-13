@@ -10,4 +10,5 @@ requests==2.5.3
 RandomWords
 mutagen
 gunicorn
-
+urllib3
+setproctitle

@@ -63,3 +63,8 @@ app/static/arts/*
 !app/static/arts/default.png
 !app/static/js/lib
 !app/static/css/lib
+.vagrant/
+/production/logs/
+/production/run/
+/production/temp/
+

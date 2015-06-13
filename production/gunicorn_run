@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+. ../env/bin/activate
+gunicorn vkrsys.wsgi --config gunicorn.conf
