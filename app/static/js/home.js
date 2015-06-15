@@ -2,6 +2,8 @@ require(['common'], function() {
     require(['jquery', 'PlayerApp/Player', 'UserCard'],
         function($, Player, UserCard) {
             $(document).ready(function($) {
+                
+                contentLoader.fetchMainUserpic();
 
                 var loadContent = function() {
                     contentLoader.loadInitialRecommendations(window.TARGET_USERNAME, true, function(d) {

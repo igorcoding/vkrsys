@@ -81,6 +81,7 @@ CELERY_ROUTES = {
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 PRODUCTION = not DEBUG
+PREVIEW = True
 
 TEMPLATE_DEBUG = True
 

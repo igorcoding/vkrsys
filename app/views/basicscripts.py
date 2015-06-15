@@ -84,7 +84,10 @@ class VkSocial:
                     cache.set(cache_key, userpic, settings.USERPIC_CACHE_DURATION)
             except:
                 status = STATUS['unknown']
-        return status, userpic
+        if settings.PREVIEW:
+            return status, '/static/img/default_user.png'
+        else:
+            return status, userpic
 
     @classmethod
     def _fetch_song_url(cls, song_id, access_token):

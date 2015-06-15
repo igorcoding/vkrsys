@@ -33,9 +33,14 @@ sudo ln -s /usr/bin/x86_64-linux-gnu-gfortran-4.9 /usr/bin/x86_64-linux-gnu-gfor
 sudo apt-get install -y mysql-client libmysqlclient-dev
 
 sudo mkdir -p /www
-cd /www
-sudo git clone https://github.com/igorcoding/vkrsys.git
+cd $HOME
+git clone https://github.com/igorcoding/vkrsys.git
+cd vkrsys
 git submodule update --init
+cd $HOME
+sudo mv vkrsys /www
+
+cd /www/vkrsys
 sudo apt-get install -y python2.7-dev python-pip python-virtualenv
 sudo virtualenv env
 PYTHONBIN=/www/vkrsys/env/bin
